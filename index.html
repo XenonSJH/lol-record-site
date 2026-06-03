@@ -2,7 +2,9 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>내전 전적</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내전 전적표</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -32,6 +34,8 @@
 
     th {
       background: #374151;
+      cursor: pointer;
+      user-select: none;
     }
 
     tr:hover {
@@ -39,6 +43,7 @@
     }
   </style>
 </head>
+
 <body>
   <h1>내전 전적표</h1>
 
@@ -47,12 +52,13 @@
       <tr>
         <th>순위</th>
         <th>닉네임</th>
-        <th>판수</th>
-        <th>승</th>
-        <th>패</th>
-        <th>승률</th>
+        <th onclick="sortBy('games')">판수 ↕</th>
+        <th onclick="sortBy('wins')">승 ↕</th>
+        <th onclick="sortBy('losses')">패 ↕</th>
+        <th onclick="sortBy('rate')">승률 ↕</th>
       </tr>
     </thead>
+
     <tbody id="ranking"></tbody>
   </table>
 
@@ -64,6 +70,21 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    let currentSort = "rate";
+    let ascending = false;
+    let playersData = [];
+
+    window.sortBy = function(type) {
+      if (currentSort === type) {
+        ascending = !ascending;
+      } else {
+        currentSort = type;
+        ascending = false;
+      }
+
+      renderTable();
+    };
+
     async function loadRanking() {
       const { data, error } = await supabase
         .from("players")
@@ -74,15 +95,33 @@
         return;
       }
 
+      playersData = data;
+      renderTable();
+    }
+
+    function renderTable() {
+      const data = [...playersData];
+
       data.sort((a, b) => {
-        const aGames = a.wins + a.losses;
-        const bGames = b.wins + b.losses;
+        const gamesA = a.wins + a.losses;
+        const gamesB = b.wins + b.losses;
 
-        const aRate = aGames === 0 ? 0 : a.wins / aGames;
-        const bRate = bGames === 0 ? 0 : b.wins / bGames;
+        const rateA = gamesA === 0 ? 0 : a.wins / gamesA;
+        const rateB = gamesB === 0 ? 0 : b.wins / gamesB;
 
-        if (bRate !== aRate) return bRate - aRate;
-        return b.wins - a.wins;
+        let result = 0;
+
+        if (currentSort === "games") {
+          result = gamesA - gamesB;
+        } else if (currentSort === "wins") {
+          result = a.wins - b.wins;
+        } else if (currentSort === "losses") {
+          result = a.losses - b.losses;
+        } else if (currentSort === "rate") {
+          result = rateA - rateB;
+        }
+
+        return ascending ? result : -result;
       });
 
       const tbody = document.getElementById("ranking");
@@ -106,11 +145,8 @@
     }
 
     loadRanking();
+
+    setInterval(loadRanking, 30000);
   </script>
 </body>
 </html>
-<script>
-setInterval(() => {
-    location.reload();
-}, 30000);
-</script>
