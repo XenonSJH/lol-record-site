@@ -179,7 +179,6 @@
     let currentSort = "rate";
     let ascending = false;
     let playersData = [];
-    let rankingData = [];
     let totalGames = 0;
 
     window.sortBy = function(type) {
@@ -208,17 +207,6 @@
 
       playersData = data || [];
 
-      rankingData = [...playersData].sort((a, b) => {
-        const gamesA = a.wins + a.losses;
-        const gamesB = b.wins + b.losses;
-
-        const rateA = gamesA === 0 ? 0 : a.wins / gamesA;
-        const rateB = gamesB === 0 ? 0 : b.wins / gamesB;
-
-        if (rateA !== rateB) return rateB - rateA;
-        if (gamesA !== gamesB) return gamesB - gamesA;
-        return a.lol_name.localeCompare(b.lol_name, "ko");
-      });
 
       const totalPlayerGames = playersData.reduce((sum, player) => {
         return sum + player.wins + player.losses;
@@ -227,7 +215,7 @@
       totalGames = totalPlayerGames / 10;
 
       document.getElementById("summary").innerText =
-        `총 판수: ${totalGames.toFixed(0)}판`;
+      `총 판수: ${totalGames.toFixed(0)}판 ㅣ 멤버 수: ${playersData.length}명`;
 
       renderTable();
     }
@@ -290,7 +278,7 @@
       const tbody = document.getElementById("ranking");
       tbody.innerHTML = "";
 
-      data.forEach((player) => {
+      data.forEach((player, index) => {
         const games = player.wins + player.losses;
         const rateNumber = games === 0 ? 0 : (player.wins / games) * 100;
         const rate = rateNumber.toFixed(1);
@@ -298,8 +286,9 @@
         const participation =
           totalGames === 0 ? 0 : ((games / totalGames) * 100).toFixed(1);
 
-        const realRank =
-          rankingData.findIndex(p => p.lol_name === player.lol_name) + 1;
+        const realRank = ascending
+          ? data.length - index
+          : index + 1;
 
         const rankText =
           realRank === 1 ? "🥇" :
