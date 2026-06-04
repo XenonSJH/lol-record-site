@@ -283,8 +283,10 @@
         const rateNumber = games === 0 ? 0 : (player.wins / games) * 100;
         const rate = rateNumber.toFixed(1);
 
-        const participation =
-          totalGames === 0 ? 0 : ((games / totalGames) * 100).toFixed(1);
+        const participationNumber =
+          totalGames === 0 ? 0 : (games / totalGames) * 100;
+
+        const participation = participationNumber.toFixed(1);
 
         const realRank = ascending
           ? data.length - index
