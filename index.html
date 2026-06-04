@@ -15,7 +15,14 @@
 
     h1 {
       text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .summary {
+      text-align: center;
       margin-bottom: 30px;
+      color: #d1d5db;
+      font-size: 18px;
     }
 
     table {
@@ -46,6 +53,7 @@
 
 <body>
   <h1>내전 전적표</h1>
+  <div class="summary" id="summary">총 판수 계산 중...</div>
 
   <table>
     <thead>
@@ -56,6 +64,7 @@
         <th onclick="sortBy('wins')">승 ↕</th>
         <th onclick="sortBy('losses')">패 ↕</th>
         <th onclick="sortBy('rate')">승률 ↕</th>
+        <th onclick="sortBy('participation')">참여율 ↕</th>
       </tr>
     </thead>
 
@@ -73,6 +82,7 @@
     let currentSort = "rate";
     let ascending = false;
     let playersData = [];
+    let totalGames = 0;
 
     window.sortBy = function(type) {
       if (currentSort === type) {
@@ -96,6 +106,16 @@
       }
 
       playersData = data;
+
+      const totalPlayerGames = data.reduce((sum, player) => {
+        return sum + player.wins + player.losses;
+      }, 0);
+
+      totalGames = totalPlayerGames / 10;
+
+      document.getElementById("summary").innerText =
+        `총 판수: ${totalGames.toFixed(0)}판`;
+
       renderTable();
     }
 
@@ -109,6 +129,9 @@
         const rateA = gamesA === 0 ? 0 : a.wins / gamesA;
         const rateB = gamesB === 0 ? 0 : b.wins / gamesB;
 
+        const participationA = totalGames === 0 ? 0 : gamesA / totalGames;
+        const participationB = totalGames === 0 ? 0 : gamesB / totalGames;
+
         let result = 0;
 
         if (currentSort === "games") {
@@ -119,6 +142,8 @@
           result = a.losses - b.losses;
         } else if (currentSort === "rate") {
           result = rateA - rateB;
+        } else if (currentSort === "participation") {
+          result = participationA - participationB;
         }
 
         return ascending ? result : -result;
@@ -130,6 +155,8 @@
       data.forEach((player, index) => {
         const games = player.wins + player.losses;
         const rate = games === 0 ? 0 : (player.wins / games * 100).toFixed(1);
+        const participation =
+          totalGames === 0 ? 0 : (games / totalGames * 100).toFixed(1);
 
         tbody.innerHTML += `
           <tr>
@@ -139,6 +166,7 @@
             <td>${player.wins}</td>
             <td>${player.losses}</td>
             <td>${rate}%</td>
+            <td>${participation}%</td>
           </tr>
         `;
       });
