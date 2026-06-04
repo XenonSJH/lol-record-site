@@ -205,19 +205,21 @@
         return;
       }
 
+      const { count: matchCount, error: matchError } = await supabase
+        .from("matches")
+        .select("*", { count: "exact", head: true });
+
+      if (matchError) {
+        console.error(matchError);
+        document.getElementById("summary").innerText = "총 판수를 불러오지 못했습니다.";
+        return;
+      }
+
       playersData = data || [];
-
-
-      const totalPlayerGames = playersData.reduce((sum, player) => {
-        const wins = Number(player.wins) || 0;
-        const losses = Number(player.losses) || 0;
-        return sum + wins + losses;
-      }, 0);
-
-      totalGames = totalPlayerGames / 10;
+      totalGames = matchCount || 0;
 
       document.getElementById("summary").innerText =
-      `총 판수: ${totalGames.toFixed(0)}판 ㅣ 멤버 수: ${playersData.length}명`;
+        `총 판수: ${totalGames}판 ㅣ 멤버 수: ${playersData.length}명`;
 
       renderTable();
     }
