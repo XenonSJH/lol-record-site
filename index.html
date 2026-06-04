@@ -209,7 +209,9 @@
 
 
       const totalPlayerGames = playersData.reduce((sum, player) => {
-        return sum + player.wins + player.losses;
+        const wins = Number(player.wins) || 0;
+        const losses = Number(player.losses) || 0;
+        return sum + wins + losses;
       }, 0);
 
       totalGames = totalPlayerGames / 10;
@@ -254,11 +256,16 @@
       );
 
       data.sort((a, b) => {
-        const gamesA = a.wins + a.losses;
-        const gamesB = b.wins + b.losses;
+        const winsA = Number(a.wins) || 0;
+        const lossesA = Number(a.losses) || 0;
+        const winsB = Number(b.wins) || 0;
+        const lossesB = Number(b.losses) || 0;
 
-        const rateA = gamesA === 0 ? 0 : a.wins / gamesA;
-        const rateB = gamesB === 0 ? 0 : b.wins / gamesB;
+        const gamesA = winsA + lossesA;
+        const gamesB = winsB + lossesB;
+
+        const rateA = gamesA === 0 ? 0 : winsA / gamesA;
+        const rateB = gamesB === 0 ? 0 : winsB / gamesB;
 
         const participationA = totalGames === 0 ? 0 : gamesA / totalGames;
         const participationB = totalGames === 0 ? 0 : gamesB / totalGames;
@@ -267,8 +274,8 @@
 
         if (currentSort === "name") result = compareNames(a.lol_name, b.lol_name);
         else if (currentSort === "games") result = gamesA - gamesB;
-        else if (currentSort === "wins") result = a.wins - b.wins;
-        else if (currentSort === "losses") result = a.losses - b.losses;
+        else if (currentSort === "wins") result = winsA - winsB;
+        else if (currentSort === "losses") result = lossesA - lossesB;
         else if (currentSort === "rate") result = rateA - rateB;
         else if (currentSort === "participation") result = participationA - participationB;
 
@@ -279,8 +286,11 @@
       tbody.innerHTML = "";
 
       data.forEach((player, index) => {
-        const games = player.wins + player.losses;
-        const rateNumber = games === 0 ? 0 : (player.wins / games) * 100;
+        const wins = Number(player.wins) || 0;
+        const losses = Number(player.losses) || 0;
+
+        const games = wins + losses;
+        const rateNumber = games === 0 ? 0 : (wins / games) * 100;
         const rate = rateNumber.toFixed(1);
 
         const participationNumber =
@@ -314,8 +324,8 @@
             <td>${rankText}</td>
             <td class="nickname">${player.lol_name}</td>
             <td>${games}</td>
-            <td class="win">${player.wins}</td>
-            <td class="loss">${player.losses}</td>
+            <td class="win">${wins}</td>
+            <td class="loss">${losses}</td>
             <td class="${rateClass}">${rate}%</td>
             <td>${participation}%</td>
           </tr>
