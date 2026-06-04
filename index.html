@@ -6,9 +6,7 @@
   <title>내전 전적표</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       font-family: Arial, sans-serif;
@@ -130,13 +128,8 @@
     }
 
     @media (max-width: 700px) {
-      body {
-        padding: 20px;
-      }
-
-      h1 {
-        font-size: 32px;
-      }
+      body { padding: 20px; }
+      h1 { font-size: 32px; }
 
       th,
       td {
@@ -186,6 +179,7 @@
     let currentSort = "rate";
     let ascending = false;
     let playersData = [];
+    let rankingData = [];
     let totalGames = 0;
 
     window.sortBy = function(type) {
@@ -214,6 +208,18 @@
 
       playersData = data || [];
 
+      rankingData = [...playersData].sort((a, b) => {
+        const gamesA = a.wins + a.losses;
+        const gamesB = b.wins + b.losses;
+
+        const rateA = gamesA === 0 ? 0 : a.wins / gamesA;
+        const rateB = gamesB === 0 ? 0 : b.wins / gamesB;
+
+        if (rateA !== rateB) return rateB - rateA;
+        if (gamesA !== gamesB) return gamesB - gamesA;
+        return a.lol_name.localeCompare(b.lol_name, "ko");
+      });
+
       const totalPlayerGames = playersData.reduce((sum, player) => {
         return sum + player.wins + player.losses;
       }, 0);
@@ -241,35 +247,12 @@
       const groupA = getLanguageGroup(aName);
       const groupB = getLanguageGroup(bName);
 
-      if (groupA !== groupB) {
-        return groupA - groupB;
-      }
-
+      if (groupA !== groupB) return groupA - groupB;
       if (groupA === 1) return aName.localeCompare(bName, "ko");
       if (groupA === 2) return aName.localeCompare(bName, "en");
       if (groupA === 3) return aName.localeCompare(bName, "zh");
 
       return aName.localeCompare(bName);
-    }
-
-    function getRateClass(rateNumber) {
-      if (rateNumber >= 60) return "rate-high";
-      if (rateNumber >= 50) return "rate-mid";
-      return "rate-low";
-    }
-
-    function getMedal(index) {
-      if (index === 0) return "🥇";
-      if (index === 1) return "🥈";
-      if (index === 2) return "🥉";
-      return index + 1;
-    }
-
-    function getRankClass(index) {
-      if (index === 0) return "rank-1";
-      if (index === 1) return "rank-2";
-      if (index === 2) return "rank-3";
-      return "";
     }
 
     function renderTable() {
@@ -307,20 +290,37 @@
       const tbody = document.getElementById("ranking");
       tbody.innerHTML = "";
 
-      data.forEach((player, index) => {
+      data.forEach((player) => {
         const games = player.wins + player.losses;
-        const rateNumber = games === 0 ? 0 : player.wins / games * 100;
+        const rateNumber = games === 0 ? 0 : (player.wins / games) * 100;
         const rate = rateNumber.toFixed(1);
-        const participation =
-          totalGames === 0 ? 0 : (games / totalGames * 100).toFixed(1);
 
-        const medal = getMedal(index);
-        const rankClass = getRankClass(index);
-        const rateClass = getRateClass(rateNumber);
+        const participation =
+          totalGames === 0 ? 0 : ((games / totalGames) * 100).toFixed(1);
+
+        const realRank =
+          rankingData.findIndex(p => p.lol_name === player.lol_name) + 1;
+
+        const rankText =
+          realRank === 1 ? "🥇" :
+          realRank === 2 ? "🥈" :
+          realRank === 3 ? "🥉" :
+          realRank;
+
+        const rankClass =
+          realRank === 1 ? "rank-1" :
+          realRank === 2 ? "rank-2" :
+          realRank === 3 ? "rank-3" :
+          "";
+
+        const rateClass =
+          rateNumber >= 60 ? "rate-high" :
+          rateNumber >= 50 ? "rate-mid" :
+          "rate-low";
 
         tbody.innerHTML += `
           <tr class="${rankClass}">
-            <td>${medal}</td>
+            <td>${rankText}</td>
             <td class="nickname">${player.lol_name}</td>
             <td>${games}</td>
             <td class="win">${player.wins}</td>
