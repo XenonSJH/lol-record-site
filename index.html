@@ -20,9 +20,26 @@
 
     .summary {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       color: #d1d5db;
       font-size: 18px;
+    }
+
+    .search-box {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      background: #1f2937;
+      color: white;
+      outline: none;
+    }
+
+    .search-box::placeholder {
+      color: #9ca3af;
     }
 
     table {
@@ -55,11 +72,19 @@
   <h1>내전 전적표</h1>
   <div class="summary" id="summary">총 판수 계산 중...</div>
 
+  <input
+    id="searchInput"
+    class="search-box"
+    type="text"
+    placeholder="닉네임 검색..."
+    oninput="renderTable()"
+  >
+
   <table>
     <thead>
       <tr>
         <th>순위</th>
-        <th>닉네임</th>
+        <th onclick="sortBy('name')">닉네임 ↕</th>
         <th onclick="sortBy('games')">판수 ↕</th>
         <th onclick="sortBy('wins')">승 ↕</th>
         <th onclick="sortBy('losses')">패 ↕</th>
@@ -95,6 +120,8 @@
       renderTable();
     };
 
+    window.renderTable = renderTable;
+
     async function loadRanking() {
       const { data, error } = await supabase
         .from("players")
@@ -119,8 +146,50 @@
       renderTable();
     }
 
+    function getLanguageGroup(name) {
+      const first = name.trim()[0];
+
+      if (!first) return 4;
+
+      if (/[가-힣]/.test(first)) return 1;
+      if (/[a-zA-Z]/.test(first)) return 2;
+      if (/[\u4e00-\u9fff]/.test(first)) return 3;
+
+      return 4;
+    }
+
+    function compareNames(aName, bName) {
+      const groupA = getLanguageGroup(aName);
+      const groupB = getLanguageGroup(bName);
+
+      if (groupA !== groupB) {
+        return groupA - groupB;
+      }
+
+      if (groupA === 1) {
+        return aName.localeCompare(bName, "ko");
+      }
+
+      if (groupA === 2) {
+        return aName.localeCompare(bName, "en");
+      }
+
+      if (groupA === 3) {
+        return aName.localeCompare(bName, "zh");
+      }
+
+      return aName.localeCompare(bName);
+    }
+
     function renderTable() {
-      const data = [...playersData];
+      const keyword = document
+        .getElementById("searchInput")
+        .value
+        .toLowerCase();
+
+      const data = playersData.filter(player =>
+        player.lol_name.toLowerCase().includes(keyword)
+      );
 
       data.sort((a, b) => {
         const gamesA = a.wins + a.losses;
@@ -134,7 +203,9 @@
 
         let result = 0;
 
-        if (currentSort === "games") {
+        if (currentSort === "name") {
+          result = compareNames(a.lol_name, b.lol_name);
+        } else if (currentSort === "games") {
           result = gamesA - gamesB;
         } else if (currentSort === "wins") {
           result = a.wins - b.wins;
@@ -173,7 +244,6 @@
     }
 
     loadRanking();
-
     setInterval(loadRanking, 30000);
   </script>
 </body>
