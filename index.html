@@ -188,14 +188,14 @@
         currentSort = type;
 
         if (type === "name") {
-          ascending = true;   // 이름은 처음 클릭하면 가나다순
+          ascending = true;
         } else {
-          ascending = false;  // 숫자는 처음 클릭하면 높은 순
+          ascending = false;
         }
-    }
+      }
 
-    renderTable();
-  };
+      renderTable();
+    };
 
     window.renderTable = renderTable;
 
@@ -305,9 +305,18 @@
 
         const participation = participationNumber.toFixed(1);
 
-        const realRank = ascending
-          ? index + 1
-          : data.length - index;
+        let realRank;
+
+        if (currentSort === "name") {
+          realRank = ascending
+            ? index + 1
+            : data.length - index;
+        } else {
+          realRank = ascending
+            ? data.length - index
+            : index + 1;
+        }
+
         const rankText =
           realRank === 1 ? "🥇" :
           realRank === 2 ? "🥈" :
