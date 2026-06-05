@@ -186,11 +186,16 @@
         ascending = !ascending;
       } else {
         currentSort = type;
-        ascending = false;
-      }
 
-      renderTable();
-    };
+        if (type === "name") {
+          ascending = true;   // 이름은 처음 클릭하면 가나다순
+        } else {
+          ascending = false;  // 숫자는 처음 클릭하면 높은 순
+        }
+    }
+
+    renderTable();
+  };
 
     window.renderTable = renderTable;
 
@@ -300,8 +305,9 @@
 
         const participation = participationNumber.toFixed(1);
 
-        const realRank = index + 1;
-
+        const realRank = ascending
+          ? index + 1
+          : data.length - index;
         const rankText =
           realRank === 1 ? "🥇" :
           realRank === 2 ? "🥈" :
