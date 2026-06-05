@@ -300,9 +300,7 @@
 
         const participation = participationNumber.toFixed(1);
 
-        const realRank = ascending
-          ? data.length - index
-          : index + 1;
+        const realRank = index + 1;
 
         const rankText =
           realRank === 1 ? "🥇" :
