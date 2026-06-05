@@ -127,6 +127,27 @@
       font-weight: 800;
     }
 
+    .low-participation td {
+      color: #9ca3af !important;
+      filter: grayscale(100%);
+    }
+
+    .low-participation .win,
+    .low-participation .loss,
+    .low-participation .rate-high,
+    .low-participation .rate-mid,
+    .low-participation .rate-low {
+      color: #9ca3af !important;
+    }
+
+    .group-divider td {
+      height: 20px;
+      padding: 0;
+      background: transparent !important;
+      border-bottom: 2px solid rgba(147, 197, 253, 0.5);
+      border-radius: 0 !important;
+    }
+
     @media (max-width: 700px) {
       body { padding: 20px; }
       h1 { font-size: 32px; }
@@ -186,12 +207,7 @@
         ascending = !ascending;
       } else {
         currentSort = type;
-
-        if (type === "name") {
-          ascending = true;
-        } else {
-          ascending = false;
-        }
+        ascending = type === "name";
       }
 
       renderTable();
@@ -252,6 +268,28 @@
       return aName.localeCompare(bName);
     }
 
+    function getStats(player) {
+      const wins = Number(player.wins) || 0;
+      const losses = Number(player.losses) || 0;
+      const games = wins + losses;
+      const rateNumber = games === 0 ? 0 : (wins / games) * 100;
+      const participationNumber = totalGames === 0 ? 0 : (games / totalGames) * 100;
+
+      return {
+        wins,
+        losses,
+        games,
+        rateNumber,
+        participationNumber
+      };
+    }
+
+    function getParticipationGroup(participationNumber) {
+      if (participationNumber >= 35) return 0;
+      if (participationNumber >= 10) return 1;
+      return 2;
+    }
+
     function renderTable() {
       const keyword = document
         .getElementById("searchInput")
@@ -263,47 +301,35 @@
       );
 
       data.sort((a, b) => {
-        const winsA = Number(a.wins) || 0;
-        const lossesA = Number(a.losses) || 0;
-        const winsB = Number(b.wins) || 0;
-        const lossesB = Number(b.losses) || 0;
-
-        const gamesA = winsA + lossesA;
-        const gamesB = winsB + lossesB;
-
-        const rateA = gamesA === 0 ? 0 : winsA / gamesA;
-        const rateB = gamesB === 0 ? 0 : winsB / gamesB;
-
-        const participationA = totalGames === 0 ? 0 : (gamesA / totalGames) * 100;
-        const participationB = totalGames === 0 ? 0 : (gamesB / totalGames) * 100;
+        const statsA = getStats(a);
+        const statsB = getStats(b);
 
         if (currentSort === "rate") {
-
-          const getGroup = (p) => {
-            if (p >= 35) return 0;
-            if (p >= 10) return 1;
-            return 2;
-          };
-
-          const groupA = getGroup(participationA);
-          const groupB = getGroup(participationB);
+          const groupA = getParticipationGroup(statsA.participationNumber);
+          const groupB = getParticipationGroup(statsB.participationNumber);
 
           if (!ascending) {
             if (groupA !== groupB) return groupA - groupB;
-            return rateB - rateA;
+            return statsB.rateNumber - statsA.rateNumber;
           } else {
             if (groupA !== groupB) return groupB - groupA;
-            return rateA - rateB;
+            return statsA.rateNumber - statsB.rateNumber;
           }
         }
 
         let result = 0;
 
-        if (currentSort === "name") result = compareNames(a.lol_name, b.lol_name);
-        else if (currentSort === "games") result = gamesA - gamesB;
-        else if (currentSort === "wins") result = winsA - winsB;
-        else if (currentSort === "losses") result = lossesA - lossesB;
-        else if (currentSort === "participation") result = participationA - participationB;
+        if (currentSort === "name") {
+          result = compareNames(a.lol_name, b.lol_name);
+        } else if (currentSort === "games") {
+          result = statsA.games - statsB.games;
+        } else if (currentSort === "wins") {
+          result = statsA.wins - statsB.wins;
+        } else if (currentSort === "losses") {
+          result = statsA.losses - statsB.losses;
+        } else if (currentSort === "participation") {
+          result = statsA.participationNumber - statsB.participationNumber;
+        }
 
         return ascending ? result : -result;
       });
@@ -311,31 +337,49 @@
       const tbody = document.getElementById("ranking");
       tbody.innerHTML = "";
 
+      let lastGroup = null;
+      let rankedCount = 0;
+
       data.forEach((player, index) => {
-        const wins = Number(player.wins) || 0;
-        const losses = Number(player.losses) || 0;
+        const {
+          wins,
+          losses,
+          games,
+          rateNumber,
+          participationNumber
+        } = getStats(player);
 
-        const games = wins + losses;
-        const rateNumber = games === 0 ? 0 : (wins / games) * 100;
         const rate = rateNumber.toFixed(1);
-
-        const participationNumber =
-          totalGames === 0 ? 0 : (games / totalGames) * 100;
-
         const participation = participationNumber.toFixed(1);
+
+        const currentGroup = getParticipationGroup(participationNumber);
         const isLowParticipation = participationNumber < 10;
         const isRanked = participationNumber >= 35;
 
-        let realRank;
+        if (
+          currentSort === "rate" &&
+          lastGroup !== null &&
+          lastGroup !== currentGroup
+        ) {
+          tbody.innerHTML += `
+            <tr class="group-divider">
+              <td colspan="7"></td>
+            </tr>
+          `;
+        }
 
-        if (currentSort === "name") {
-          realRank = ascending
-            ? index + 1
-            : data.length - index;
-        } else {
-          realRank = ascending
-            ? data.length - index
-            : index + 1;
+        lastGroup = currentGroup;
+
+        let realRank = "-";
+
+        if (isRanked) {
+          rankedCount++;
+
+          if (currentSort === "rate" && ascending) {
+            realRank = data.filter(p => getStats(p).participationNumber >= 35).length - rankedCount + 1;
+          } else {
+            realRank = rankedCount;
+          }
         }
 
         const rankText =
@@ -356,7 +400,7 @@
           "rate-low";
 
         tbody.innerHTML += `
-          <tr class="${rankClass}">
+          <tr class="${rankClass} ${isLowParticipation ? "low-participation" : ""}">
             <td>${rankText}</td>
             <td class="nickname">${player.lol_name}</td>
             <td>${games}</td>
