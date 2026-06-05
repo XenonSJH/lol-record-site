@@ -370,15 +370,31 @@
 
         lastGroup = currentGroup;
 
-        let realRank = "-";
+        let realRank;
 
-        if (isRanked) {
-          rankedCount++;
+        if (currentSort === "rate") {
+          if (isRanked) {
+            rankedCount++;
 
-          if (currentSort === "rate" && ascending) {
-            realRank = data.filter(p => getStats(p).participationNumber >= 35).length - rankedCount + 1;
+            if (ascending) {
+              realRank =
+                data.filter(p => getStats(p).participationNumber >= 35).length
+                - rankedCount + 1;
+            } else {
+              realRank = rankedCount;
+            }
           } else {
-            realRank = rankedCount;
+            realRank = "-";
+          }
+        } else {
+          if (currentSort === "name") {
+            realRank = ascending
+              ? index + 1
+              : data.length - index;
+          } else {
+            realRank = ascending
+              ? data.length - index
+              : index + 1;
           }
         }
 
