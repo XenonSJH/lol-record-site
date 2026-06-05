@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>내전 전적표</title>
+  <title>🏆 벤들시티 내전 통계 🏆</title>
 
   <style>
     * { box-sizing: border-box; }
@@ -29,6 +29,35 @@
       margin-bottom: 24px;
       color: #cbd5e1;
       font-size: 18px;
+    }
+
+    .tab-container {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .tab {
+      padding: 12px 32px;
+      border-radius: 14px;
+      border: none;
+      color: white;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s;
+      background: #4b5563;
+      filter: grayscale(100%);
+    }
+
+    .tab.active {
+      background: #dc2626;
+      filter: grayscale(0%);
+    }
+
+    .tab:hover {
+      transform: translateY(-2px);
     }
 
     .search-box {
@@ -120,6 +149,61 @@
       font-weight: 800;
     }
 
+    .tier-s {
+      color: #ef4444;
+      font-weight: 900;
+      border: 2px solid #ef4444;
+      border-radius: 10px;
+      padding: 6px 12px;
+      display: inline-block;
+      min-width: 60px;
+      box-shadow: 0 0 10px #ef4444;
+    }
+
+    .tier-a {
+      color: #f97316;
+      font-weight: 900;
+      border: 2px solid #f97316;
+      border-radius: 10px;
+      padding: 6px 12px;
+      display: inline-block;
+      min-width: 60px;
+      box-shadow: 0 0 10px #f97316;
+    }
+
+    .tier-b {
+      color: #facc15;
+      font-weight: 900;
+      border: 2px solid #facc15;
+      border-radius: 10px;
+      padding: 6px 12px;
+      display: inline-block;
+      min-width: 60px;
+      box-shadow: 0 0 10px #facc15;
+    }
+
+    .tier-c {
+      color: #22c55e;
+      font-weight: 900;
+      border: 2px solid #22c55e;
+      border-radius: 10px;
+      padding: 6px 12px;
+      display: inline-block;
+      min-width: 60px;
+      box-shadow: 0 0 10px #22c55e;
+    }
+
+    .tier-d {
+      color: #3b82f6;
+      font-weight: 900;
+      border: 2px solid #3b82f6;
+      border-radius: 10px;
+      padding: 6px 12px;
+      display: inline-block;
+      min-width: 60px;
+      box-shadow: 0 0 10px #3b82f6;
+    }
+
     .rank-1 td:first-child,
     .rank-2 td:first-child,
     .rank-3 td:first-child {
@@ -148,6 +232,10 @@
       border-radius: 0 !important;
     }
 
+    #championPage {
+      display: none;
+    }
+
     @media (max-width: 700px) {
       body { padding: 20px; }
       h1 { font-size: 32px; }
@@ -157,37 +245,70 @@
         padding: 10px 6px;
         font-size: 13px;
       }
+
+      .tab {
+        padding: 10px 22px;
+        font-size: 15px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <h1>🏆 내전 전적 랭킹</h1>
+  <h1>🏆 벤들시티 내전 통계 🏆</h1>
+
+  <div class="tab-container">
+    <button id="playerBtn" class="tab active">플레이어</button>
+    <button id="championBtn" class="tab">챔피언</button>
+  </div>
+
   <div class="summary" id="summary">총 판수 계산 중...</div>
 
-  <input
-    id="searchInput"
-    class="search-box"
-    type="text"
-    placeholder="닉네임 검색..."
-    oninput="renderTable()"
-  />
+  <div id="playerPage">
+    <input
+      id="searchInput"
+      class="search-box"
+      type="text"
+      placeholder="닉네임 검색..."
+      oninput="renderPlayerTable()"
+    />
 
-  <table>
-    <thead>
-      <tr>
-        <th>순위</th>
-        <th onclick="sortBy('name')">닉네임 ↕</th>
-        <th onclick="sortBy('games')">판수 ↕</th>
-        <th onclick="sortBy('wins')">승 ↕</th>
-        <th onclick="sortBy('losses')">패 ↕</th>
-        <th onclick="sortBy('rate')">승률 ↕</th>
-        <th onclick="sortBy('participation')">참여율 ↕</th>
-      </tr>
-    </thead>
+    <table>
+      <thead>
+        <tr>
+          <th>순위</th>
+          <th onclick="sortBy('name')">닉네임 ↕</th>
+          <th onclick="sortBy('games')">판수 ↕</th>
+          <th onclick="sortBy('wins')">승 ↕</th>
+          <th onclick="sortBy('losses')">패 ↕</th>
+          <th onclick="sortBy('rate')">승률 ↕</th>
+          <th onclick="sortBy('participation')">참여율 ↕</th>
+        </tr>
+      </thead>
 
-    <tbody id="ranking"></tbody>
-  </table>
+      <tbody id="ranking"></tbody>
+    </table>
+  </div>
+
+  <div id="championPage">
+    <table>
+      <thead>
+        <tr>
+          <th>순위</th>
+          <th>티어</th>
+          <th>챔피언</th>
+          <th>판수</th>
+          <th>승</th>
+          <th>패</th>
+          <th>승률</th>
+          <th>KDA</th>
+          <th>점수</th>
+        </tr>
+      </thead>
+
+      <tbody id="championRanking"></tbody>
+    </table>
+  </div>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
@@ -200,7 +321,33 @@
     let currentSort = "rate";
     let ascending = false;
     let playersData = [];
+    let championData = [];
     let totalGames = 0;
+
+    const playerBtn = document.getElementById("playerBtn");
+    const championBtn = document.getElementById("championBtn");
+    const playerPage = document.getElementById("playerPage");
+    const championPage = document.getElementById("championPage");
+
+    playerBtn.onclick = () => {
+      playerPage.style.display = "block";
+      championPage.style.display = "none";
+
+      playerBtn.classList.add("active");
+      championBtn.classList.remove("active");
+
+      renderPlayerTable();
+    };
+
+    championBtn.onclick = () => {
+      playerPage.style.display = "none";
+      championPage.style.display = "block";
+
+      championBtn.classList.add("active");
+      playerBtn.classList.remove("active");
+
+      renderChampionTable();
+    };
 
     window.sortBy = function(type) {
       if (currentSort === type) {
@@ -210,10 +357,10 @@
         ascending = type === "name";
       }
 
-      renderTable();
+      renderPlayerTable();
     };
 
-    window.renderTable = renderTable;
+    window.renderPlayerTable = renderPlayerTable;
 
     async function loadRanking() {
       const { data, error } = await supabase
@@ -236,13 +383,23 @@
         return;
       }
 
+      const { data: champRows, error: champError } = await supabase
+        .from("match_players")
+        .select("champion_name, kills, deaths, assists, win");
+
+      if (champError) {
+        console.error(champError);
+      }
+
       playersData = data || [];
+      championData = champRows || [];
       totalGames = matchCount || 0;
 
       document.getElementById("summary").innerText =
         `총 판수: ${totalGames}판 ㅣ 멤버 수: ${playersData.length}명`;
 
-      renderTable();
+      renderPlayerTable();
+      renderChampionTable();
     }
 
     function getLanguageGroup(name) {
@@ -290,7 +447,7 @@
       return 2;
     }
 
-    function renderTable() {
+    function renderPlayerTable() {
       const keyword = document
         .getElementById("searchInput")
         .value
@@ -424,6 +581,125 @@
             <td class="loss">${losses}</td>
             <td class="${rateClass}">${rate}%</td>
             <td>${participation}%</td>
+          </tr>
+        `;
+      });
+    }
+
+    function getChampionTier(rank, total) {
+      const ratio = rank / total;
+
+      if (ratio <= 0.1) return "S";
+      if (ratio <= 0.25) return "A";
+      if (ratio <= 0.55) return "B";
+      if (ratio <= 0.8) return "C";
+      return "D";
+    }
+
+    function getTierClass(tier) {
+      if (tier === "S") return "tier-s";
+      if (tier === "A") return "tier-a";
+      if (tier === "B") return "tier-b";
+      if (tier === "C") return "tier-c";
+      return "tier-d";
+    }
+
+    function renderChampionTable() {
+      const map = {};
+
+      championData.forEach(row => {
+        const champ = row.champion_name;
+
+        if (!champ) return;
+
+        if (!map[champ]) {
+          map[champ] = {
+            name: champ,
+            wins: 0,
+            losses: 0,
+            kills: 0,
+            deaths: 0,
+            assists: 0
+          };
+        }
+
+        if (row.win) {
+          map[champ].wins++;
+        } else {
+          map[champ].losses++;
+        }
+
+        map[champ].kills += Number(row.kills) || 0;
+        map[champ].deaths += Number(row.deaths) || 0;
+        map[champ].assists += Number(row.assists) || 0;
+      });
+
+      let champions = Object.values(map).map(champ => {
+        const games = champ.wins + champ.losses;
+        const winRate = games === 0 ? 0 : (champ.wins / games) * 100;
+        const kda = champ.deaths === 0
+          ? champ.kills + champ.assists
+          : (champ.kills + champ.assists) / champ.deaths;
+
+        return {
+          ...champ,
+          games,
+          winRate,
+          kda
+        };
+      });
+
+      const maxGames = Math.max(...champions.map(c => c.games), 1);
+      const maxKda = Math.max(...champions.map(c => c.kda), 1);
+
+      champions = champions.map(champ => {
+        const winRateScore = champ.winRate * 0.5;
+        const pickScore = (champ.games / maxGames) * 20;
+        const sampleScore = Math.min(champ.games / 20, 1) * 20;
+        const kdaScore = (champ.kda / maxKda) * 10;
+
+        return {
+          ...champ,
+          score: winRateScore + pickScore + sampleScore + kdaScore
+        };
+      });
+
+      champions.sort((a, b) => b.score - a.score);
+
+      const tbody = document.getElementById("championRanking");
+      tbody.innerHTML = "";
+
+      if (champions.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9">아직 챔피언 통계 데이터가 없습니다.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      champions.forEach((champ, index) => {
+        const rank = index + 1;
+        const tier = getChampionTier(rank, champions.length);
+        const tierClass = getTierClass(tier);
+
+        const rankText =
+          rank === 1 ? "🥇" :
+          rank === 2 ? "🥈" :
+          rank === 3 ? "🥉" :
+          rank;
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${rankText}</td>
+            <td class="${tierClass}">${tier}</td>
+            <td class="nickname">${champ.name}</td>
+            <td>${champ.games}</td>
+            <td class="win">${champ.wins}</td>
+            <td class="loss">${champ.losses}</td>
+            <td>${champ.winRate.toFixed(1)}%</td>
+            <td>${champ.kda.toFixed(2)}</td>
+            <td>${champ.score.toFixed(1)}</td>
           </tr>
         `;
       });
