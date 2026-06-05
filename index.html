@@ -274,8 +274,28 @@
         const rateA = gamesA === 0 ? 0 : winsA / gamesA;
         const rateB = gamesB === 0 ? 0 : winsB / gamesB;
 
-        const participationA = totalGames === 0 ? 0 : gamesA / totalGames;
-        const participationB = totalGames === 0 ? 0 : gamesB / totalGames;
+        const participationA = totalGames === 0 ? 0 : (gamesA / totalGames) * 100;
+        const participationB = totalGames === 0 ? 0 : (gamesB / totalGames) * 100;
+
+        if (currentSort === "rate") {
+
+          const getGroup = (p) => {
+            if (p >= 35) return 0;
+            if (p >= 10) return 1;
+            return 2;
+          };
+
+          const groupA = getGroup(participationA);
+          const groupB = getGroup(participationB);
+
+          if (!ascending) {
+            if (groupA !== groupB) return groupA - groupB;
+            return rateB - rateA;
+          } else {
+            if (groupA !== groupB) return groupB - groupA;
+            return rateA - rateB;
+          }
+        }
 
         let result = 0;
 
@@ -283,7 +303,6 @@
         else if (currentSort === "games") result = gamesA - gamesB;
         else if (currentSort === "wins") result = winsA - winsB;
         else if (currentSort === "losses") result = lossesA - lossesB;
-        else if (currentSort === "rate") result = rateA - rateB;
         else if (currentSort === "participation") result = participationA - participationB;
 
         return ascending ? result : -result;
@@ -304,6 +323,8 @@
           totalGames === 0 ? 0 : (games / totalGames) * 100;
 
         const participation = participationNumber.toFixed(1);
+        const isLowParticipation = participationNumber < 10;
+        const isRanked = participationNumber >= 35;
 
         let realRank;
 
