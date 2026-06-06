@@ -364,7 +364,9 @@ function calcPlayerStats(playerName,lane="ALL"){
   let data=rows.filter(r=>r.lol_name===playerName);
   if(lane!=="ALL")data=data.filter(r=>r.lane===lane);
   const games=data.length,wins=data.filter(r=>r.win).length,losses=games-wins;
-  const winRate=games?wins/games*100:0,participation=totalGames?games/totalGames*100:0;
+  const winRate=games?wins/games*100:0;
+  const allGames=rows.filter(r=>r.lol_name===playerName).length;
+  const participation=totalGames?allGames/totalGames*100:0;
   const kills=data.reduce((s,r)=>s+num(r.kills),0),deaths=data.reduce((s,r)=>s+num(r.deaths),0),assists=data.reduce((s,r)=>s+num(r.assists),0);
   const kpList=data.map(kp).filter(v=>v!==null);
   return{name:playerName,games,wins,losses,winRate,participation,avgKills:games?kills/games:0,avgDeaths:games?deaths/games:0,avgAssists:games?assists/games:0,kda:getKda(kills,deaths,assists),kp:average(kpList),rows:data};
@@ -692,7 +694,7 @@ function openChampionDetail(championName, detailLane="ALL"){
     : "";
 
   const data=s.rows;
-  const bestKill=bestRecord(data,"kills"),bestDeath=bestRecord(data,"deaths"),bestAssist=bestRecord(data,"assists");
+  const bestKill=bestRecord(data,"kills"),bestDeath=bestRecord(data,"deaths"),bestAssist=bestRecord(data,"assists"),bestKp=bestRecord(data,"kp");
 
   const laneTierBadges=laneTierList.length
     ? laneTierList.map(c=>`<span class="lane-pill">${laneIcon(c.displayLane)} ${tierBadge(c.tier)}</span>`).join("")
@@ -705,7 +707,7 @@ function openChampionDetail(championName, detailLane="ALL"){
     <div class="hero-title">${championName}</div>
     <div class="hero-sub">${laneTierBadges}</div>
   </div>
-</div></div><div class="section"><div class="section-title">전체 통계</div>${statCards([{label:"판수",value:s.games},{label:"승",value:s.wins,cls:"win"},{label:"패",value:s.losses,cls:"loss"},{label:"승률",value:pct(s.winRate),cls:rateClass(s.winRate)},{label:"픽률",value:pct(s.pickRate)},{label:"밴율",value:pct(s.banRate)},{label:"평균 킬",value:s.avgKills.toFixed(1)},{label:"평균 데스",value:s.avgDeaths.toFixed(1)},{label:"평균 어시",value:s.avgAssists.toFixed(1)},{label:"KDA",value:s.kda.toFixed(2)},{label:"평균 킬관여율",value:pct(s.kp)},{label:"라인별 티어",value:laneTierList.length+"개"}])}</div><div class="section"><div class="section-title">최고 기록</div>${statCards([{label:"최다 킬",value:bestKill?`${num(bestKill.kills)}회`:"-",extra:championRecordExtra(bestKill)},{label:"최다 데스",value:bestDeath?`${num(bestDeath.deaths)}회`:"-",extra:championRecordExtra(bestDeath)},{label:"최다 어시스트",value:bestAssist?`${num(bestAssist.assists)}회`:"-",extra:championRecordExtra(bestAssist)}])}</div><div class="section"><div class="section-title">최근 기록 10판</div>${recentBlocks(data)}</div><div class="section"><div class="section-title">라인 비율</div>${laneRatio(data)}</div><div class="section"><div class="section-title">라인별 통계</div>${tableStatsRows(getChampionLaneStats(championName),"라인")}</div><div class="section"><div class="section-title">${championName} 장인 랭킹</div><div id="masterRankingArea"></div></div>`;
+</div></div><div class="section"><div class="section-title">전체 통계</div>${statCards([{label:"판수",value:s.games},{label:"승",value:s.wins,cls:"win"},{label:"패",value:s.losses,cls:"loss"},{label:"승률",value:pct(s.winRate),cls:rateClass(s.winRate)},{label:"픽률",value:pct(s.pickRate)},{label:"밴율",value:pct(s.banRate)},{label:"평균 킬",value:s.avgKills.toFixed(1)},{label:"평균 데스",value:s.avgDeaths.toFixed(1)},{label:"평균 어시",value:s.avgAssists.toFixed(1)},{label:"KDA",value:s.kda.toFixed(2)},{label:"평균 킬관여율",value:pct(s.kp)}])}</div><div class="section"><div class="section-title">최고 기록</div>${statCards([{label:"최다 킬",value:bestKill?`${num(bestKill.kills)}회`:"-",extra:championRecordExtra(bestKill)},{label:"최다 데스",value:bestDeath?`${num(bestDeath.deaths)}회`:"-",extra:championRecordExtra(bestDeath)},{label:"최다 어시스트",value:bestAssist?`${num(bestAssist.assists)}회`:"-",extra:championRecordExtra(bestAssist)},{label:"최대 킬관여율",value:bestKp?pct(kp(bestKp)||0):"-",extra:championRecordExtra(bestKp)}])}</div><div class="section"><div class="section-title">최근 기록 10판</div>${recentBlocks(data)}</div><div class="section"><div class="section-title">라인 비율</div>${laneRatio(data)}</div><div class="section"><div class="section-title">라인별 통계</div>${tableStatsRows(getChampionLaneStats(championName),"라인")}</div><div class="section"><div class="section-title">${championName} 장인 랭킹</div><div id="masterRankingArea"></div></div>`;
   showDetail(html);renderMasterRankingArea(championName);
 }
 
