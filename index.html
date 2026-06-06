@@ -9,43 +9,44 @@
 * { box-sizing: border-box; }
 
 body {
+  margin: 0;
   font-family: Arial, sans-serif;
   background:
     radial-gradient(circle at left, rgba(15,23,42,.55), transparent 28%),
     radial-gradient(circle at right, rgba(15,23,42,.55), transparent 28%),
     linear-gradient(90deg, #111827, #1e293b 18%, #1e293b 82%, #111827);
   color: white;
-  padding: 40px;
+  padding: 38px;
   min-height: 100vh;
 }
 
 h1 {
   text-align: center;
   font-size: 42px;
-  margin-bottom: 12px;
+  margin: 0 0 12px 0;
 }
 
 .summary {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   color: #cbd5e1;
-  font-size: 18px;
+  font-size: 17px;
 }
 
-.tab-container {
+.top-tabs {
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .tab {
-  padding: 12px 32px;
+  padding: 12px 34px;
   border-radius: 14px;
   border: none;
   color: white;
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 900;
   cursor: pointer;
   transition: .2s;
   background: #4b5563;
@@ -57,16 +58,98 @@ h1 {
   filter: grayscale(0%);
 }
 
+.search-wrap {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto 18px auto;
+}
+
+.search-row {
+  display: flex;
+  gap: 8px;
+}
+
 .search-box {
   width: 100%;
-  padding: 15px;
-  margin-bottom: 24px;
+  padding: 15px 16px;
   border-radius: 14px;
   border: 1px solid #334155;
   background: rgba(30,41,59,.95);
   color: white;
   font-size: 16px;
   outline: none;
+}
+
+.search-btn {
+  width: 58px;
+  border: none;
+  border-radius: 14px;
+  background: #2563eb;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.suggest-box {
+  position: absolute;
+  top: 58px;
+  left: 0;
+  right: 66px;
+  background: rgba(15,23,42,.98);
+  border: 1px solid rgba(96,165,250,.35);
+  border-radius: 14px;
+  overflow: hidden;
+  z-index: 20;
+  display: none;
+}
+
+.suggest-item {
+  padding: 13px 16px;
+  cursor: pointer;
+  color: #e5e7eb;
+  border-bottom: 1px solid rgba(51,65,85,.7);
+}
+
+.suggest-item:hover {
+  background: rgba(59,130,246,.22);
+}
+
+.filter-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.lane-filter {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(148,163,184,.25);
+  background: rgba(30,41,59,.92);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.lane-filter.active {
+  background: #2563eb;
+  border-color: #60a5fa;
+}
+
+.lane-icon {
+  width: 23px;
+  height: 23px;
+  object-fit: contain;
+}
+
+.main-card {
+  max-width: 1250px;
+  margin: 0 auto;
 }
 
 table {
@@ -77,86 +160,50 @@ table {
 }
 
 th {
-  padding: 15px 8px;
+  padding: 10px 6px;
   background: rgba(51,65,85,.95);
   color: #93c5fd;
-  cursor: pointer;
-  user-select: none;
   text-align: center;
 }
 
 td {
-  padding: 15px 8px;
+  padding: 14px 8px;
   text-align: center;
   background: rgba(51,65,85,.88);
   border-bottom: 1px solid rgba(71,85,105,.55);
   vertical-align: middle;
 }
 
-th:first-child,
-td:first-child {
-  border-radius: 14px 0 0 14px;
-}
+th:first-child, td:first-child { border-radius: 14px 0 0 14px; }
+th:last-child, td:last-child { border-radius: 0 14px 14px 0; }
 
-th:last-child,
-td:last-child {
-  border-radius: 0 14px 14px 0;
-}
+tbody tr:hover td { background: rgba(71,85,105,.95); }
 
-tbody tr:hover td {
-  background: rgba(71,85,105,.95);
-}
-
-.nickname {
-  font-weight: 800;
-}
-
-.clickable-row {
-  cursor: pointer;
-}
-
-.win {
-  color: #22c55e;
-  font-weight: 800;
-}
-
-.loss {
-  color: #ef4444;
-  font-weight: 800;
-}
-
-.rate-high {
-  color: #22c55e;
-  font-weight: 900;
-}
-
-.rate-mid {
-  color: #facc15;
-  font-weight: 900;
-}
-
-.rate-low {
-  color: #f87171;
-  font-weight: 900;
-}
-
-.tier-badge {
-  width: 68px;
-  height: 42px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.sort-btn {
+  border: none;
   border-radius: 10px;
+  padding: 8px 10px;
+  background: rgba(30,64,175,.7);
+  color: #dbeafe;
+  cursor: pointer;
   font-weight: 900;
-  font-size: 20px;
+  width: 100%;
 }
 
-.tier-s { color:#ef4444; border:2px solid #ef4444; box-shadow:0 0 10px #ef4444; }
-.tier-a { color:#f97316; border:2px solid #f97316; box-shadow:0 0 10px #f97316; }
-.tier-b { color:#facc15; border:2px solid #facc15; box-shadow:0 0 10px #facc15; }
-.tier-c { color:#22c55e; border:2px solid #22c55e; box-shadow:0 0 10px #22c55e; }
-.tier-d { color:#3b82f6; border:2px solid #3b82f6; box-shadow:0 0 10px #3b82f6; }
+.sort-btn.active {
+  background: #1d4ed8;
+  color: white;
+}
+
+.clickable-row { cursor: pointer; }
+
+.nickname { font-weight: 900; }
+
+.win { color: #22c55e; font-weight: 900; }
+.loss { color: #ef4444; font-weight: 900; }
+.rate-high { color: #22c55e; font-weight: 900; }
+.rate-mid { color: #facc15; font-weight: 900; }
+.rate-low { color: #f87171; font-weight: 900; }
 
 .champ-cell {
   display: flex;
@@ -164,10 +211,6 @@ tbody tr:hover td {
   justify-content: flex-start;
   gap: 12px;
   min-width: 0;
-}
-
-.detail-table .champ-cell {
-  justify-content: center;
 }
 
 .champ-icon {
@@ -179,6 +222,12 @@ tbody tr:hover td {
   flex-shrink: 0;
 }
 
+.champ-icon.big {
+  width: 106px;
+  height: 106px;
+  border-radius: 22px;
+}
+
 .champ-name {
   font-weight: 900;
   overflow: hidden;
@@ -186,70 +235,174 @@ tbody tr:hover td {
   white-space: nowrap;
 }
 
-.detail-row td {
-  background: transparent !important;
-  padding: 0 !important;
-  border-bottom: none !important;
+.back-btn {
+  border: none;
+  background: rgba(30,41,59,.85);
+  color: #cbd5e1;
+  border-radius: 12px;
+  padding: 9px 14px;
+  font-weight: 900;
+  cursor: pointer;
+  margin-bottom: 18px;
 }
 
-.detail-wrap {
-  display: grid;
-  grid-template-rows: 1fr;
-  opacity: 1;
-  transform: translateY(0);
-  transition:
-    grid-template-rows .28s ease,
-    opacity .22s ease,
-    transform .22s ease;
+.detail-page {
+  max-width: 1250px;
+  margin: 0 auto;
+  display: none;
 }
 
-.detail-inner {
-  overflow: hidden;
-  min-height: 0;
-}
-
-.detail-wrap.opening {
-  animation: detailOpen .28s ease-out;
-}
-
-.detail-wrap.closing {
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
-.detail-wrap.no-animate {
-  animation: none !important;
-  transition: none !important;
-}
-
-@keyframes detailOpen {
-  from {
-    grid-template-rows: 0fr;
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    grid-template-rows: 1fr;
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.detail-box {
-  margin: 4px 0 14px 0;
+.detail-hero {
   background: rgba(15,23,42,.92);
   border: 1px solid rgba(96,165,250,.35);
-  border-radius: 18px;
-  padding: 18px;
+  border-radius: 22px;
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 18px;
 }
 
-.detail-title {
-  font-size: 22px;
+.profile-box {
+  width: 106px;
+  height: 106px;
+  border-radius: 22px;
+  background: #020617;
+  border: 1px solid rgba(148,163,184,.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12px;
   font-weight: 900;
-  margin-bottom: 14px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.profile-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-title {
+  font-size: 34px;
+  font-weight: 1000;
+  margin-bottom: 10px;
+}
+
+.hero-sub {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lane-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(30,41,59,.95);
+  border: 1px solid rgba(148,163,184,.25);
+  font-weight: 900;
+  color: #dbeafe;
+}
+
+.section {
+  background: rgba(15,23,42,.92);
+  border: 1px solid rgba(96,165,250,.26);
+  border-radius: 22px;
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 1000;
   color: #bfdbfe;
-  text-align: left;
+  margin-bottom: 14px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+
+.stat-card {
+  background: rgba(30,41,59,.95);
+  border: 1px solid rgba(148,163,184,.25);
+  border-radius: 15px;
+  padding: 14px 10px;
+  text-align: center;
+}
+
+.stat-label {
+  color: #cbd5e1;
+  font-size: 13px;
+  margin-bottom: 6px;
+  font-weight: 800;
+}
+
+.stat-value {
+  font-size: 21px;
+  font-weight: 1000;
+}
+
+.record-blocks {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.result-block {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 1000;
+  border-right: 1px solid rgba(15,23,42,.45);
+}
+
+.result-block:first-child {
+  border-radius: 12px 0 0 12px;
+}
+
+.result-block:last-child {
+  border-radius: 0 12px 12px 0;
+  border-right: none;
+}
+
+.result-win { background: #22c55e; }
+.result-loss { background: #ef4444; }
+
+.lane-ratio-row {
+  margin-bottom: 12px;
+}
+
+.ratio-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-weight: 900;
+}
+
+.ratio-bar-bg {
+  background: rgba(30,41,59,.95);
+  height: 15px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.ratio-bar {
+  height: 100%;
+  background: #2563eb;
+  border-radius: 999px;
 }
 
 .detail-table {
@@ -260,90 +413,61 @@ tbody tr:hover td {
 
 .detail-table th,
 .detail-table td {
-  text-align: center;
-  vertical-align: middle;
+  font-size: 13px;
 }
 
 .detail-table th {
-  font-size: 13px;
-  padding: 10px 6px;
   background: rgba(30,41,59,.95);
 }
 
 .detail-table td {
-  font-size: 14px;
-  padding: 10px 6px;
   background: rgba(51,65,85,.82);
 }
 
-.detail-table th:first-child {
-  cursor: default;
+.record-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
 }
 
-.detail-table th:nth-child(1),
-.detail-table td:nth-child(1) { width: 7%; }
-
-.detail-table th:nth-child(2),
-.detail-table td:nth-child(2) { width: 21%; }
-
-.detail-table th:nth-child(3),
-.detail-table td:nth-child(3) { width: 11%; }
-
-.detail-table th:nth-child(4),
-.detail-table td:nth-child(4) { width: 10%; }
-
-.detail-table th:nth-child(5),
-.detail-table td:nth-child(5) { width: 10%; }
-
-.detail-table th:nth-child(6),
-.detail-table td:nth-child(6) { width: 11%; }
-
-.detail-table th:nth-child(7),
-.detail-table td:nth-child(7) { width: 13%; }
-
-.detail-table th:nth-child(8),
-.detail-table td:nth-child(8) { width: 8%; }
-
-.detail-table th:nth-child(9),
-.detail-table td:nth-child(9) { width: 9%; }
-
-.group-divider td {
-  height: 20px;
-  padding: 0;
-  background: transparent !important;
-  border-bottom: 2px solid rgba(147,197,253,.5);
-  border-radius: 0 !important;
+.small-champ-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  object-fit: cover;
 }
 
-.low-participation td {
-  color: #cbd5e1 !important;
-  filter: grayscale(70%);
+.master-filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
 }
 
-#championPage {
-  display: none;
+.master-filter {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(30,41,59,.95);
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
 }
 
-#championPage th:nth-child(1), #championPage td:nth-child(1) { width: 6%; }
-#championPage th:nth-child(2), #championPage td:nth-child(2) { width: 7%; }
-#championPage th:nth-child(3), #championPage td:nth-child(3) { width: 18%; text-align: left; }
-#championPage th:nth-child(4), #championPage td:nth-child(4) { width: 6%; }
-#championPage th:nth-child(5), #championPage td:nth-child(5) { width: 6%; }
-#championPage th:nth-child(6), #championPage td:nth-child(6) { width: 6%; }
-#championPage th:nth-child(7), #championPage td:nth-child(7) { width: 7%; }
-#championPage th:nth-child(8), #championPage td:nth-child(8) { width: 7%; }
-#championPage th:nth-child(9), #championPage td:nth-child(9) { width: 8%; }
-#championPage th:nth-child(10), #championPage td:nth-child(10) { width: 8%; }
-#championPage th:nth-child(11), #championPage td:nth-child(11) { width: 9%; }
-#championPage th:nth-child(12), #championPage td:nth-child(12) { width: 6%; }
-#championPage th:nth-child(13), #championPage td:nth-child(13) { width: 6%; }
+.master-filter.active {
+  background: #2563eb;
+}
 
-@media (max-width: 800px) {
+.hide { display: none !important; }
+
+@media (max-width: 850px) {
   body { padding: 20px; }
   h1 { font-size: 30px; }
-  th, td { padding: 9px 5px; font-size: 12px; }
-  .champ-icon { width: 34px; height: 34px; }
-  .tier-badge { width: 48px; height: 32px; font-size: 15px; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  th, td { font-size: 12px; padding: 9px 5px; }
+  .detail-hero { align-items: flex-start; }
 }
 </style>
 </head>
@@ -351,55 +475,59 @@ tbody tr:hover td {
 <body>
 <h1>🏆 BANDLE.GG 🏆</h1>
 
-<div class="tab-container">
-  <button id="playerBtn" class="tab active">플레이어</button>
-  <button id="championBtn" class="tab">챔피언</button>
+<div class="top-tabs">
+  <button id="playerTab" class="tab active">플레이어</button>
+  <button id="championTab" class="tab">챔피언</button>
 </div>
 
-<div class="summary" id="summary">총 판수 계산 중...</div>
+<div class="summary" id="summary">데이터 불러오는 중...</div>
 
-<div id="playerPage">
-  <input id="searchInput" class="search-box" type="text" placeholder="닉네임 검색..." oninput="renderPlayerTable()" />
+<div id="mainPage" class="main-card">
+  <div class="search-wrap">
+    <div class="search-row">
+      <input id="searchInput" class="search-box" type="text" placeholder="검색어 입력..." autocomplete="off" />
+      <button id="searchBtn" class="search-btn">🔍</button>
+    </div>
+    <div id="suggestBox" class="suggest-box"></div>
+  </div>
 
-  <table>
+  <div id="laneFilters" class="filter-row"></div>
+
+  <table id="playerTable">
     <thead>
       <tr>
-        <th>순위</th>
-        <th onclick="sortBy('name')">닉네임 ↕</th>
-        <th onclick="sortBy('games')">판수 ↕</th>
-        <th onclick="sortBy('wins')">승 ↕</th>
-        <th onclick="sortBy('losses')">패 ↕</th>
-        <th onclick="sortBy('rate')">승률 ↕</th>
-        <th onclick="sortBy('participation')">참여율 ↕</th>
+        <th><button class="sort-btn" onclick="sortPlayer('rank')">순위</button></th>
+        <th><button class="sort-btn" onclick="sortPlayer('name')">닉네임</button></th>
+        <th><button class="sort-btn" onclick="sortPlayer('games')">판수</button></th>
+        <th><button class="sort-btn" onclick="sortPlayer('wins')">승</button></th>
+        <th><button class="sort-btn" onclick="sortPlayer('losses')">패</button></th>
+        <th><button class="sort-btn" onclick="sortPlayer('winRate')">승률</button></th>
+        <th><button class="sort-btn" onclick="sortPlayer('kp')">킬관여율</button></th>
       </tr>
     </thead>
-    <tbody id="ranking"></tbody>
+    <tbody id="playerRanking"></tbody>
   </table>
-</div>
 
-<div id="championPage">
-  <input id="championSearchInput" class="search-box" type="text" placeholder="챔피언 검색..." oninput="renderChampionTable()" />
-
-  <table>
+  <table id="championTable" class="hide">
     <thead>
       <tr>
-        <th onclick="sortChampionBy('rank')">순위 ↕</th>
-        <th onclick="sortChampionBy('tier')">티어 ↕</th>
-        <th onclick="sortChampionBy('name')">챔피언 ↕</th>
-        <th onclick="sortChampionBy('games')">판수 ↕</th>
-        <th onclick="sortChampionBy('wins')">승 ↕</th>
-        <th onclick="sortChampionBy('losses')">패 ↕</th>
-        <th onclick="sortChampionBy('winRate')">승률 ↕</th>
-        <th onclick="sortChampionBy('pickRate')">픽률 ↕</th>
-        <th onclick="sortChampionBy('avgKills')">평균 킬 수 ↕</th>
-        <th onclick="sortChampionBy('avgDeaths')">평균 데스 수 ↕</th>
-        <th onclick="sortChampionBy('avgAssists')">평균 어시스트 수 ↕</th>
-        <th onclick="sortChampionBy('kda')">KDA ↕</th>
-        <th onclick="sortChampionBy('score')">점수 ↕</th>
+        <th><button class="sort-btn" onclick="sortChampion('rank')">순위</button></th>
+        <th><button class="sort-btn" onclick="sortChampion('name')">챔피언</button></th>
+        <th><button class="sort-btn" onclick="sortChampion('games')">판수</button></th>
+        <th><button class="sort-btn" onclick="sortChampion('wins')">승</button></th>
+        <th><button class="sort-btn" onclick="sortChampion('losses')">패</button></th>
+        <th><button class="sort-btn" onclick="sortChampion('winRate')">승률</button></th>
+        <th><button class="sort-btn" onclick="sortChampion('pickRate')">픽률</button></th>
+        <th><button class="sort-btn" onclick="sortChampion('kp')">킬관여율</button></th>
       </tr>
     </thead>
     <tbody id="championRanking"></tbody>
   </table>
+</div>
+
+<div id="detailPage" class="detail-page">
+  <button class="back-btn" onclick="goBack()">← 뒤로가기</button>
+  <div id="detailContent"></div>
 </div>
 
 <script type="module">
@@ -410,165 +538,131 @@ const SUPABASE_KEY = "sb_publishable_QHDiR1qAWGVaKSDZguc0qg_fE_eVCwZ";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let currentSort = "rate";
-let ascending = false;
+const LANE_ORDER = ["TOP", "JUNGLE", "MID", "ADC", "SUPPORT"];
 
-let championSort = "score";
-let championAscending = false;
+const LANE_LABELS = {
+  ALL: "전체",
+  TOP: "탑",
+  JUNGLE: "정글",
+  MID: "미드",
+  ADC: "원딜",
+  SUPPORT: "서폿"
+};
 
-let masterSort = "score";
-let masterAscending = false;
+const LANE_ICON_URLS = {
+  TOP: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-top.svg",
+  JUNGLE: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-jungle.svg",
+  MID: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-middle.svg",
+  ADC: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-bottom.svg",
+  SUPPORT: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-utility.svg"
+};
 
-let playerChampSort = "score";
-let playerChampAscending = false;
-
-let selectedChampion = null;
-let selectedPlayer = null;
-
-let detailOpenMode = null;
-let suppressDetailAnimation = false;
-
-let playersData = [];
-let championData = [];
+let players = [];
+let rows = [];
+let matches = [];
 let totalGames = 0;
+
+let currentTab = "player";
+let currentLane = "ALL";
+let activeSearch = "";
+
+let playerSort = "winRate";
+let playerAsc = false;
+let championSort = "winRate";
+let championAsc = false;
+let mostSort = "score";
+let mostAsc = false;
+let masterSort = "score";
+let masterAsc = false;
+let masterLane = "ALL";
 
 let latestVersion = "15.12.1";
 let championNameToId = {};
 
-const playerBtn = document.getElementById("playerBtn");
-const championBtn = document.getElementById("championBtn");
-const playerPage = document.getElementById("playerPage");
-const championPage = document.getElementById("championPage");
+const playerTab = document.getElementById("playerTab");
+const championTab = document.getElementById("championTab");
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+const suggestBox = document.getElementById("suggestBox");
 
-playerBtn.onclick = () => {
-  playerPage.style.display = "block";
-  championPage.style.display = "none";
-
-  playerBtn.classList.add("active");
-  championBtn.classList.remove("active");
-
-  renderPlayerTable();
+playerTab.onclick = () => {
+  currentTab = "player";
+  activeSearch = "";
+  searchInput.value = "";
+  playerTab.classList.add("active");
+  championTab.classList.remove("active");
+  document.getElementById("playerTable").classList.remove("hide");
+  document.getElementById("championTable").classList.add("hide");
+  renderLaneFilters();
+  renderMain();
 };
 
-championBtn.onclick = () => {
-  playerPage.style.display = "none";
-  championPage.style.display = "block";
-
-  championBtn.classList.add("active");
-  playerBtn.classList.remove("active");
-
-  renderChampionTable();
+championTab.onclick = () => {
+  currentTab = "champion";
+  activeSearch = "";
+  searchInput.value = "";
+  championTab.classList.add("active");
+  playerTab.classList.remove("active");
+  document.getElementById("championTable").classList.remove("hide");
+  document.getElementById("playerTable").classList.add("hide");
+  renderLaneFilters();
+  renderMain();
 };
 
-window.sortBy = function(type) {
-  if (currentSort === type) {
-    ascending = !ascending;
-  } else {
-    currentSort = type;
-    ascending = type === "name";
+searchInput.addEventListener("input", renderSuggestions);
+
+searchInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    runSearch(searchInput.value.trim());
   }
+});
 
-  suppressDetailAnimation = true;
-  renderPlayerTable();
-};
+searchBtn.onclick = () => runSearch(searchInput.value.trim());
 
-window.sortChampionBy = function(type) {
-  if (championSort === type) {
-    championAscending = !championAscending;
-  } else {
-    championSort = type;
-    championAscending = type === "name";
+window.sortPlayer = function(type) {
+  if (playerSort === type) playerAsc = !playerAsc;
+  else {
+    playerSort = type === "rank" ? "winRate" : type;
+    playerAsc = type === "name";
   }
-
-  suppressDetailAnimation = true;
-  renderChampionTable();
+  renderMain();
 };
 
-window.sortMasterBy = function(type) {
-  if (masterSort === type) {
-    masterAscending = !masterAscending;
-  } else {
+window.sortChampion = function(type) {
+  if (championSort === type) championAsc = !championAsc;
+  else {
+    championSort = type === "rank" ? "winRate" : type;
+    championAsc = type === "name";
+  }
+  renderMain();
+};
+
+window.sortMost = function(type, playerName) {
+  if (mostSort === type) mostAsc = !mostAsc;
+  else {
+    mostSort = type === "rank" ? "score" : type;
+    mostAsc = type === "name";
+  }
+  openPlayerDetail(playerName);
+};
+
+window.sortMaster = function(type, championName) {
+  if (masterSort === type) masterAsc = !masterAsc;
+  else {
     masterSort = type === "rank" ? "score" : type;
-    masterAscending = type === "name";
+    masterAsc = type === "name";
   }
-
-  suppressDetailAnimation = true;
-  renderChampionTable();
+  openChampionDetail(championName);
 };
 
-window.sortPlayerChampBy = function(type) {
-  if (playerChampSort === type) {
-    playerChampAscending = !playerChampAscending;
-  } else {
-    playerChampSort = type === "rank" ? "score" : type;
-    playerChampAscending = type === "name";
-  }
-
-  suppressDetailAnimation = true;
-  renderPlayerTable();
+window.setMasterLane = function(lane, championName) {
+  masterLane = lane;
+  openChampionDetail(championName);
 };
 
-window.toggleChampion = function(name) {
-  if (selectedChampion === name) {
-    closeDetailThen(() => {
-      selectedChampion = null;
-      detailOpenMode = null;
-      renderChampionTable();
-    });
-    return;
-  }
-
-  selectedChampion = name;
-  selectedPlayer = null;
-  detailOpenMode = "champion";
-  suppressDetailAnimation = false;
-  renderChampionTable();
-};
-
-window.togglePlayer = function(name) {
-  if (selectedPlayer === name) {
-    closeDetailThen(() => {
-      selectedPlayer = null;
-      detailOpenMode = null;
-      renderPlayerTable();
-    });
-    return;
-  }
-
-  selectedPlayer = name;
-  selectedChampion = null;
-  detailOpenMode = "player";
-  suppressDetailAnimation = false;
-  renderPlayerTable();
-};
-
-window.renderPlayerTable = renderPlayerTable;
-window.renderChampionTable = renderChampionTable;
-
-function closeDetailThen(callback) {
-  const wrap = document.querySelector(".detail-wrap");
-
-  if (!wrap) {
-    callback();
-    return;
-  }
-
-  wrap.classList.add("closing");
-
-  setTimeout(callback, 280);
-}
-
-function detailWrapClass(mode) {
-  if (suppressDetailAnimation) {
-    return "detail-wrap no-animate";
-  }
-
-  if (detailOpenMode === mode) {
-    return "detail-wrap opening";
-  }
-
-  return "detail-wrap";
-}
+window.openPlayerDetail = openPlayerDetail;
+window.openChampionDetail = openChampionDetail;
+window.goBack = goBack;
 
 async function loadChampionMeta() {
   try {
@@ -576,125 +670,44 @@ async function loadChampionMeta() {
     const versions = await versionRes.json();
     latestVersion = versions[0];
 
-    const champRes = await fetch(
-      `https://ddragon.leagueoflegends.com/cdn/${latestVersion}/data/ko_KR/champion.json`
-    );
-
+    const champRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${latestVersion}/data/ko_KR/champion.json`);
     const champJson = await champRes.json();
 
     championNameToId = {};
-
     Object.values(champJson.data).forEach(champ => {
       championNameToId[champ.name] = champ.id;
     });
   } catch (e) {
-    console.error("챔피언 메타 로드 실패:", e);
+    console.error(e);
   }
 }
 
-function getChampionImageUrl(championName) {
-  const champId = championNameToId[championName];
-
-  if (!champId) return "";
-
-  return `https://ddragon.leagueoflegends.com/cdn/${latestVersion}/img/champion/${champId}.png`;
+function champImg(name) {
+  const id = championNameToId[name];
+  if (!id) return "";
+  return `https://ddragon.leagueoflegends.com/cdn/${latestVersion}/img/champion/${id}.png`;
 }
 
-async function loadRanking() {
-  await loadChampionMeta();
-
-  const { data, error } = await supabase
-    .from("players")
-    .select("lol_name, wins, losses");
-
-  if (error) {
-    document.getElementById("summary").innerText = "데이터를 불러오지 못했습니다.";
-    return;
-  }
-
-  const { count: matchCount } = await supabase
-    .from("matches")
-    .select("*", { count: "exact", head: true });
-
-  const { data: champRows } = await supabase
-    .from("match_players")
-    .select("champion_name, lol_name, kills, deaths, assists, win");
-
-  playersData = data || [];
-  championData = champRows || [];
-  totalGames = matchCount || 0;
-
-  document.getElementById("summary").innerText =
-    `총 판수: ${totalGames}판 ㅣ 멤버 수: ${playersData.length}명`;
-
-  suppressDetailAnimation = true;
-  renderPlayerTable();
-  renderChampionTable();
+function laneIcon(lane) {
+  if (!LANE_ICON_URLS[lane]) return "";
+  return `<img class="lane-icon" src="${LANE_ICON_URLS[lane]}" onerror="this.style.display='none'" />`;
 }
 
-function getLanguageGroup(name) {
-  const first = name.trim()[0];
-
-  if (!first) return 4;
-  if (/[가-힣]/.test(first)) return 1;
-  if (/[a-zA-Z]/.test(first)) return 2;
-  if (/[\u4e00-\u9fff]/.test(first)) return 3;
-
-  return 4;
+function lanePill(lane) {
+  return `<span class="lane-pill">${laneIcon(lane)} ${LANE_LABELS[lane] || lane}</span>`;
 }
 
-function compareNames(aName, bName) {
-  const groupA = getLanguageGroup(aName);
-  const groupB = getLanguageGroup(bName);
-
-  if (groupA !== groupB) return groupA - groupB;
-  if (groupA === 1) return aName.localeCompare(bName, "ko");
-  if (groupA === 2) return aName.localeCompare(bName, "en");
-  if (groupA === 3) return aName.localeCompare(bName, "zh");
-
-  return aName.localeCompare(bName);
+function clean(v) {
+  return String(v ?? "").replaceAll("'", "\\'").replaceAll('"', "&quot;");
 }
 
-function getStats(player) {
-  const wins = Number(player.wins) || 0;
-  const losses = Number(player.losses) || 0;
-  const games = wins + losses;
-  const rateNumber = games === 0 ? 0 : wins / games * 100;
-  const participationNumber = totalGames === 0 ? 0 : games / totalGames * 100;
-
-  return {
-    wins,
-    losses,
-    games,
-    rateNumber,
-    participationNumber
-  };
+function num(v) {
+  return Number(v) || 0;
 }
 
-function getParticipationGroup(p) {
-  if (p >= 35) return 0;
-  if (p >= 10) return 1;
-  return 2;
-}
-
-function getKda(k, d, a) {
-  return d === 0 ? k + a : (k + a) / d;
-}
-
-function getChampionTier(score) {
-  if (score >= 85) return "S";
-  if (score >= 70) return "A";
-  if (score >= 55) return "B";
-  if (score >= 40) return "C";
-  return "D";
-}
-
-function getTierClass(tier) {
-  if (tier === "S") return "tier-s";
-  if (tier === "A") return "tier-a";
-  if (tier === "B") return "tier-b";
-  if (tier === "C") return "tier-c";
-  return "tier-d";
+function pct(v) {
+  if (!isFinite(v)) return "0.0%";
+  return `${v.toFixed(1)}%`;
 }
 
 function rateClass(rate) {
@@ -703,534 +716,850 @@ function rateClass(rate) {
   return "rate-low";
 }
 
-function buildPersonalChampScore(item) {
-  const winRate = item.games === 0 ? 0 : item.wins / item.games * 100;
-  const avgKills = item.games === 0 ? 0 : item.kills / item.games;
-  const avgDeaths = item.games === 0 ? 0 : item.deaths / item.games;
-  const avgAssists = item.games === 0 ? 0 : item.assists / item.games;
-  const kda = getKda(item.kills, item.deaths, item.assists);
+function kda(k, d, a) {
+  return d === 0 ? k + a : (k + a) / d;
+}
 
-  const playScore = Math.min(item.games / 25, 1) * 18;
-  const winScore = winRate * 0.42;
-  const kdaScore = Math.min(kda / 6, 1) * 22;
-  const killScore = Math.min(avgKills / 10, 1) * 8;
+function kp(row) {
+  const teamKills = num(row.team_kills);
+  if (teamKills <= 0) return null;
+  return (num(row.kills) + num(row.assists)) / teamKills * 100;
+}
+
+function average(arr) {
+  if (!arr.length) return 0;
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+function getRegisteredNames() {
+  return new Set(players.map(p => p.lol_name));
+}
+
+function rowsByLane(data) {
+  if (currentLane === "ALL") return data;
+  return data.filter(r => r.lane === currentLane);
+}
+
+function rowsBySearch(data, keyField) {
+  if (!activeSearch) return data;
+  const q = activeSearch.toLowerCase();
+  return data.filter(item => String(item[keyField] || item.name || "").toLowerCase().includes(q));
+}
+
+async function loadData() {
+  await loadChampionMeta();
+
+  const { data: pData } = await supabase
+    .from("players")
+    .select("discord_id,lol_name,wins,losses,profile_image_url,profile_updated_at");
+
+  const { data: rData } = await supabase
+    .from("match_players")
+    .select("id,match_id,created_at,lol_name,champion_name,lane,kills,deaths,assists,team_kills,win");
+
+  const { data: mData, count } = await supabase
+    .from("matches")
+    .select("*", { count: "exact" });
+
+  players = pData || [];
+  rows = rData || [];
+  matches = mData || [];
+  totalGames = count || matches.length || 0;
+
+  document.getElementById("summary").innerText =
+    `총 판수: ${totalGames}판 ㅣ 멤버 수: ${players.length}명`;
+
+  renderLaneFilters();
+  renderMain();
+}
+
+function renderLaneFilters() {
+  const box = document.getElementById("laneFilters");
+  const lanes = ["ALL", ...LANE_ORDER];
+
+  box.innerHTML = lanes.map(lane => `
+    <button class="lane-filter ${currentLane === lane ? "active" : ""}" onclick="setLane('${lane}')">
+      ${lane === "ALL" ? "" : laneIcon(lane)}
+      <span>${LANE_LABELS[lane]}</span>
+    </button>
+  `).join("");
+}
+
+window.setLane = function(lane) {
+  currentLane = lane;
+  activeSearch = "";
+  searchInput.value = "";
+  renderLaneFilters();
+  renderMain();
+};
+
+function renderSuggestions() {
+  const q = searchInput.value.trim().toLowerCase();
+
+  if (!q) {
+    suggestBox.style.display = "none";
+    suggestBox.innerHTML = "";
+    return;
+  }
+
+  let list = [];
+
+  if (currentTab === "player") {
+    list = players
+      .map(p => p.lol_name)
+      .filter(name => name.toLowerCase().includes(q));
+  } else {
+    list = [...new Set(rows.map(r => r.champion_name).filter(Boolean))]
+      .filter(name => name.toLowerCase().includes(q));
+  }
+
+  list = list.slice(0, 8);
+
+  if (!list.length) {
+    suggestBox.style.display = "none";
+    return;
+  }
+
+  suggestBox.innerHTML = list.map(item => `
+    <div class="suggest-item" onclick="runSearch('${clean(item)}')">${item}</div>
+  `).join("");
+
+  suggestBox.style.display = "block";
+}
+
+window.runSearch = runSearch;
+
+function runSearch(value) {
+  activeSearch = value.trim();
+  searchInput.value = activeSearch;
+  suggestBox.style.display = "none";
+  renderMain();
+}
+
+function compareName(a, b) {
+  return String(a).localeCompare(String(b), "ko");
+}
+
+function calcPlayerStats(playerName, lane = currentLane) {
+  let data = rows.filter(r => r.lol_name === playerName);
+
+  if (lane !== "ALL") data = data.filter(r => r.lane === lane);
+
+  const games = data.length;
+  const wins = data.filter(r => r.win).length;
+  const losses = games - wins;
+  const winRate = games ? wins / games * 100 : 0;
+  const kills = data.reduce((s, r) => s + num(r.kills), 0);
+  const deaths = data.reduce((s, r) => s + num(r.deaths), 0);
+  const assists = data.reduce((s, r) => s + num(r.assists), 0);
+  const kpList = data.map(kp).filter(v => v !== null);
 
   return {
-    ...item,
+    name: playerName,
+    games,
+    wins,
+    losses,
     winRate,
-    avgKills,
-    avgDeaths,
-    avgAssists,
-    kda,
-    score: playScore + winScore + kdaScore + killScore
+    avgKills: games ? kills / games : 0,
+    avgDeaths: games ? deaths / games : 0,
+    avgAssists: games ? assists / games : 0,
+    kda: kda(kills, deaths, assists),
+    kp: average(kpList),
+    rows: data
   };
 }
 
-function renderPlayerTable() {
-  const keyword = document.getElementById("searchInput").value.toLowerCase();
-
-  const data = playersData.filter(player =>
-    player.lol_name.toLowerCase().includes(keyword)
-  );
-
-  data.sort((a, b) => {
-    const A = getStats(a);
-    const B = getStats(b);
-
-    if (currentSort === "rate") {
-      const gA = getParticipationGroup(A.participationNumber);
-      const gB = getParticipationGroup(B.participationNumber);
-
-      if (!ascending) {
-        if (gA !== gB) return gA - gB;
-        return B.rateNumber - A.rateNumber;
-      } else {
-        if (gA !== gB) return gB - gA;
-        return A.rateNumber - B.rateNumber;
-      }
-    }
-
-    let result = 0;
-
-    if (currentSort === "name") result = compareNames(a.lol_name, b.lol_name);
-    else if (currentSort === "games") result = A.games - B.games;
-    else if (currentSort === "wins") result = A.wins - B.wins;
-    else if (currentSort === "losses") result = A.losses - B.losses;
-    else if (currentSort === "participation") result = A.participationNumber - B.participationNumber;
-
-    return ascending ? result : -result;
-  });
-
-  const tbody = document.getElementById("ranking");
-  tbody.innerHTML = "";
-
-  let lastGroup = null;
-  let rankedCount = 0;
-
-  data.forEach((player, index) => {
-    const {
-      wins,
-      losses,
-      games,
-      rateNumber,
-      participationNumber
-    } = getStats(player);
-
-    const currentGroup = getParticipationGroup(participationNumber);
-    const isRanked = participationNumber >= 35;
-
-    if (
-      currentSort === "rate" &&
-      lastGroup !== null &&
-      lastGroup !== currentGroup
-    ) {
-      tbody.innerHTML += `
-        <tr class="group-divider">
-          <td colspan="7"></td>
-        </tr>
-      `;
-    }
-
-    lastGroup = currentGroup;
-
-    let realRank;
-
-    if (currentSort === "rate") {
-      if (isRanked) {
-        rankedCount++;
-        realRank = ascending
-          ? data.filter(p => getStats(p).participationNumber >= 35).length - rankedCount + 1
-          : rankedCount;
-      } else {
-        realRank = "-";
-      }
-    } else {
-      realRank = currentSort === "name"
-        ? ascending ? index + 1 : data.length - index
-        : ascending ? data.length - index : index + 1;
-    }
-
-    const rankText =
-      realRank === 1 ? "🥇" :
-      realRank === 2 ? "🥈" :
-      realRank === 3 ? "🥉" :
-      realRank;
-
-    const safeName = player.lol_name.replaceAll("'", "\\'");
-
-    tbody.innerHTML += `
-      <tr class="clickable-row ${participationNumber < 10 ? "low-participation" : ""}" onclick="togglePlayer('${safeName}')">
-        <td>${rankText}</td>
-        <td class="nickname">${player.lol_name}</td>
-        <td>${games}</td>
-        <td class="win">${wins}</td>
-        <td class="loss">${losses}</td>
-        <td class="${rateClass(rateNumber)}">${rateNumber.toFixed(1)}%</td>
-        <td>${participationNumber.toFixed(1)}%</td>
-      </tr>
-    `;
-
-    if (selectedPlayer === player.lol_name) {
-      tbody.innerHTML += renderPlayerChampionRanking(player.lol_name);
-    }
-  });
-
-  suppressDetailAnimation = false;
-}
-
-function getChampionStats() {
-  const map = {};
-
-  championData.forEach(row => {
-    const champ = row.champion_name;
-    if (!champ) return;
-
-    if (!map[champ]) {
-      map[champ] = {
-        name: champ,
-        wins: 0,
-        losses: 0,
-        kills: 0,
-        deaths: 0,
-        assists: 0
-      };
-    }
-
-    if (row.win) map[champ].wins++;
-    else map[champ].losses++;
-
-    map[champ].kills += Number(row.kills) || 0;
-    map[champ].deaths += Number(row.deaths) || 0;
-    map[champ].assists += Number(row.assists) || 0;
-  });
-
-  return Object.values(map).map(champ => {
-    const games = champ.wins + champ.losses;
-    const winRate = games === 0 ? 0 : champ.wins / games * 100;
-    const pickRate = totalGames === 0 ? 0 : games / totalGames * 100;
-
-    const avgKills = games === 0 ? 0 : champ.kills / games;
-    const avgDeaths = games === 0 ? 0 : champ.deaths / games;
-    const avgAssists = games === 0 ? 0 : champ.assists / games;
-    const kda = getKda(champ.kills, champ.deaths, champ.assists);
-
-    const winRateScore = winRate * 0.42;
-    const pickRateScore = Math.min(pickRate / 35, 1) * 23;
-    const gamesScore = Math.min(games / 20, 1) * 15;
-    const kdaScore = Math.min(kda / 6, 1) * 20;
-
-    const score = winRateScore + pickRateScore + gamesScore + kdaScore;
-
+function getPlayerRanking() {
+  let list = players.map(p => {
+    const s = calcPlayerStats(p.lol_name, currentLane);
     return {
-      ...champ,
-      games,
-      winRate,
-      pickRate,
-      avgKills,
-      avgDeaths,
-      avgAssists,
-      kda,
-      score,
-      tier: getChampionTier(score)
+      ...s,
+      profile_image_url: p.profile_image_url || ""
     };
   });
-}
 
-function compareChampion(a, b) {
-  let result = 0;
-
-  if (championSort === "rank" || championSort === "score") result = a.score - b.score;
-  else if (championSort === "tier") {
-    const order = { S:5, A:4, B:3, C:2, D:1 };
-    result = order[a.tier] - order[b.tier];
+  if (currentLane !== "ALL") {
+    list = list.filter(p => p.games > 0);
   }
-  else if (championSort === "name") result = compareNames(a.name, b.name);
-  else if (championSort === "games") result = a.games - b.games;
-  else if (championSort === "wins") result = a.wins - b.wins;
-  else if (championSort === "losses") result = a.losses - b.losses;
-  else if (championSort === "winRate") result = a.winRate - b.winRate;
-  else if (championSort === "pickRate") result = a.pickRate - b.pickRate;
-  else if (championSort === "avgKills") result = a.avgKills - b.avgKills;
-  else if (championSort === "avgDeaths") result = a.avgDeaths - b.avgDeaths;
-  else if (championSort === "avgAssists") result = a.avgAssists - b.avgAssists;
-  else if (championSort === "kda") result = a.kda - b.kda;
 
-  return championAscending ? result : -result;
-}
+  if (activeSearch) {
+    const q = activeSearch.toLowerCase();
+    list = list.filter(p => p.name.toLowerCase().includes(q));
+  }
 
-function getMasterStats(championName) {
-  const map = {};
+  list.sort((a, b) => {
+    let result = 0;
+    if (playerSort === "name") result = compareName(a.name, b.name);
+    else if (playerSort === "games") result = a.games - b.games;
+    else if (playerSort === "wins") result = a.wins - b.wins;
+    else if (playerSort === "losses") result = a.losses - b.losses;
+    else if (playerSort === "kp") result = a.kp - b.kp;
+    else result = a.winRate - b.winRate;
 
-  championData
-    .filter(row => row.champion_name === championName)
-    .forEach(row => {
-      const name = row.lol_name || "알 수 없음";
-
-      if (!map[name]) {
-        map[name] = {
-          name,
-          games: 0,
-          wins: 0,
-          losses: 0,
-          kills: 0,
-          deaths: 0,
-          assists: 0
-        };
-      }
-
-      map[name].games++;
-
-      if (row.win) map[name].wins++;
-      else map[name].losses++;
-
-      map[name].kills += Number(row.kills) || 0;
-      map[name].deaths += Number(row.deaths) || 0;
-      map[name].assists += Number(row.assists) || 0;
-    });
-
-  return Object.values(map).map(p => buildPersonalChampScore(p));
-}
-
-function getPlayerChampionStats(playerName) {
-  const map = {};
-
-  championData
-    .filter(row => row.lol_name === playerName)
-    .forEach(row => {
-      const champ = row.champion_name || "알 수 없음";
-
-      if (!map[champ]) {
-        map[champ] = {
-          name: champ,
-          games: 0,
-          wins: 0,
-          losses: 0,
-          kills: 0,
-          deaths: 0,
-          assists: 0
-        };
-      }
-
-      map[champ].games++;
-
-      if (row.win) map[champ].wins++;
-      else map[champ].losses++;
-
-      map[champ].kills += Number(row.kills) || 0;
-      map[champ].deaths += Number(row.deaths) || 0;
-      map[champ].assists += Number(row.assists) || 0;
-    });
-
-  return Object.values(map).map(c => buildPersonalChampScore(c));
-}
-
-function compareMaster(a, b) {
-  let result = 0;
-
-  if (masterSort === "name") result = compareNames(a.name, b.name);
-  else if (masterSort === "games") result = a.games - b.games;
-  else if (masterSort === "winRate") result = a.winRate - b.winRate;
-  else if (masterSort === "avgKills") result = a.avgKills - b.avgKills;
-  else if (masterSort === "avgDeaths") result = a.avgDeaths - b.avgDeaths;
-  else if (masterSort === "avgAssists") result = a.avgAssists - b.avgAssists;
-  else if (masterSort === "kda") result = a.kda - b.kda;
-  else result = a.score - b.score;
-
-  return masterAscending ? result : -result;
-}
-
-function comparePlayerChamp(a, b) {
-  let result = 0;
-
-  if (playerChampSort === "name") result = compareNames(a.name, b.name);
-  else if (playerChampSort === "games") result = a.games - b.games;
-  else if (playerChampSort === "winRate") result = a.winRate - b.winRate;
-  else if (playerChampSort === "avgKills") result = a.avgKills - b.avgKills;
-  else if (playerChampSort === "avgDeaths") result = a.avgDeaths - b.avgDeaths;
-  else if (playerChampSort === "avgAssists") result = a.avgAssists - b.avgAssists;
-  else if (playerChampSort === "kda") result = a.kda - b.kda;
-  else result = a.score - b.score;
-
-  return playerChampAscending ? result : -result;
-}
-
-function renderMasterRanking(championName) {
-  let masters = getMasterStats(championName);
-  masters.sort(compareMaster);
-
-  let html = `
-    <tr class="detail-row">
-      <td colspan="13">
-        <div class="${detailWrapClass("champion")}">
-          <div class="detail-inner">
-            <div class="detail-box">
-              <div class="detail-title">${championName} 장인 랭킹</div>
-              <table class="detail-table">
-                <colgroup>
-                  <col style="width:7%">
-                  <col style="width:21%">
-                  <col style="width:11%">
-                  <col style="width:10%">
-                  <col style="width:10%">
-                  <col style="width:11%">
-                  <col style="width:13%">
-                  <col style="width:8%">
-                  <col style="width:9%">
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th>순위</th>
-                    <th onclick="sortMasterBy('name')">플레이어 ↕</th>
-                    <th onclick="sortMasterBy('games')">플레이 횟수 ↕</th>
-                    <th onclick="sortMasterBy('winRate')">승률 ↕</th>
-                    <th onclick="sortMasterBy('avgKills')">평균 킬 수 ↕</th>
-                    <th onclick="sortMasterBy('avgDeaths')">평균 데스 수 ↕</th>
-                    <th onclick="sortMasterBy('avgAssists')">평균 어시스트 수 ↕</th>
-                    <th onclick="sortMasterBy('kda')">KDA ↕</th>
-                    <th onclick="sortMasterBy('score')">점수 ↕</th>
-                  </tr>
-                </thead>
-                <tbody>
-  `;
-
-  masters.forEach((m, index) => {
-    html += `
-      <tr>
-        <td>${index + 1}</td>
-        <td class="nickname">${m.name}</td>
-        <td>${m.games}</td>
-        <td>${m.winRate.toFixed(1)}%</td>
-        <td>${m.avgKills.toFixed(1)}</td>
-        <td>${m.avgDeaths.toFixed(1)}</td>
-        <td>${m.avgAssists.toFixed(1)}</td>
-        <td>${m.kda.toFixed(2)}</td>
-        <td>${m.score.toFixed(1)}</td>
-      </tr>
-    `;
+    return playerAsc ? result : -result;
   });
 
-  html += `
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </td>
-    </tr>
-  `;
-
-  return html;
+  return list;
 }
 
-function renderPlayerChampionRanking(playerName) {
-  let champs = getPlayerChampionStats(playerName);
-  champs.sort(comparePlayerChamp);
+function renderPlayerRanking() {
+  const tbody = document.getElementById("playerRanking");
+  const list = getPlayerRanking();
 
-  let html = `
-    <tr class="detail-row">
-      <td colspan="7">
-        <div class="${detailWrapClass("player")}">
-          <div class="detail-inner">
-            <div class="detail-box">
-              <div class="detail-title">${playerName} 모스트 챔피언</div>
-              <table class="detail-table">
-                <colgroup>
-                  <col style="width:7%">
-                  <col style="width:21%">
-                  <col style="width:11%">
-                  <col style="width:10%">
-                  <col style="width:10%">
-                  <col style="width:11%">
-                  <col style="width:13%">
-                  <col style="width:8%">
-                  <col style="width:9%">
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th>순위</th>
-                    <th onclick="sortPlayerChampBy('name')">챔피언 ↕</th>
-                    <th onclick="sortPlayerChampBy('games')">플레이 횟수 ↕</th>
-                    <th onclick="sortPlayerChampBy('winRate')">승률 ↕</th>
-                    <th onclick="sortPlayerChampBy('avgKills')">평균 킬 수 ↕</th>
-                    <th onclick="sortPlayerChampBy('avgDeaths')">평균 데스 수 ↕</th>
-                    <th onclick="sortPlayerChampBy('avgAssists')">평균 어시스트 수 ↕</th>
-                    <th onclick="sortPlayerChampBy('kda')">KDA ↕</th>
-                    <th onclick="sortPlayerChampBy('score')">점수 ↕</th>
-                  </tr>
-                </thead>
-                <tbody>
-  `;
-
-  if (champs.length === 0) {
-    html += `
-      <tr>
-        <td colspan="9">아직 플레이한 챔피언 데이터가 없습니다.</td>
-      </tr>
-    `;
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7">플레이어 데이터가 없습니다.</td></tr>`;
+    return;
   }
 
-  champs.forEach((c, index) => {
-    const imageUrl = getChampionImageUrl(c.name);
+  tbody.innerHTML = list.map((p, i) => {
+    const rank = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1;
 
-    html += `
-      <tr>
-        <td>${index + 1}</td>
+    return `
+      <tr class="clickable-row" onclick="openPlayerDetail('${clean(p.name)}')">
+        <td>${rank}</td>
+        <td class="nickname">${p.name}</td>
+        <td>${p.games}</td>
+        <td class="win">${p.wins}</td>
+        <td class="loss">${p.losses}</td>
+        <td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td>
+        <td>${pct(p.kp)}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function calcChampionStats(championName, lane = currentLane) {
+  let data = rows.filter(r => r.champion_name === championName);
+
+  if (lane !== "ALL") data = data.filter(r => r.lane === lane);
+
+  const games = data.length;
+  const wins = data.filter(r => r.win).length;
+  const losses = games - wins;
+  const winRate = games ? wins / games * 100 : 0;
+  const pickRate = totalGames ? games / totalGames * 100 : 0;
+  const kills = data.reduce((s, r) => s + num(r.kills), 0);
+  const deaths = data.reduce((s, r) => s + num(r.deaths), 0);
+  const assists = data.reduce((s, r) => s + num(r.assists), 0);
+  const kpList = data.map(kp).filter(v => v !== null);
+
+  return {
+    name: championName,
+    games,
+    wins,
+    losses,
+    winRate,
+    pickRate,
+    banRate: 0,
+    avgKills: games ? kills / games : 0,
+    avgDeaths: games ? deaths / games : 0,
+    avgAssists: games ? assists / games : 0,
+    kda: kda(kills, deaths, assists),
+    kp: average(kpList),
+    rows: data
+  };
+}
+
+function getChampionRanking() {
+  let names = [...new Set(rows.map(r => r.champion_name).filter(Boolean))];
+
+  let list = names.map(name => calcChampionStats(name, currentLane));
+
+  if (currentLane !== "ALL") {
+    list = list.filter(c => c.games > 0);
+  }
+
+  if (activeSearch) {
+    const q = activeSearch.toLowerCase();
+    list = list.filter(c => c.name.toLowerCase().includes(q));
+  }
+
+  list.sort((a, b) => {
+    let result = 0;
+    if (championSort === "name") result = compareName(a.name, b.name);
+    else if (championSort === "games") result = a.games - b.games;
+    else if (championSort === "wins") result = a.wins - b.wins;
+    else if (championSort === "losses") result = a.losses - b.losses;
+    else if (championSort === "pickRate") result = a.pickRate - b.pickRate;
+    else if (championSort === "kp") result = a.kp - b.kp;
+    else result = a.winRate - b.winRate;
+
+    return championAsc ? result : -result;
+  });
+
+  return list;
+}
+
+function renderChampionRanking() {
+  const tbody = document.getElementById("championRanking");
+  const list = getChampionRanking();
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="8">챔피언 데이터가 없습니다.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map((c, i) => {
+    const rank = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1;
+    const img = champImg(c.name);
+
+    return `
+      <tr class="clickable-row" onclick="openChampionDetail('${clean(c.name)}')">
+        <td>${rank}</td>
         <td>
           <div class="champ-cell">
-            <img class="champ-icon" src="${imageUrl}" onerror="this.style.display='none'" />
+            <img class="champ-icon" src="${img}" onerror="this.style.display='none'" />
             <span class="champ-name">${c.name}</span>
           </div>
         </td>
         <td>${c.games}</td>
-        <td>${c.winRate.toFixed(1)}%</td>
-        <td>${c.avgKills.toFixed(1)}</td>
-        <td>${c.avgDeaths.toFixed(1)}</td>
-        <td>${c.avgAssists.toFixed(1)}</td>
-        <td>${c.kda.toFixed(2)}</td>
-        <td>${c.score.toFixed(1)}</td>
+        <td class="win">${c.wins}</td>
+        <td class="loss">${c.losses}</td>
+        <td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td>
+        <td>${pct(c.pickRate)}</td>
+        <td>${pct(c.kp)}</td>
       </tr>
     `;
+  }).join("");
+}
+
+function renderMain() {
+  if (currentTab === "player") renderPlayerRanking();
+  else renderChampionRanking();
+}
+
+function goBack() {
+  document.getElementById("detailPage").style.display = "none";
+  document.getElementById("mainPage").style.display = "block";
+  document.querySelector(".top-tabs").style.display = "flex";
+  document.getElementById("summary").style.display = "block";
+}
+
+function showDetail(html) {
+  document.getElementById("detailContent").innerHTML = html;
+  document.getElementById("mainPage").style.display = "none";
+  document.querySelector(".top-tabs").style.display = "none";
+  document.getElementById("summary").style.display = "none";
+  document.getElementById("detailPage").style.display = "block";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function statCards(items) {
+  return `
+    <div class="stat-grid">
+      ${items.map(item => `
+        <div class="stat-card">
+          <div class="stat-label">${item.label}</div>
+          <div class="stat-value ${item.cls || ""}">${item.value}</div>
+          ${item.extra || ""}
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function recentBlocks(data) {
+  const recent = [...data]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 10);
+
+  if (!recent.length) return "최근 전적 없음";
+
+  return `
+    <div class="record-blocks">
+      ${recent.map(r => `
+        <div class="result-block ${r.win ? "result-win" : "result-loss"}">${r.win ? "승" : "패"}</div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function streaks(data) {
+  const sorted = [...data].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  let maxWin = 0, maxLose = 0, curWin = 0, curLose = 0;
+
+  sorted.forEach(r => {
+    if (r.win) {
+      curWin++;
+      curLose = 0;
+    } else {
+      curLose++;
+      curWin = 0;
+    }
+    maxWin = Math.max(maxWin, curWin);
+    maxLose = Math.max(maxLose, curLose);
   });
 
-  html += `
-                </tbody>
-              </table>
-            </div>
-          </div>
+  return { maxWin, maxLose };
+}
+
+function bestRecord(data, field, mode = "max") {
+  if (!data.length) return null;
+
+  return [...data].sort((a, b) => {
+    let av = field === "kp" ? (kp(a) ?? -1) : num(a[field]);
+    let bv = field === "kp" ? (kp(b) ?? -1) : num(b[field]);
+    return mode === "max" ? bv - av : av - bv;
+  })[0];
+}
+
+function recordExtra(row) {
+  if (!row) return "";
+  return `
+    <div class="record-icons">
+      <img class="small-champ-icon" src="${champImg(row.champion_name)}" onerror="this.style.display='none'" />
+      ${laneIcon(row.lane)}
+    </div>
+  `;
+}
+
+function mainLanes(data) {
+  const map = {};
+  data.forEach(r => {
+    if (!r.lane) return;
+    map[r.lane] = (map[r.lane] || 0) + 1;
+  });
+
+  return Object.entries(map)
+    .sort((a, b) => b[1] - a[1])
+    .map(([lane]) => lane);
+}
+
+function laneRatio(data) {
+  const total = data.length;
+  if (!total) return `<div>라인 데이터가 없습니다.</div>`;
+
+  const map = {};
+  data.forEach(r => {
+    if (!r.lane) return;
+    map[r.lane] = (map[r.lane] || 0) + 1;
+  });
+
+  return LANE_ORDER.filter(l => map[l]).map(lane => {
+    const value = map[lane];
+    const percent = value / total * 100;
+    return `
+      <div class="lane-ratio-row">
+        <div class="ratio-head">${laneIcon(lane)} ${LANE_LABELS[lane]} ${pct(percent)} · ${value}판</div>
+        <div class="ratio-bar-bg"><div class="ratio-bar" style="width:${percent}%"></div></div>
+      </div>
+    `;
+  }).join("");
+}
+
+function tableStatsRows(statsList, firstTitle = "구분") {
+  return `
+    <table class="detail-table">
+      <thead>
+        <tr>
+          <th>${firstTitle}</th>
+          <th>판수</th>
+          <th>승</th>
+          <th>패</th>
+          <th>승률</th>
+          <th>평균 킬</th>
+          <th>평균 데스</th>
+          <th>평균 어시</th>
+          <th>KDA</th>
+          <th>킬관여율</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${statsList.map(s => `
+          <tr>
+            <td>${s.label}</td>
+            <td>${s.games}</td>
+            <td class="win">${s.wins}</td>
+            <td class="loss">${s.losses}</td>
+            <td class="${rateClass(s.winRate)}">${pct(s.winRate)}</td>
+            <td>${s.avgKills.toFixed(1)}</td>
+            <td>${s.avgDeaths.toFixed(1)}</td>
+            <td>${s.avgAssists.toFixed(1)}</td>
+            <td>${s.kda.toFixed(2)}</td>
+            <td>${pct(s.kp)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function getPlayerLaneStats(playerName) {
+  return LANE_ORDER.map(lane => {
+    const s = calcPlayerStats(playerName, lane);
+    return { ...s, label: `${laneIcon(lane)} ${LANE_LABELS[lane]}` };
+  }).filter(s => s.games > 0);
+}
+
+function getPlayerMostStats(playerName) {
+  const data = rows.filter(r => r.lol_name === playerName);
+  const map = {};
+
+  data.forEach(r => {
+    const key = `${r.champion_name}__${r.lane}`;
+    if (!map[key]) map[key] = [];
+    map[key].push(r);
+  });
+
+  let list = Object.entries(map).map(([key, arr]) => {
+    const [champion, lane] = key.split("__");
+    const games = arr.length;
+    const wins = arr.filter(r => r.win).length;
+    const losses = games - wins;
+    const kills = arr.reduce((s, r) => s + num(r.kills), 0);
+    const deaths = arr.reduce((s, r) => s + num(r.deaths), 0);
+    const assists = arr.reduce((s, r) => s + num(r.assists), 0);
+    const kpList = arr.map(kp).filter(v => v !== null);
+    const winRate = games ? wins / games * 100 : 0;
+    const avgKills = games ? kills / games : 0;
+    const avgDeaths = games ? deaths / games : 0;
+    const avgAssists = games ? assists / games : 0;
+    const kdaValue = kda(kills, deaths, assists);
+    const kpAvg = average(kpList);
+    const score = games * 8 + winRate * .45 + kdaValue * 4 + kpAvg * .15;
+
+    return {
+      champion,
+      lane,
+      games,
+      wins,
+      losses,
+      winRate,
+      avgKills,
+      avgDeaths,
+      avgAssists,
+      kda: kdaValue,
+      kp: kpAvg,
+      score
+    };
+  });
+
+  list.sort((a, b) => {
+    let result = 0;
+    if (mostSort === "name") result = compareName(a.champion, b.champion);
+    else if (mostSort === "games") result = a.games - b.games;
+    else if (mostSort === "winRate") result = a.winRate - b.winRate;
+    else if (mostSort === "avgKills") result = a.avgKills - b.avgKills;
+    else if (mostSort === "avgDeaths") result = a.avgDeaths - b.avgDeaths;
+    else if (mostSort === "avgAssists") result = a.avgAssists - b.avgAssists;
+    else if (mostSort === "kda") result = a.kda - b.kda;
+    else if (mostSort === "kp") result = a.kp - b.kp;
+    else result = a.score - b.score;
+    return mostAsc ? result : -result;
+  });
+
+  return list;
+}
+
+function renderMostTable(playerName) {
+  const list = getPlayerMostStats(playerName);
+
+  return `
+    <table class="detail-table">
+      <thead>
+        <tr>
+          <th><button class="sort-btn" onclick="sortMost('rank','${clean(playerName)}')">순위</button></th>
+          <th><button class="sort-btn" onclick="sortMost('name','${clean(playerName)}')">챔피언</button></th>
+          <th><button class="sort-btn" onclick="sortMost('games','${clean(playerName)}')">판수</button></th>
+          <th><button class="sort-btn" onclick="sortMost('winRate','${clean(playerName)}')">승률</button></th>
+          <th><button class="sort-btn" onclick="sortMost('avgKills','${clean(playerName)}')">평균 킬</button></th>
+          <th><button class="sort-btn" onclick="sortMost('avgDeaths','${clean(playerName)}')">평균 데스</button></th>
+          <th><button class="sort-btn" onclick="sortMost('avgAssists','${clean(playerName)}')">평균 어시</button></th>
+          <th><button class="sort-btn" onclick="sortMost('kda','${clean(playerName)}')">KDA</button></th>
+          <th><button class="sort-btn" onclick="sortMost('kp','${clean(playerName)}')">킬관여율</button></th>
+          <th><button class="sort-btn" onclick="sortMost('score','${clean(playerName)}')">점수</button></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map((c, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td>
+              <div class="champ-cell">
+                <img class="champ-icon" src="${champImg(c.champion)}" onerror="this.style.display='none'" />
+                <span>${c.champion}</span>
+                ${laneIcon(c.lane)}
+              </div>
+            </td>
+            <td>${c.games}</td>
+            <td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td>
+            <td>${c.avgKills.toFixed(1)}</td>
+            <td>${c.avgDeaths.toFixed(1)}</td>
+            <td>${c.avgAssists.toFixed(1)}</td>
+            <td>${c.kda.toFixed(2)}</td>
+            <td>${pct(c.kp)}</td>
+            <td>${c.score.toFixed(1)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function openPlayerDetail(playerName) {
+  const player = players.find(p => p.lol_name === playerName) || {};
+  const s = calcPlayerStats(playerName, "ALL");
+  const data = s.rows;
+  const lanes = mainLanes(data);
+  const st = streaks(data);
+
+  const bestKill = bestRecord(data, "kills");
+  const bestDeath = bestRecord(data, "deaths");
+  const bestAssist = bestRecord(data, "assists");
+  const bestKp = bestRecord(data, "kp");
+
+  const profile = player.profile_image_url
+    ? `<img src="${player.profile_image_url}" onerror="this.parentElement.innerHTML='프로필 사진을<br>추가해주세요!'" />`
+    : `프로필 사진을<br>추가해주세요!`;
+
+  const html = `
+    <div class="detail-hero">
+      <div class="profile-box">${profile}</div>
+      <div>
+        <div class="hero-title">${playerName}</div>
+        <div class="hero-sub">
+          ${lanes.length ? lanes.map(lanePill).join("") : `<span class="lane-pill">라인 기록 없음</span>`}
         </div>
-      </td>
-    </tr>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">전체 전적</div>
+      ${statCards([
+        { label:"판수", value:s.games },
+        { label:"승", value:s.wins, cls:"win" },
+        { label:"패", value:s.losses, cls:"loss" },
+        { label:"승률", value:pct(s.winRate), cls:rateClass(s.winRate) },
+        { label:"평균 킬", value:s.avgKills.toFixed(1) },
+        { label:"평균 데스", value:s.avgDeaths.toFixed(1) },
+        { label:"평균 어시", value:s.avgAssists.toFixed(1) },
+        { label:"평균 KDA", value:s.kda.toFixed(2) },
+        { label:"평균 킬관여율", value:pct(s.kp) },
+        { label:"최대 연승", value:`${st.maxWin}연승`, cls:"win" },
+        { label:"최대 연패", value:`${st.maxLose}연패`, cls:"loss" },
+        { label:"주 라인", value:lanes[0] ? LANE_LABELS[lanes[0]] : "-" }
+      ])}
+    </div>
+
+    <div class="section">
+      <div class="section-title">최고 기록</div>
+      ${statCards([
+        { label:"최다 킬", value:bestKill ? num(bestKill.kills) : "-", extra:recordExtra(bestKill) },
+        { label:"최다 데스", value:bestDeath ? num(bestDeath.deaths) : "-", extra:recordExtra(bestDeath) },
+        { label:"최다 어시스트", value:bestAssist ? num(bestAssist.assists) : "-", extra:recordExtra(bestAssist) },
+        { label:"최대 킬관여율", value:bestKp ? pct(kp(bestKp) || 0) : "-", extra:recordExtra(bestKp) }
+      ])}
+    </div>
+
+    <div class="section">
+      <div class="section-title">최근 전적 10판</div>
+      ${recentBlocks(data)}
+    </div>
+
+    <div class="section">
+      <div class="section-title">라인 비율</div>
+      ${laneRatio(data)}
+    </div>
+
+    <div class="section">
+      <div class="section-title">라인별 전적</div>
+      ${tableStatsRows(getPlayerLaneStats(playerName), "라인")}
+    </div>
+
+    <div class="section">
+      <div class="section-title">모스트 챔피언</div>
+      ${renderMostTable(playerName)}
+    </div>
   `;
 
-  return html;
+  showDetail(html);
 }
 
-function renderChampionTable() {
-  const keyword = document.getElementById("championSearchInput").value.toLowerCase();
+function getChampionLaneStats(championName) {
+  return LANE_ORDER.map(lane => {
+    const s = calcChampionStats(championName, lane);
+    return { ...s, label: `${laneIcon(lane)} ${LANE_LABELS[lane]}` };
+  }).filter(s => s.games > 0);
+}
 
-  let champions = getChampionStats().filter(champ =>
-    champ.name.toLowerCase().includes(keyword)
-  );
+function getMasterStats(championName, lane = masterLane) {
+  let data = rows.filter(r => r.champion_name === championName);
 
-  champions.sort(compareChampion);
+  if (lane !== "ALL") data = data.filter(r => r.lane === lane);
 
-  const tbody = document.getElementById("championRanking");
-  tbody.innerHTML = "";
-
-  if (champions.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="13">아직 챔피언 통계 데이터가 없습니다.</td>
-      </tr>
-    `;
-    return;
-  }
-
-  champions.forEach((champ, index) => {
-    const displayRank = championAscending ? champions.length - index : index + 1;
-
-    const rankText =
-      displayRank === 1 ? "🥇" :
-      displayRank === 2 ? "🥈" :
-      displayRank === 3 ? "🥉" :
-      displayRank;
-
-    const imageUrl = getChampionImageUrl(champ.name);
-    const safeName = champ.name.replaceAll("'", "\\'");
-
-    tbody.innerHTML += `
-      <tr class="clickable-row" onclick="toggleChampion('${safeName}')">
-        <td>${rankText}</td>
-        <td><div class="tier-badge ${getTierClass(champ.tier)}">${champ.tier}</div></td>
-        <td>
-          <div class="champ-cell">
-            <img class="champ-icon" src="${imageUrl}" onerror="this.style.display='none'" />
-            <span class="champ-name">${champ.name}</span>
-          </div>
-        </td>
-        <td>${champ.games}</td>
-        <td class="win">${champ.wins}</td>
-        <td class="loss">${champ.losses}</td>
-        <td>${champ.winRate.toFixed(1)}%</td>
-        <td>${champ.pickRate.toFixed(1)}%</td>
-        <td>${champ.avgKills.toFixed(1)}</td>
-        <td>${champ.avgDeaths.toFixed(1)}</td>
-        <td>${champ.avgAssists.toFixed(1)}</td>
-        <td>${champ.kda.toFixed(2)}</td>
-        <td>${champ.score.toFixed(1)}</td>
-      </tr>
-    `;
-
-    if (selectedChampion === champ.name) {
-      tbody.innerHTML += renderMasterRanking(champ.name);
-    }
+  const map = {};
+  data.forEach(r => {
+    if (!map[r.lol_name]) map[r.lol_name] = [];
+    map[r.lol_name].push(r);
   });
 
-  suppressDetailAnimation = false;
+  let list = Object.entries(map).map(([name, arr]) => {
+    const games = arr.length;
+    const wins = arr.filter(r => r.win).length;
+    const losses = games - wins;
+    const kills = arr.reduce((s, r) => s + num(r.kills), 0);
+    const deaths = arr.reduce((s, r) => s + num(r.deaths), 0);
+    const assists = arr.reduce((s, r) => s + num(r.assists), 0);
+    const kpList = arr.map(kp).filter(v => v !== null);
+    const winRate = games ? wins / games * 100 : 0;
+    const avgKills = games ? kills / games : 0;
+    const avgDeaths = games ? deaths / games : 0;
+    const avgAssists = games ? assists / games : 0;
+    const kdaValue = kda(kills, deaths, assists);
+    const kpAvg = average(kpList);
+    const score = games * 8 + winRate * .45 + kdaValue * 4 + kpAvg * .15;
+
+    return {
+      name,
+      games,
+      wins,
+      losses,
+      winRate,
+      avgKills,
+      avgDeaths,
+      avgAssists,
+      kda: kdaValue,
+      kp: kpAvg,
+      score
+    };
+  });
+
+  list.sort((a, b) => {
+    let result = 0;
+    if (masterSort === "name") result = compareName(a.name, b.name);
+    else if (masterSort === "games") result = a.games - b.games;
+    else if (masterSort === "winRate") result = a.winRate - b.winRate;
+    else if (masterSort === "avgKills") result = a.avgKills - b.avgKills;
+    else if (masterSort === "avgDeaths") result = a.avgDeaths - b.avgDeaths;
+    else if (masterSort === "avgAssists") result = a.avgAssists - b.avgAssists;
+    else if (masterSort === "kda") result = a.kda - b.kda;
+    else if (masterSort === "kp") result = a.kp - b.kp;
+    else result = a.score - b.score;
+    return masterAsc ? result : -result;
+  });
+
+  return list;
 }
 
-loadRanking();
-setInterval(loadRanking, 30000);
+function renderMasterTable(championName) {
+  const list = getMasterStats(championName, masterLane);
+
+  return `
+    <div class="master-filter-row">
+      ${["ALL", ...LANE_ORDER].map(lane => `
+        <button class="master-filter ${masterLane === lane ? "active" : ""}" onclick="setMasterLane('${lane}','${clean(championName)}')">
+          ${lane === "ALL" ? "" : laneIcon(lane)} ${LANE_LABELS[lane]}
+        </button>
+      `).join("")}
+    </div>
+
+    <table class="detail-table">
+      <thead>
+        <tr>
+          <th><button class="sort-btn" onclick="sortMaster('rank','${clean(championName)}')">순위</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('name','${clean(championName)}')">플레이어</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('games','${clean(championName)}')">판수</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('winRate','${clean(championName)}')">승률</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('avgKills','${clean(championName)}')">평균 킬</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('avgDeaths','${clean(championName)}')">평균 데스</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('avgAssists','${clean(championName)}')">평균 어시</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('kda','${clean(championName)}')">KDA</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('kp','${clean(championName)}')">킬관여율</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('score','${clean(championName)}')">점수</button></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map((p, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td class="nickname">${p.name}</td>
+            <td>${p.games}</td>
+            <td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td>
+            <td>${p.avgKills.toFixed(1)}</td>
+            <td>${p.avgDeaths.toFixed(1)}</td>
+            <td>${p.avgAssists.toFixed(1)}</td>
+            <td>${p.kda.toFixed(2)}</td>
+            <td>${pct(p.kp)}</td>
+            <td>${p.score.toFixed(1)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function openChampionDetail(championName) {
+  const s = calcChampionStats(championName, "ALL");
+  const data = s.rows;
+  const lanes = mainLanes(data);
+
+  const bestKill = bestRecord(data, "kills");
+  const bestDeath = bestRecord(data, "deaths");
+  const bestAssist = bestRecord(data, "assists");
+
+  const html = `
+    <div class="detail-hero">
+      <img class="champ-icon big" src="${champImg(championName)}" onerror="this.style.display='none'" />
+      <div>
+        <div class="hero-title">${championName}</div>
+        <div class="hero-sub">
+          ${lanes.length ? lanes.map(lanePill).join("") : `<span class="lane-pill">라인 기록 없음</span>`}
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">전체 통계</div>
+      ${statCards([
+        { label:"판수", value:s.games },
+        { label:"승", value:s.wins, cls:"win" },
+        { label:"패", value:s.losses, cls:"loss" },
+        { label:"승률", value:pct(s.winRate), cls:rateClass(s.winRate) },
+        { label:"픽률", value:pct(s.pickRate) },
+        { label:"밴율", value:pct(s.banRate) },
+        { label:"평균 킬", value:s.avgKills.toFixed(1) },
+        { label:"평균 데스", value:s.avgDeaths.toFixed(1) },
+        { label:"평균 어시", value:s.avgAssists.toFixed(1) },
+        { label:"KDA", value:s.kda.toFixed(2) },
+        { label:"평균 킬관여율", value:pct(s.kp) }
+      ])}
+    </div>
+
+    <div class="section">
+      <div class="section-title">최고 기록</div>
+      ${statCards([
+        { label:"최다 킬", value:bestKill ? `${num(bestKill.kills)}회` : "-", extra:bestKill ? `<div style="font-size:12px;color:#cbd5e1;margin-top:5px;">${bestKill.lol_name}</div>${recordExtra(bestKill)}` : "" },
+        { label:"최다 데스", value:bestDeath ? `${num(bestDeath.deaths)}회` : "-", extra:bestDeath ? `<div style="font-size:12px;color:#cbd5e1;margin-top:5px;">${bestDeath.lol_name}</div>${recordExtra(bestDeath)}` : "" },
+        { label:"최다 어시스트", value:bestAssist ? `${num(bestAssist.assists)}회` : "-", extra:bestAssist ? `<div style="font-size:12px;color:#cbd5e1;margin-top:5px;">${bestAssist.lol_name}</div>${recordExtra(bestAssist)}` : "" }
+      ])}
+    </div>
+
+    <div class="section">
+      <div class="section-title">최근 기록 10판</div>
+      ${recentBlocks(data)}
+    </div>
+
+    <div class="section">
+      <div class="section-title">라인 비율</div>
+      ${laneRatio(data)}
+    </div>
+
+    <div class="section">
+      <div class="section-title">라인별 통계</div>
+      ${tableStatsRows(getChampionLaneStats(championName), "라인")}
+    </div>
+
+    <div class="section">
+      <div class="section-title">${championName} 장인 랭킹</div>
+      ${renderMasterTable(championName)}
+    </div>
+  `;
+
+  showDetail(html);
+}
+
+loadData();
+setInterval(loadData, 30000);
 </script>
 </body>
 </html>
