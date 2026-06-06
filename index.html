@@ -104,6 +104,11 @@ tbody tr:hover td{background:rgba(71,85,105,.95)}
 .detail-table td{background:rgba(51,65,85,.82)}
 .record-icons{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px}
 .small-champ-icon{width:28px;height:28px;border-radius:8px;object-fit:cover}
+.recent-lane-wrapper img{
+  width:14px !important;
+  height:14px !important;
+  object-fit:contain;
+}
 .master-filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .master-filter{border:none;border-radius:999px;padding:8px 12px;background:rgba(30,41,59,.95);color:white;font-weight:1000;cursor:pointer;white-space:nowrap}
 .master-filter.active{background:#2563eb}
@@ -548,7 +553,24 @@ function statCards(items){return`<div class="stat-grid">${items.map(item=>`<div 
 function recentBlocks(data){
   const recent=[...data].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,10);
   if(!recent.length)return"최근 전적 없음";
-  return`<div class="record-blocks">${recent.map(r=>`<div class="result-block ${r.win?"result-win":"result-loss"}" title="${r.champion_name||""} / ${LANE_LABELS[r.lane]||r.lane||""}">${r.win?"승":"패"}</div>`).join("")}</div>`;
+  return`
+<div class="record-blocks">
+  ${recent.map(r=>`
+    <div style="display:flex;flex-direction:column;align-items:center;">
+      <div
+        class="result-block ${r.win?"result-win":"result-loss"}"
+        title="${r.champion_name||""} / ${LANE_LABELS[r.lane]||r.lane||""}"
+      >
+        ${r.win?"승":"패"}
+      </div>
+
+      <div class="recent-lane-wrapper" style="margin-top:4px;">
+        ${laneIcon(r.lane)}
+      </div>
+    </div>
+  `).join("")}
+  </div>
+  `;
 }
 
 function streaks(data){
