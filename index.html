@@ -166,6 +166,10 @@ tbody tr:hover td {
   min-width: 0;
 }
 
+.detail-table .champ-cell {
+  justify-content: center;
+}
+
 .champ-icon {
   width: 44px;
   height: 44px;
@@ -189,17 +193,27 @@ tbody tr:hover td {
 }
 
 .detail-wrap {
-  overflow: hidden;
+  display: grid;
+  grid-template-rows: 1fr;
   opacity: 1;
   transform: translateY(0);
-  transition: opacity .22s ease, transform .22s ease;
+  transition:
+    grid-template-rows .28s ease,
+    opacity .22s ease,
+    transform .22s ease;
+}
+
+.detail-inner {
+  overflow: hidden;
+  min-height: 0;
 }
 
 .detail-wrap.opening {
-  animation: slideDown .22s ease-out;
+  animation: detailOpen .28s ease-out;
 }
 
 .detail-wrap.closing {
+  grid-template-rows: 0fr;
   opacity: 0;
   transform: translateY(-8px);
 }
@@ -209,12 +223,14 @@ tbody tr:hover td {
   transition: none !important;
 }
 
-@keyframes slideDown {
+@keyframes detailOpen {
   from {
+    grid-template-rows: 0fr;
     opacity: 0;
     transform: translateY(-8px);
   }
   to {
+    grid-template-rows: 1fr;
     opacity: 1;
     transform: translateY(0);
   }
@@ -242,18 +258,22 @@ tbody tr:hover td {
   table-layout: fixed;
 }
 
+.detail-table th,
+.detail-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
 .detail-table th {
   font-size: 13px;
   padding: 10px 6px;
   background: rgba(30,41,59,.95);
-  text-align: center;
 }
 
 .detail-table td {
   font-size: 14px;
   padding: 10px 6px;
   background: rgba(51,65,85,.82);
-  text-align: center;
 }
 
 .detail-table th:first-child {
@@ -261,19 +281,19 @@ tbody tr:hover td {
 }
 
 .detail-table th:nth-child(1),
-.detail-table td:nth-child(1) { width: 8%; }
+.detail-table td:nth-child(1) { width: 7%; }
 
 .detail-table th:nth-child(2),
-.detail-table td:nth-child(2) { width: 22%; }
+.detail-table td:nth-child(2) { width: 21%; }
 
 .detail-table th:nth-child(3),
 .detail-table td:nth-child(3) { width: 11%; }
 
 .detail-table th:nth-child(4),
-.detail-table td:nth-child(4) { width: 11%; }
+.detail-table td:nth-child(4) { width: 10%; }
 
 .detail-table th:nth-child(5),
-.detail-table td:nth-child(5) { width: 11%; }
+.detail-table td:nth-child(5) { width: 10%; }
 
 .detail-table th:nth-child(6),
 .detail-table td:nth-child(6) { width: 11%; }
@@ -282,10 +302,10 @@ tbody tr:hover td {
 .detail-table td:nth-child(7) { width: 13%; }
 
 .detail-table th:nth-child(8),
-.detail-table td:nth-child(8) { width: 7%; }
+.detail-table td:nth-child(8) { width: 8%; }
 
 .detail-table th:nth-child(9),
-.detail-table td:nth-child(9) { width: 6%; }
+.detail-table td:nth-child(9) { width: 9%; }
 
 .group-divider td {
   height: 20px;
@@ -535,7 +555,7 @@ function closeDetailThen(callback) {
 
   wrap.classList.add("closing");
 
-  setTimeout(callback, 220);
+  setTimeout(callback, 280);
 }
 
 function detailWrapClass(mode) {
@@ -1002,23 +1022,35 @@ function renderMasterRanking(championName) {
     <tr class="detail-row">
       <td colspan="13">
         <div class="${detailWrapClass("champion")}">
-          <div class="detail-box">
-            <div class="detail-title">${championName} 장인 랭킹</div>
-            <table class="detail-table">
-              <thead>
-                <tr>
-                  <th>순위</th>
-                  <th onclick="sortMasterBy('name')">플레이어 ↕</th>
-                  <th onclick="sortMasterBy('games')">플레이 횟수 ↕</th>
-                  <th onclick="sortMasterBy('winRate')">승률 ↕</th>
-                  <th onclick="sortMasterBy('avgKills')">평균 킬 수 ↕</th>
-                  <th onclick="sortMasterBy('avgDeaths')">평균 데스 수 ↕</th>
-                  <th onclick="sortMasterBy('avgAssists')">평균 어시스트 수 ↕</th>
-                  <th onclick="sortMasterBy('kda')">KDA ↕</th>
-                  <th onclick="sortMasterBy('score')">점수 ↕</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div class="detail-inner">
+            <div class="detail-box">
+              <div class="detail-title">${championName} 장인 랭킹</div>
+              <table class="detail-table">
+                <colgroup>
+                  <col style="width:7%">
+                  <col style="width:21%">
+                  <col style="width:11%">
+                  <col style="width:10%">
+                  <col style="width:10%">
+                  <col style="width:11%">
+                  <col style="width:13%">
+                  <col style="width:8%">
+                  <col style="width:9%">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>순위</th>
+                    <th onclick="sortMasterBy('name')">플레이어 ↕</th>
+                    <th onclick="sortMasterBy('games')">플레이 횟수 ↕</th>
+                    <th onclick="sortMasterBy('winRate')">승률 ↕</th>
+                    <th onclick="sortMasterBy('avgKills')">평균 킬 수 ↕</th>
+                    <th onclick="sortMasterBy('avgDeaths')">평균 데스 수 ↕</th>
+                    <th onclick="sortMasterBy('avgAssists')">평균 어시스트 수 ↕</th>
+                    <th onclick="sortMasterBy('kda')">KDA ↕</th>
+                    <th onclick="sortMasterBy('score')">점수 ↕</th>
+                  </tr>
+                </thead>
+                <tbody>
   `;
 
   masters.forEach((m, index) => {
@@ -1038,8 +1070,9 @@ function renderMasterRanking(championName) {
   });
 
   html += `
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </td>
@@ -1057,23 +1090,35 @@ function renderPlayerChampionRanking(playerName) {
     <tr class="detail-row">
       <td colspan="7">
         <div class="${detailWrapClass("player")}">
-          <div class="detail-box">
-            <div class="detail-title">${playerName} 모스트 챔피언</div>
-            <table class="detail-table">
-              <thead>
-                <tr>
-                  <th>순위</th>
-                  <th onclick="sortPlayerChampBy('name')">챔피언 ↕</th>
-                  <th onclick="sortPlayerChampBy('games')">플레이 횟수 ↕</th>
-                  <th onclick="sortPlayerChampBy('winRate')">승률 ↕</th>
-                  <th onclick="sortPlayerChampBy('avgKills')">평균 킬 수 ↕</th>
-                  <th onclick="sortPlayerChampBy('avgDeaths')">평균 데스 수 ↕</th>
-                  <th onclick="sortPlayerChampBy('avgAssists')">평균 어시스트 수 ↕</th>
-                  <th onclick="sortPlayerChampBy('kda')">KDA ↕</th>
-                  <th onclick="sortPlayerChampBy('score')">점수 ↕</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div class="detail-inner">
+            <div class="detail-box">
+              <div class="detail-title">${playerName} 모스트 챔피언</div>
+              <table class="detail-table">
+                <colgroup>
+                  <col style="width:7%">
+                  <col style="width:21%">
+                  <col style="width:11%">
+                  <col style="width:10%">
+                  <col style="width:10%">
+                  <col style="width:11%">
+                  <col style="width:13%">
+                  <col style="width:8%">
+                  <col style="width:9%">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>순위</th>
+                    <th onclick="sortPlayerChampBy('name')">챔피언 ↕</th>
+                    <th onclick="sortPlayerChampBy('games')">플레이 횟수 ↕</th>
+                    <th onclick="sortPlayerChampBy('winRate')">승률 ↕</th>
+                    <th onclick="sortPlayerChampBy('avgKills')">평균 킬 수 ↕</th>
+                    <th onclick="sortPlayerChampBy('avgDeaths')">평균 데스 수 ↕</th>
+                    <th onclick="sortPlayerChampBy('avgAssists')">평균 어시스트 수 ↕</th>
+                    <th onclick="sortPlayerChampBy('kda')">KDA ↕</th>
+                    <th onclick="sortPlayerChampBy('score')">점수 ↕</th>
+                  </tr>
+                </thead>
+                <tbody>
   `;
 
   if (champs.length === 0) {
@@ -1108,8 +1153,9 @@ function renderPlayerChampionRanking(playerName) {
   });
 
   html += `
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </td>
