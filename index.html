@@ -27,9 +27,10 @@ h1{text-align:center;font-size:42px;margin:0 0 12px;font-weight:1000}
 
 .combo-portrait-wrap{
   border-radius:12px;
-  padding:0;
+  padding:2px;
   display:inline-flex;
-  background:none !important;
+  width:fit-content;
+  height:fit-content;
 }
 .summary{text-align:center;margin-bottom:20px;color:#cbd5e1;font-size:17px;font-weight:1000}
 .top-tabs{width:95%;margin:0 auto 18px;display:flex;justify-content:center;gap:12px}
@@ -454,9 +455,16 @@ function comboPortraitStyle(tiers){
   if(!tiers || !tiers.length)return "";
 
   const unique=[...new Set(tiers)];
-  if(unique.length===1)return "";
 
-  return `background:conic-gradient(${unique.map(t=>tierColor(t)).join(",")});`;
+  if(unique.length===1){
+    return `border:2px solid ${tierColor(unique[0])};`;
+  }
+
+  return `
+    background:conic-gradient(${unique.map(t=>tierColor(t)).join(",")});
+    border-radius:12px;
+    padding:2px;
+  `;
 }
 function championScore(champ){
   return champ.winRate*.48+champ.pickRate*1.7+champ.banRate*1.05+champ.kp*.12+Math.min(champ.games,30)*.85;
@@ -677,7 +685,7 @@ function renderChampionRanking(){
     const isBanMerged=championSort==="banRate";
     const tierList=c.tierList?.length ? c.tierList : [c.tier];
     const isMixed=isBanMerged && tierList.length>1;
-    const portraitClass=isMixed ? "" : tierClass;
+    const portraitClass=tierClass;
     const portraitStyle="";
 
     return`
@@ -687,7 +695,7 @@ function renderChampionRanking(){
         <td>
           <div class="champ-cell" title="${c.name}">
             <span class="combo-portrait-wrap" style="${portraitStyle}">
-              <img class="champ-icon ${portraitClass}" src="${img}" onerror="this.style.display='none'" />
+  <           <img class="champ-icon" src="${img}" onerror="this.style.display='none'" />
             </span>
             <span class="champ-name">${c.name}</span>
             ${isBanMerged ? "" : laneIcon(c.displayLane)}
