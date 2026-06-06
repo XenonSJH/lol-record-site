@@ -100,6 +100,43 @@ tbody tr:hover td{background:rgba(71,85,105,.95)}
 .col-lane{width:10%}
 .col-score{width:9%}
 .col-auto{width:auto}
+html, body {
+  width: 100%;
+}
+
+body {
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+}
+
+.main-card,
+.detail-page {
+  width: 100vw !important;
+  max-width: none !important;
+  margin-left: calc(-1 * 24px) !important;
+  margin-right: calc(-1 * 24px) !important;
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+}
+
+#playerTable,
+#championTable,
+.detail-table {
+  width: 100% !important;
+  min-width: 100% !important;
+  table-layout: fixed !important;
+}
+
+#playerTable col.col-rank { width: 7% !important; }
+#playerTable col.col-name { width: 31% !important; }
+#playerTable col.col-small { width: 9% !important; }
+#playerTable col.col-rate { width: 11% !important; }
+
+#championTable col.col-rank { width: 6% !important; }
+#championTable col.col-tier { width: 9% !important; }
+#championTable col.col-champ { width: 30% !important; }
+#championTable col.col-small { width: 7% !important; }
+#championTable col.col-rate { width: 9% !important; }
 @media(max-width:850px){body{padding:20px}h1{font-size:30px}.stat-grid{grid-template-columns:repeat(2,1fr)}th,td{font-size:12px;padding:9px 5px}.detail-hero{align-items:flex-start}}
 </style>
 </head>
