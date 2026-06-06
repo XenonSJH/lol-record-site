@@ -440,40 +440,33 @@ function calcChampionStats(championName,lane="ALL"){
 
 function getChampionRanking(){
   const lane=effectiveLane();
-  let list=[];
+  const map={};
 
-  if(lane==="ALL"){
-    const map={};
+  rows.forEach(r=>{
+    if(!r.champion_name || !r.lane)return;
+    const key=`${r.champion_name}__${r.lane}`;
+    map[key]={champion:r.champion_name,lane:r.lane};
+  });
 
-    rows.forEach(r=>{
-      if(!r.champion_name || !r.lane)return;
-      const key=`${r.champion_name}__${r.lane}`;
-      map[key]={champion:r.champion_name,lane:r.lane};
-    });
+  let allList=Object.values(map).map(item=>{
+    const stat=calcChampionStats(item.champion,item.lane);
+    stat.displayName=item.champion;
+    stat.displayLane=item.lane;
+    return stat;
+  }).filter(c=>c.games>=1);
 
-    list=Object.values(map).map(item=>{
-      const stat=calcChampionStats(item.champion,item.lane);
-      stat.displayName=item.champion;
-      stat.displayLane=item.lane;
-      return stat;
-    }).filter(c=>c.games>=1);
-  }else{
-    const names=[...new Set(rows.filter(r=>r.lane===lane).map(r=>r.champion_name).filter(Boolean))];
+  allList=assignChampionTiers(allList);
 
-    list=names.map(name=>{
-      const stat=calcChampionStats(name,lane);
-      stat.displayName=name;
-      stat.displayLane=lane;
-      return stat;
-    }).filter(c=>c.games>=1);
+  let list=allList;
+
+  if(lane!=="ALL"){
+    list=list.filter(c=>c.displayLane===lane);
   }
 
   if(activeSearch){
     const q=activeSearch.toLowerCase();
     list=list.filter(c=>c.name.toLowerCase().includes(q));
   }
-
-  list=assignChampionTiers(list);
 
   list.sort((a,b)=>{
     const tierOrder={OP:1,S:2,A:3,B:4,C:5};
