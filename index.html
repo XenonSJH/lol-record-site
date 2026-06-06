@@ -434,11 +434,10 @@ function bestTierFromList(tiers){
   unique.sort((a,b)=>(tierOrder[a]||99)-(tierOrder[b]||99));
   return unique[0] || "C";
 }
-
 function comboTierBadge(tiers){
   if(!tiers || !tiers.length)return tierBadge("C");
 
-  const unique=[...new Set(tiers).filter(Boolean)];
+  const unique=[...new Set(tiers.filter(Boolean))];
   const best=bestTierFromList(unique);
   const extra=Math.max(unique.length-1,0);
 
