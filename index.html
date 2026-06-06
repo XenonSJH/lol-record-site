@@ -311,6 +311,24 @@ function assignChampionTiers(list){
   });
   return ranked;
 }
+function getGlobalChampionTierMap(){
+  const names=[...new Set(rows.map(r=>r.champion_name).filter(Boolean))];
+  const globalList=names
+    .map(name=>calcChampionStats(name,"ALL"))
+    .filter(c=>c.games>=1);
+
+  const tiered=assignChampionTiers(globalList);
+  const map={};
+
+  tiered.forEach(c=>{
+    map[c.name]={
+      tier:c.tier,
+      score:c.score
+    };
+  });
+
+  return map;
+}
 
 async function loadData(){
   await loadChampionMeta();
@@ -423,15 +441,29 @@ function calcChampionStats(championName,lane="ALL"){
 
 function getChampionRanking(){
   const lane=effectiveLane();
+  const globalTierMap=getGlobalChampionTierMap();
+
   let names=[...new Set(rows.map(r=>r.champion_name).filter(Boolean))];
-  let list=names.map(name=>calcChampionStats(name,lane)).filter(c=>c.games>=1);
-  if(lane!=="ALL")list=list.filter(c=>c.games>0);
-  if(activeSearch){const q=activeSearch.toLowerCase();list=list.filter(c=>c.name.toLowerCase().includes(q))}
-  list=assignChampionTiers(list);
+
+  let list=names
+    .map(name=>{
+      const stat=calcChampionStats(name,lane);
+      stat.tier=globalTierMap[name]?.tier || "C";
+      stat.globalScore=globalTierMap[name]?.score || 0;
+      return stat;
+    })
+    .filter(c=>c.games>=1);
+
+  if(activeSearch){
+    const q=activeSearch.toLowerCase();
+    list=list.filter(c=>c.name.toLowerCase().includes(q));
+  }
+
   list.sort((a,b)=>{
     const tierOrder={OP:1,S:2,A:3,B:4,C:5};
     let result=0;
-    if(championSort==="tier")result=tierOrder[a.tier]-tierOrder[b.tier]||b.score-a.score;
+
+    if(championSort==="tier")result=tierOrder[a.tier]-tierOrder[b.tier]||b.globalScore-a.globalScore;
     else if(championSort==="name")result=compareName(a.name,b.name);
     else if(championSort==="games")result=a.games-b.games;
     else if(championSort==="wins")result=a.wins-b.wins;
@@ -440,9 +472,11 @@ function getChampionRanking(){
     else if(championSort==="banRate")result=a.banRate-b.banRate;
     else if(championSort==="kp")result=a.kp-b.kp;
     else if(championSort==="winRate")result=a.winRate-b.winRate;
-    else result=a.score-b.score;
+    else result=a.globalScore-b.globalScore;
+
     return championAsc?result:-result;
   });
+
   return list;
 }
 
