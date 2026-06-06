@@ -1,712 +1,796 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🏆 벤들시티 내전 통계 🏆</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🏆 벤들시티 내전 통계 🏆</title>
 
-  <style>
-    * { box-sizing: border-box; }
+<style>
+* { box-sizing: border-box; }
 
-    body {
-      font-family: Arial, sans-serif;
-      background:
-        radial-gradient(circle at top, #2563eb 0%, transparent 32%),
-        linear-gradient(135deg, #020617, #111827);
-      color: white;
-      padding: 40px;
-      min-height: 100vh;
-    }
+body {
+  font-family: Arial, sans-serif;
+  background:
+    radial-gradient(circle at top, #2563eb 0%, transparent 32%),
+    linear-gradient(135deg, #020617, #111827);
+  color: white;
+  padding: 40px;
+  min-height: 100vh;
+}
 
-    h1 {
-      text-align: center;
-      font-size: 42px;
-      margin-bottom: 12px;
-    }
+h1 {
+  text-align: center;
+  font-size: 42px;
+  margin-bottom: 12px;
+}
 
-    .summary {
-      text-align: center;
-      margin-bottom: 24px;
-      color: #cbd5e1;
-      font-size: 18px;
-    }
+.summary {
+  text-align: center;
+  margin-bottom: 24px;
+  color: #cbd5e1;
+  font-size: 18px;
+}
 
-    .tab-container {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
+.tab-container {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
 
-    .tab {
-      padding: 12px 32px;
-      border-radius: 14px;
-      border: none;
-      color: white;
-      font-size: 17px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: 0.2s;
-      background: #4b5563;
-      filter: grayscale(100%);
-    }
+.tab {
+  padding: 12px 32px;
+  border-radius: 14px;
+  border: none;
+  color: white;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s;
+  background: #4b5563;
+  filter: grayscale(100%);
+}
 
-    .tab.active {
-      background: #dc2626;
-      filter: grayscale(0%);
-    }
+.tab.active {
+  background: #dc2626;
+  filter: grayscale(0%);
+}
 
-    .tab:hover {
-      transform: translateY(-2px);
-    }
+.tab:hover {
+  transform: translateY(-2px);
+}
 
-    .search-box {
-      width: 100%;
-      padding: 15px;
-      margin-bottom: 24px;
-      border-radius: 14px;
-      border: 1px solid #334155;
-      background: rgba(15, 23, 42, 0.9);
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
+.search-box {
+  width: 100%;
+  padding: 15px;
+  margin-bottom: 24px;
+  border-radius: 14px;
+  border: 1px solid #334155;
+  background: rgba(15, 23, 42, 0.9);
+  color: white;
+  font-size: 16px;
+  outline: none;
+}
 
-    .search-box:focus {
-      border-color: #60a5fa;
-      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
-    }
+.search-box:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+}
 
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0 10px;
-    }
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+  table-layout: fixed;
+}
 
-    th {
-      padding: 16px;
-      background: rgba(30, 41, 59, 0.95);
-      color: #93c5fd;
-      cursor: pointer;
-      user-select: none;
-    }
+th {
+  padding: 16px;
+  background: rgba(30, 41, 59, 0.95);
+  color: #93c5fd;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+}
 
-    td {
-      padding: 16px;
-      text-align: center;
-      background: rgba(31, 41, 55, 0.95);
-      border-bottom: 1px solid rgba(55, 65, 81, 0.8);
-    }
+td {
+  padding: 16px;
+  text-align: center;
+  background: rgba(31, 41, 55, 0.95);
+  border-bottom: 1px solid rgba(55, 65, 81, 0.8);
+  vertical-align: middle;
+}
 
-    th:first-child,
-    td:first-child {
-      border-radius: 14px 0 0 14px;
-    }
+th:first-child,
+td:first-child {
+  border-radius: 14px 0 0 14px;
+}
 
-    th:last-child,
-    td:last-child {
-      border-radius: 0 14px 14px 0;
-    }
+th:last-child,
+td:last-child {
+  border-radius: 0 14px 14px 0;
+}
 
-    tbody tr {
-      transition: 0.15s;
-    }
+tbody tr {
+  transition: 0.15s;
+}
 
-    tbody tr:hover {
-      transform: scale(1.01);
-    }
+tbody tr:hover {
+  transform: scale(1.01);
+}
 
-    tbody tr:hover td {
-      background: #273449;
-    }
+tbody tr:hover td {
+  background: #273449;
+}
 
-    .nickname {
-      font-weight: 700;
-    }
+.nickname {
+  font-weight: 700;
+}
 
-    .win {
-      color: #22c55e;
-      font-weight: 700;
-    }
+.win {
+  color: #22c55e;
+  font-weight: 700;
+}
 
-    .loss {
-      color: #ef4444;
-      font-weight: 700;
-    }
+.loss {
+  color: #ef4444;
+  font-weight: 700;
+}
 
-    .rate-high {
-      color: #22c55e;
-      font-weight: 800;
-    }
+.rate-high {
+  color: #22c55e;
+  font-weight: 800;
+}
 
-    .rate-mid {
-      color: #facc15;
-      font-weight: 800;
-    }
+.rate-mid {
+  color: #facc15;
+  font-weight: 800;
+}
 
-    .rate-low {
-      color: #f87171;
-      font-weight: 800;
-    }
+.rate-low {
+  color: #f87171;
+  font-weight: 800;
+}
 
-    .tier-s {
-      color: #ef4444;
-      font-weight: 900;
-      border: 2px solid #ef4444;
-      border-radius: 10px;
-      padding: 6px 12px;
-      display: inline-block;
-      min-width: 60px;
-      box-shadow: 0 0 10px #ef4444;
-    }
+.tier-badge {
+  width: 68px;
+  height: 42px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-weight: 900;
+  font-size: 20px;
+}
 
-    .tier-a {
-      color: #f97316;
-      font-weight: 900;
-      border: 2px solid #f97316;
-      border-radius: 10px;
-      padding: 6px 12px;
-      display: inline-block;
-      min-width: 60px;
-      box-shadow: 0 0 10px #f97316;
-    }
+.tier-s {
+  color: #ef4444;
+  border: 2px solid #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+}
 
-    .tier-b {
-      color: #facc15;
-      font-weight: 900;
-      border: 2px solid #facc15;
-      border-radius: 10px;
-      padding: 6px 12px;
-      display: inline-block;
-      min-width: 60px;
-      box-shadow: 0 0 10px #facc15;
-    }
+.tier-a {
+  color: #f97316;
+  border: 2px solid #f97316;
+  box-shadow: 0 0 10px #f97316;
+}
 
-    .tier-c {
-      color: #22c55e;
-      font-weight: 900;
-      border: 2px solid #22c55e;
-      border-radius: 10px;
-      padding: 6px 12px;
-      display: inline-block;
-      min-width: 60px;
-      box-shadow: 0 0 10px #22c55e;
-    }
+.tier-b {
+  color: #facc15;
+  border: 2px solid #facc15;
+  box-shadow: 0 0 10px #facc15;
+}
 
-    .tier-d {
-      color: #3b82f6;
-      font-weight: 900;
-      border: 2px solid #3b82f6;
-      border-radius: 10px;
-      padding: 6px 12px;
-      display: inline-block;
-      min-width: 60px;
-      box-shadow: 0 0 10px #3b82f6;
-    }
+.tier-c {
+  color: #22c55e;
+  border: 2px solid #22c55e;
+  box-shadow: 0 0 10px #22c55e;
+}
 
-    .rank-1 td:first-child,
-    .rank-2 td:first-child,
-    .rank-3 td:first-child {
-      font-size: 20px;
-      font-weight: 800;
-    }
+.tier-d {
+  color: #3b82f6;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 10px #3b82f6;
+}
 
-    .low-participation td {
-      color: #9ca3af !important;
-      filter: grayscale(100%);
-    }
+.champ-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
 
-    .low-participation .win,
-    .low-participation .loss,
-    .low-participation .rate-high,
-    .low-participation .rate-mid,
-    .low-participation .rate-low {
-      color: #9ca3af !important;
-    }
+.champ-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  object-fit: cover;
+  flex-shrink: 0;
+}
 
-    .group-divider td {
-      height: 20px;
-      padding: 0;
-      background: transparent !important;
-      border-bottom: 2px solid rgba(147, 197, 253, 0.5);
-      border-radius: 0 !important;
-    }
+.champ-name {
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-    #championPage {
-      display: none;
-    }
+.rank-1 td:first-child,
+.rank-2 td:first-child,
+.rank-3 td:first-child {
+  font-size: 20px;
+  font-weight: 800;
+}
 
-    @media (max-width: 700px) {
-      body { padding: 20px; }
-      h1 { font-size: 32px; }
+.low-participation td {
+  color: #9ca3af !important;
+  filter: grayscale(100%);
+}
 
-      th,
-      td {
-        padding: 10px 6px;
-        font-size: 13px;
-      }
+.low-participation .win,
+.low-participation .loss,
+.low-participation .rate-high,
+.low-participation .rate-mid,
+.low-participation .rate-low {
+  color: #9ca3af !important;
+}
 
-      .tab {
-        padding: 10px 22px;
-        font-size: 15px;
-      }
-    }
-  </style>
+.group-divider td {
+  height: 20px;
+  padding: 0;
+  background: transparent !important;
+  border-bottom: 2px solid rgba(147, 197, 253, 0.5);
+  border-radius: 0 !important;
+}
+
+#championPage {
+  display: none;
+}
+
+#championPage th:nth-child(1),
+#championPage td:nth-child(1) { width: 8%; }
+
+#championPage th:nth-child(2),
+#championPage td:nth-child(2) { width: 9%; }
+
+#championPage th:nth-child(3),
+#championPage td:nth-child(3) {
+  width: 22%;
+  text-align: left;
+}
+
+#championPage th:nth-child(4),
+#championPage td:nth-child(4),
+#championPage th:nth-child(5),
+#championPage td:nth-child(5),
+#championPage th:nth-child(6),
+#championPage td:nth-child(6) { width: 7%; }
+
+#championPage th:nth-child(7),
+#championPage td:nth-child(7),
+#championPage th:nth-child(8),
+#championPage td:nth-child(8),
+#championPage th:nth-child(9),
+#championPage td:nth-child(9),
+#championPage th:nth-child(10),
+#championPage td:nth-child(10) { width: 8%; }
+
+@media (max-width: 700px) {
+  body { padding: 20px; }
+  h1 { font-size: 32px; }
+
+  th,
+  td {
+    padding: 10px 6px;
+    font-size: 13px;
+  }
+
+  .tab {
+    padding: 10px 22px;
+    font-size: 15px;
+  }
+
+  .champ-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .tier-badge {
+    width: 54px;
+    height: 34px;
+    font-size: 16px;
+  }
+}
+</style>
 </head>
 
 <body>
-  <h1>🏆 벤들시티 내전 통계 🏆</h1>
+<h1>🏆 벤들시티 내전 통계 🏆</h1>
 
-  <div class="tab-container">
-    <button id="playerBtn" class="tab active">플레이어</button>
-    <button id="championBtn" class="tab">챔피언</button>
-  </div>
+<div class="tab-container">
+  <button id="playerBtn" class="tab active">플레이어</button>
+  <button id="championBtn" class="tab">챔피언</button>
+</div>
 
-  <div class="summary" id="summary">총 판수 계산 중...</div>
+<div class="summary" id="summary">총 판수 계산 중...</div>
 
-  <div id="playerPage">
-    <input
-      id="searchInput"
-      class="search-box"
-      type="text"
-      placeholder="닉네임 검색..."
-      oninput="renderPlayerTable()"
-    />
+<div id="playerPage">
+  <input
+    id="searchInput"
+    class="search-box"
+    type="text"
+    placeholder="닉네임 검색..."
+    oninput="renderPlayerTable()"
+  />
 
-    <table>
-      <thead>
-        <tr>
-          <th>순위</th>
-          <th onclick="sortBy('name')">닉네임 ↕</th>
-          <th onclick="sortBy('games')">판수 ↕</th>
-          <th onclick="sortBy('wins')">승 ↕</th>
-          <th onclick="sortBy('losses')">패 ↕</th>
-          <th onclick="sortBy('rate')">승률 ↕</th>
-          <th onclick="sortBy('participation')">참여율 ↕</th>
-        </tr>
-      </thead>
+  <table>
+    <thead>
+      <tr>
+        <th>순위</th>
+        <th onclick="sortBy('name')">닉네임 ↕</th>
+        <th onclick="sortBy('games')">판수 ↕</th>
+        <th onclick="sortBy('wins')">승 ↕</th>
+        <th onclick="sortBy('losses')">패 ↕</th>
+        <th onclick="sortBy('rate')">승률 ↕</th>
+        <th onclick="sortBy('participation')">참여율 ↕</th>
+      </tr>
+    </thead>
+    <tbody id="ranking"></tbody>
+  </table>
+</div>
 
-      <tbody id="ranking"></tbody>
-    </table>
-  </div>
+<div id="championPage">
+  <table>
+    <thead>
+      <tr>
+        <th>순위</th>
+        <th>티어</th>
+        <th>챔피언</th>
+        <th>판수</th>
+        <th>승</th>
+        <th>패</th>
+        <th>승률</th>
+        <th>픽률</th>
+        <th>KDA</th>
+        <th>점수</th>
+      </tr>
+    </thead>
+    <tbody id="championRanking"></tbody>
+  </table>
+</div>
 
-  <div id="championPage">
-    <table>
-      <thead>
-        <tr>
-          <th>순위</th>
-          <th>티어</th>
-          <th>챔피언</th>
-          <th>판수</th>
-          <th>승</th>
-          <th>패</th>
-          <th>승률</th>
-          <th>KDA</th>
-          <th>점수</th>
-        </tr>
-      </thead>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-      <tbody id="championRanking"></tbody>
-    </table>
-  </div>
+const SUPABASE_URL = "https://ehligpqxjczgcggjpzwn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_QHDiR1qAWGVaKSDZguc0qg_fE_eVCwZ";
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const SUPABASE_URL = "https://ehligpqxjczgcggjpzwn.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_QHDiR1qAWGVaKSDZguc0qg_fE_eVCwZ";
+let currentSort = "rate";
+let ascending = false;
+let playersData = [];
+let championData = [];
+let totalGames = 0;
+let latestVersion = "15.12.1";
+let championNameToId = {};
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const playerBtn = document.getElementById("playerBtn");
+const championBtn = document.getElementById("championBtn");
+const playerPage = document.getElementById("playerPage");
+const championPage = document.getElementById("championPage");
 
-    let currentSort = "rate";
-    let ascending = false;
-    let playersData = [];
-    let championData = [];
-    let totalGames = 0;
+playerBtn.onclick = () => {
+  playerPage.style.display = "block";
+  championPage.style.display = "none";
+  playerBtn.classList.add("active");
+  championBtn.classList.remove("active");
+  renderPlayerTable();
+};
 
-    const playerBtn = document.getElementById("playerBtn");
-    const championBtn = document.getElementById("championBtn");
-    const playerPage = document.getElementById("playerPage");
-    const championPage = document.getElementById("championPage");
+championBtn.onclick = () => {
+  playerPage.style.display = "none";
+  championPage.style.display = "block";
+  championBtn.classList.add("active");
+  playerBtn.classList.remove("active");
+  renderChampionTable();
+};
 
-    playerBtn.onclick = () => {
-      playerPage.style.display = "block";
-      championPage.style.display = "none";
+window.sortBy = function(type) {
+  if (currentSort === type) {
+    ascending = !ascending;
+  } else {
+    currentSort = type;
+    ascending = type === "name";
+  }
 
-      playerBtn.classList.add("active");
-      championBtn.classList.remove("active");
+  renderPlayerTable();
+};
 
-      renderPlayerTable();
-    };
+window.renderPlayerTable = renderPlayerTable;
 
-    championBtn.onclick = () => {
-      playerPage.style.display = "none";
-      championPage.style.display = "block";
+async function loadChampionMeta() {
+  try {
+    const versionRes = await fetch("https://ddragon.leagueoflegends.com/api/versions.json");
+    const versions = await versionRes.json();
+    latestVersion = versions[0];
 
-      championBtn.classList.add("active");
-      playerBtn.classList.remove("active");
+    const champRes = await fetch(
+      `https://ddragon.leagueoflegends.com/cdn/${latestVersion}/data/ko_KR/champion.json`
+    );
 
-      renderChampionTable();
-    };
+    const champJson = await champRes.json();
+    const champs = Object.values(champJson.data);
 
-    window.sortBy = function(type) {
-      if (currentSort === type) {
-        ascending = !ascending;
+    championNameToId = {};
+
+    champs.forEach(champ => {
+      championNameToId[champ.name] = champ.id;
+    });
+  } catch (e) {
+    console.error("챔피언 메타 로드 실패:", e);
+  }
+}
+
+function getChampionImageUrl(championName) {
+  const champId = championNameToId[championName];
+
+  if (!champId) {
+    return "https://ddragon.leagueoflegends.com/cdn/img/champion/tiles/Unknown_0.jpg";
+  }
+
+  return `https://ddragon.leagueoflegends.com/cdn/${latestVersion}/img/champion/${champId}.png`;
+}
+
+async function loadRanking() {
+  await loadChampionMeta();
+
+  const { data, error } = await supabase
+    .from("players")
+    .select("lol_name, wins, losses");
+
+  if (error) {
+    console.error(error);
+    document.getElementById("summary").innerText = "데이터를 불러오지 못했습니다.";
+    return;
+  }
+
+  const { count: matchCount, error: matchError } = await supabase
+    .from("matches")
+    .select("*", { count: "exact", head: true });
+
+  if (matchError) {
+    console.error(matchError);
+    document.getElementById("summary").innerText = "총 판수를 불러오지 못했습니다.";
+    return;
+  }
+
+  const { data: champRows, error: champError } = await supabase
+    .from("match_players")
+    .select("champion_name, kills, deaths, assists, win");
+
+  if (champError) {
+    console.error(champError);
+  }
+
+  playersData = data || [];
+  championData = champRows || [];
+  totalGames = matchCount || 0;
+
+  document.getElementById("summary").innerText =
+    `총 판수: ${totalGames}판 ㅣ 멤버 수: ${playersData.length}명`;
+
+  renderPlayerTable();
+  renderChampionTable();
+}
+
+function getLanguageGroup(name) {
+  const first = name.trim()[0];
+
+  if (!first) return 4;
+  if (/[가-힣]/.test(first)) return 1;
+  if (/[a-zA-Z]/.test(first)) return 2;
+  if (/[\u4e00-\u9fff]/.test(first)) return 3;
+
+  return 4;
+}
+
+function compareNames(aName, bName) {
+  const groupA = getLanguageGroup(aName);
+  const groupB = getLanguageGroup(bName);
+
+  if (groupA !== groupB) return groupA - groupB;
+  if (groupA === 1) return aName.localeCompare(bName, "ko");
+  if (groupA === 2) return aName.localeCompare(bName, "en");
+  if (groupA === 3) return aName.localeCompare(bName, "zh");
+
+  return aName.localeCompare(bName);
+}
+
+function getStats(player) {
+  const wins = Number(player.wins) || 0;
+  const losses = Number(player.losses) || 0;
+  const games = wins + losses;
+  const rateNumber = games === 0 ? 0 : (wins / games) * 100;
+  const participationNumber = totalGames === 0 ? 0 : (games / totalGames) * 100;
+
+  return {
+    wins,
+    losses,
+    games,
+    rateNumber,
+    participationNumber
+  };
+}
+
+function getParticipationGroup(participationNumber) {
+  if (participationNumber >= 35) return 0;
+  if (participationNumber >= 10) return 1;
+  return 2;
+}
+
+function renderPlayerTable() {
+  const keyword = document
+    .getElementById("searchInput")
+    .value
+    .toLowerCase();
+
+  const data = playersData.filter(player =>
+    player.lol_name.toLowerCase().includes(keyword)
+  );
+
+  data.sort((a, b) => {
+    const statsA = getStats(a);
+    const statsB = getStats(b);
+
+    if (currentSort === "rate") {
+      const groupA = getParticipationGroup(statsA.participationNumber);
+      const groupB = getParticipationGroup(statsB.participationNumber);
+
+      if (!ascending) {
+        if (groupA !== groupB) return groupA - groupB;
+        return statsB.rateNumber - statsA.rateNumber;
       } else {
-        currentSort = type;
-        ascending = type === "name";
+        if (groupA !== groupB) return groupB - groupA;
+        return statsA.rateNumber - statsB.rateNumber;
       }
-
-      renderPlayerTable();
-    };
-
-    window.renderPlayerTable = renderPlayerTable;
-
-    async function loadRanking() {
-      const { data, error } = await supabase
-        .from("players")
-        .select("lol_name, wins, losses");
-
-      if (error) {
-        console.error(error);
-        document.getElementById("summary").innerText = "데이터를 불러오지 못했습니다.";
-        return;
-      }
-
-      const { count: matchCount, error: matchError } = await supabase
-        .from("matches")
-        .select("*", { count: "exact", head: true });
-
-      if (matchError) {
-        console.error(matchError);
-        document.getElementById("summary").innerText = "총 판수를 불러오지 못했습니다.";
-        return;
-      }
-
-      const { data: champRows, error: champError } = await supabase
-        .from("match_players")
-        .select("champion_name, kills, deaths, assists, win");
-
-      if (champError) {
-        console.error(champError);
-      }
-
-      playersData = data || [];
-      championData = champRows || [];
-      totalGames = matchCount || 0;
-
-      document.getElementById("summary").innerText =
-        `총 판수: ${totalGames}판 ㅣ 멤버 수: ${playersData.length}명`;
-
-      renderPlayerTable();
-      renderChampionTable();
     }
 
-    function getLanguageGroup(name) {
-      const first = name.trim()[0];
+    let result = 0;
 
-      if (!first) return 4;
-      if (/[가-힣]/.test(first)) return 1;
-      if (/[a-zA-Z]/.test(first)) return 2;
-      if (/[\u4e00-\u9fff]/.test(first)) return 3;
+    if (currentSort === "name") result = compareNames(a.lol_name, b.lol_name);
+    else if (currentSort === "games") result = statsA.games - statsB.games;
+    else if (currentSort === "wins") result = statsA.wins - statsB.wins;
+    else if (currentSort === "losses") result = statsA.losses - statsB.losses;
+    else if (currentSort === "participation") result = statsA.participationNumber - statsB.participationNumber;
 
-      return 4;
+    return ascending ? result : -result;
+  });
+
+  const tbody = document.getElementById("ranking");
+  tbody.innerHTML = "";
+
+  let lastGroup = null;
+  let rankedCount = 0;
+
+  data.forEach((player, index) => {
+    const { wins, losses, games, rateNumber, participationNumber } = getStats(player);
+
+    const rate = rateNumber.toFixed(1);
+    const participation = participationNumber.toFixed(1);
+
+    const currentGroup = getParticipationGroup(participationNumber);
+    const isLowParticipation = participationNumber < 10;
+    const isRanked = participationNumber >= 35;
+
+    if (
+      currentSort === "rate" &&
+      lastGroup !== null &&
+      lastGroup !== currentGroup
+    ) {
+      tbody.innerHTML += `
+        <tr class="group-divider">
+          <td colspan="7"></td>
+        </tr>
+      `;
     }
 
-    function compareNames(aName, bName) {
-      const groupA = getLanguageGroup(aName);
-      const groupB = getLanguageGroup(bName);
+    lastGroup = currentGroup;
 
-      if (groupA !== groupB) return groupA - groupB;
-      if (groupA === 1) return aName.localeCompare(bName, "ko");
-      if (groupA === 2) return aName.localeCompare(bName, "en");
-      if (groupA === 3) return aName.localeCompare(bName, "zh");
+    let realRank;
 
-      return aName.localeCompare(bName);
+    if (currentSort === "rate") {
+      if (isRanked) {
+        rankedCount++;
+
+        if (ascending) {
+          realRank =
+            data.filter(p => getStats(p).participationNumber >= 35).length
+            - rankedCount + 1;
+        } else {
+          realRank = rankedCount;
+        }
+      } else {
+        realRank = "-";
+      }
+    } else {
+      if (currentSort === "name") {
+        realRank = ascending ? index + 1 : data.length - index;
+      } else {
+        realRank = ascending ? data.length - index : index + 1;
+      }
     }
 
-    function getStats(player) {
-      const wins = Number(player.wins) || 0;
-      const losses = Number(player.losses) || 0;
-      const games = wins + losses;
-      const rateNumber = games === 0 ? 0 : (wins / games) * 100;
-      const participationNumber = totalGames === 0 ? 0 : (games / totalGames) * 100;
+    const rankText =
+      realRank === 1 ? "🥇" :
+      realRank === 2 ? "🥈" :
+      realRank === 3 ? "🥉" :
+      realRank;
 
-      return {
-        wins,
-        losses,
-        games,
-        rateNumber,
-        participationNumber
+    const rankClass =
+      realRank === 1 ? "rank-1" :
+      realRank === 2 ? "rank-2" :
+      realRank === 3 ? "rank-3" :
+      "";
+
+    const rateClass =
+      rateNumber >= 60 ? "rate-high" :
+      rateNumber >= 50 ? "rate-mid" :
+      "rate-low";
+
+    tbody.innerHTML += `
+      <tr class="${rankClass} ${isLowParticipation ? "low-participation" : ""}">
+        <td>${rankText}</td>
+        <td class="nickname">${player.lol_name}</td>
+        <td>${games}</td>
+        <td class="win">${wins}</td>
+        <td class="loss">${losses}</td>
+        <td class="${rateClass}">${rate}%</td>
+        <td>${participation}%</td>
+      </tr>
+    `;
+  });
+}
+
+function getChampionTier(rank, total) {
+  const ratio = rank / total;
+
+  if (ratio <= 0.1) return "S";
+  if (ratio <= 0.25) return "A";
+  if (ratio <= 0.55) return "B";
+  if (ratio <= 0.8) return "C";
+  return "D";
+}
+
+function getTierClass(tier) {
+  if (tier === "S") return "tier-s";
+  if (tier === "A") return "tier-a";
+  if (tier === "B") return "tier-b";
+  if (tier === "C") return "tier-c";
+  return "tier-d";
+}
+
+function renderChampionTable() {
+  const map = {};
+
+  championData.forEach(row => {
+    const champ = row.champion_name;
+
+    if (!champ) return;
+
+    if (!map[champ]) {
+      map[champ] = {
+        name: champ,
+        wins: 0,
+        losses: 0,
+        kills: 0,
+        deaths: 0,
+        assists: 0
       };
     }
 
-    function getParticipationGroup(participationNumber) {
-      if (participationNumber >= 35) return 0;
-      if (participationNumber >= 10) return 1;
-      return 2;
-    }
+    if (row.win) map[champ].wins++;
+    else map[champ].losses++;
 
-    function renderPlayerTable() {
-      const keyword = document
-        .getElementById("searchInput")
-        .value
-        .toLowerCase();
+    map[champ].kills += Number(row.kills) || 0;
+    map[champ].deaths += Number(row.deaths) || 0;
+    map[champ].assists += Number(row.assists) || 0;
+  });
 
-      const data = playersData.filter(player =>
-        player.lol_name.toLowerCase().includes(keyword)
-      );
+  let champions = Object.values(map).map(champ => {
+    const games = champ.wins + champ.losses;
+    const winRate = games === 0 ? 0 : (champ.wins / games) * 100;
+    const pickRate = totalGames === 0 ? 0 : (games / totalGames) * 100;
+    const kda = champ.deaths === 0
+      ? champ.kills + champ.assists
+      : (champ.kills + champ.assists) / champ.deaths;
 
-      data.sort((a, b) => {
-        const statsA = getStats(a);
-        const statsB = getStats(b);
+    return {
+      ...champ,
+      games,
+      winRate,
+      pickRate,
+      kda
+    };
+  });
 
-        if (currentSort === "rate") {
-          const groupA = getParticipationGroup(statsA.participationNumber);
-          const groupB = getParticipationGroup(statsB.participationNumber);
+  const maxGames = Math.max(...champions.map(c => c.games), 1);
+  const maxKda = Math.max(...champions.map(c => c.kda), 1);
 
-          if (!ascending) {
-            if (groupA !== groupB) return groupA - groupB;
-            return statsB.rateNumber - statsA.rateNumber;
-          } else {
-            if (groupA !== groupB) return groupB - groupA;
-            return statsA.rateNumber - statsB.rateNumber;
-          }
-        }
+  champions = champions.map(champ => {
+    const winRateScore = champ.winRate * 0.5;
+    const pickScore = (champ.games / maxGames) * 20;
+    const sampleScore = Math.min(champ.games / 20, 1) * 20;
+    const kdaScore = (champ.kda / maxKda) * 10;
 
-        let result = 0;
+    return {
+      ...champ,
+      score: winRateScore + pickScore + sampleScore + kdaScore
+    };
+  });
 
-        if (currentSort === "name") {
-          result = compareNames(a.lol_name, b.lol_name);
-        } else if (currentSort === "games") {
-          result = statsA.games - statsB.games;
-        } else if (currentSort === "wins") {
-          result = statsA.wins - statsB.wins;
-        } else if (currentSort === "losses") {
-          result = statsA.losses - statsB.losses;
-        } else if (currentSort === "participation") {
-          result = statsA.participationNumber - statsB.participationNumber;
-        }
+  champions.sort((a, b) => b.score - a.score);
 
-        return ascending ? result : -result;
-      });
+  const tbody = document.getElementById("championRanking");
+  tbody.innerHTML = "";
 
-      const tbody = document.getElementById("ranking");
-      tbody.innerHTML = "";
+  if (champions.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="10">아직 챔피언 통계 데이터가 없습니다.</td>
+      </tr>
+    `;
+    return;
+  }
 
-      let lastGroup = null;
-      let rankedCount = 0;
+  champions.forEach((champ, index) => {
+    const rank = index + 1;
+    const tier = getChampionTier(rank, champions.length);
+    const tierClass = getTierClass(tier);
 
-      data.forEach((player, index) => {
-        const {
-          wins,
-          losses,
-          games,
-          rateNumber,
-          participationNumber
-        } = getStats(player);
+    const rankText =
+      rank === 1 ? "🥇" :
+      rank === 2 ? "🥈" :
+      rank === 3 ? "🥉" :
+      rank;
 
-        const rate = rateNumber.toFixed(1);
-        const participation = participationNumber.toFixed(1);
+    const imageUrl = getChampionImageUrl(champ.name);
 
-        const currentGroup = getParticipationGroup(participationNumber);
-        const isLowParticipation = participationNumber < 10;
-        const isRanked = participationNumber >= 35;
+    tbody.innerHTML += `
+      <tr>
+        <td>${rankText}</td>
+        <td>
+          <div class="tier-badge ${tierClass}">
+            ${tier}
+          </div>
+        </td>
+        <td>
+          <div class="champ-cell">
+            <img
+              class="champ-icon"
+              src="${imageUrl}"
+              alt="${champ.name}"
+              onerror="this.style.display='none'"
+            />
+            <span class="champ-name">${champ.name}</span>
+          </div>
+        </td>
+        <td>${champ.games}</td>
+        <td class="win">${champ.wins}</td>
+        <td class="loss">${champ.losses}</td>
+        <td>${champ.winRate.toFixed(1)}%</td>
+        <td>${champ.pickRate.toFixed(1)}%</td>
+        <td>${champ.kda.toFixed(2)}</td>
+        <td>${champ.score.toFixed(1)}</td>
+      </tr>
+    `;
+  });
+}
 
-        if (
-          currentSort === "rate" &&
-          lastGroup !== null &&
-          lastGroup !== currentGroup
-        ) {
-          tbody.innerHTML += `
-            <tr class="group-divider">
-              <td colspan="7"></td>
-            </tr>
-          `;
-        }
-
-        lastGroup = currentGroup;
-
-        let realRank;
-
-        if (currentSort === "rate") {
-          if (isRanked) {
-            rankedCount++;
-
-            if (ascending) {
-              realRank =
-                data.filter(p => getStats(p).participationNumber >= 35).length
-                - rankedCount + 1;
-            } else {
-              realRank = rankedCount;
-            }
-          } else {
-            realRank = "-";
-          }
-        } else {
-          if (currentSort === "name") {
-            realRank = ascending
-              ? index + 1
-              : data.length - index;
-          } else {
-            realRank = ascending
-              ? data.length - index
-              : index + 1;
-          }
-        }
-
-        const rankText =
-          realRank === 1 ? "🥇" :
-          realRank === 2 ? "🥈" :
-          realRank === 3 ? "🥉" :
-          realRank;
-
-        const rankClass =
-          realRank === 1 ? "rank-1" :
-          realRank === 2 ? "rank-2" :
-          realRank === 3 ? "rank-3" :
-          "";
-
-        const rateClass =
-          rateNumber >= 60 ? "rate-high" :
-          rateNumber >= 50 ? "rate-mid" :
-          "rate-low";
-
-        tbody.innerHTML += `
-          <tr class="${rankClass} ${isLowParticipation ? "low-participation" : ""}">
-            <td>${rankText}</td>
-            <td class="nickname">${player.lol_name}</td>
-            <td>${games}</td>
-            <td class="win">${wins}</td>
-            <td class="loss">${losses}</td>
-            <td class="${rateClass}">${rate}%</td>
-            <td>${participation}%</td>
-          </tr>
-        `;
-      });
-    }
-
-    function getChampionTier(rank, total) {
-      const ratio = rank / total;
-
-      if (ratio <= 0.1) return "S";
-      if (ratio <= 0.25) return "A";
-      if (ratio <= 0.55) return "B";
-      if (ratio <= 0.8) return "C";
-      return "D";
-    }
-
-    function getTierClass(tier) {
-      if (tier === "S") return "tier-s";
-      if (tier === "A") return "tier-a";
-      if (tier === "B") return "tier-b";
-      if (tier === "C") return "tier-c";
-      return "tier-d";
-    }
-
-    function renderChampionTable() {
-      const map = {};
-
-      championData.forEach(row => {
-        const champ = row.champion_name;
-
-        if (!champ) return;
-
-        if (!map[champ]) {
-          map[champ] = {
-            name: champ,
-            wins: 0,
-            losses: 0,
-            kills: 0,
-            deaths: 0,
-            assists: 0
-          };
-        }
-
-        if (row.win) {
-          map[champ].wins++;
-        } else {
-          map[champ].losses++;
-        }
-
-        map[champ].kills += Number(row.kills) || 0;
-        map[champ].deaths += Number(row.deaths) || 0;
-        map[champ].assists += Number(row.assists) || 0;
-      });
-
-      let champions = Object.values(map).map(champ => {
-        const games = champ.wins + champ.losses;
-        const winRate = games === 0 ? 0 : (champ.wins / games) * 100;
-        const kda = champ.deaths === 0
-          ? champ.kills + champ.assists
-          : (champ.kills + champ.assists) / champ.deaths;
-
-        return {
-          ...champ,
-          games,
-          winRate,
-          kda
-        };
-      });
-
-      const maxGames = Math.max(...champions.map(c => c.games), 1);
-      const maxKda = Math.max(...champions.map(c => c.kda), 1);
-
-      champions = champions.map(champ => {
-        const winRateScore = champ.winRate * 0.5;
-        const pickScore = (champ.games / maxGames) * 20;
-        const sampleScore = Math.min(champ.games / 20, 1) * 20;
-        const kdaScore = (champ.kda / maxKda) * 10;
-
-        return {
-          ...champ,
-          score: winRateScore + pickScore + sampleScore + kdaScore
-        };
-      });
-
-      champions.sort((a, b) => b.score - a.score);
-
-      const tbody = document.getElementById("championRanking");
-      tbody.innerHTML = "";
-
-      if (champions.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="9">아직 챔피언 통계 데이터가 없습니다.</td>
-          </tr>
-        `;
-        return;
-      }
-
-      champions.forEach((champ, index) => {
-        const rank = index + 1;
-        const tier = getChampionTier(rank, champions.length);
-        const tierClass = getTierClass(tier);
-
-        const rankText =
-          rank === 1 ? "🥇" :
-          rank === 2 ? "🥈" :
-          rank === 3 ? "🥉" :
-          rank;
-
-        tbody.innerHTML += `
-          <tr>
-            <td>${rankText}</td>
-            <td class="${tierClass}">${tier}</td>
-            <td class="nickname">${champ.name}</td>
-            <td>${champ.games}</td>
-            <td class="win">${champ.wins}</td>
-            <td class="loss">${champ.losses}</td>
-            <td>${champ.winRate.toFixed(1)}%</td>
-            <td>${champ.kda.toFixed(2)}</td>
-            <td>${champ.score.toFixed(1)}</td>
-          </tr>
-        `;
-      });
-    }
-
-    loadRanking();
-    setInterval(loadRanking, 30000);
-  </script>
+loadRanking();
+setInterval(loadRanking, 30000);
+</script>
 </body>
 </html>
