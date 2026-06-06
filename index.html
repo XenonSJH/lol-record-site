@@ -144,7 +144,96 @@ tbody tr:hover td{background:rgba(71,85,105,.95)}
 .master-filter.active{background:#2563eb}
 .hide{display:none!important}
 .col-rank{width:6%}.col-tier{width:8%}.col-small{width:8%}.col-rate{width:10%}.col-name{width:22%}.col-champ{width:24%}.col-lane{width:8%}.col-score{width:8%}.col-auto{width:auto}
+/* ===== 알약형 티어 업그레이드 ===== */
+.tier-badge{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:74px;
+  height:36px;
+  padding:0 15px;
+  border-radius:999px;
+  font-weight:1000;
+  font-size:16px;
+  letter-spacing:.6px;
+  color:white;
+  border:2px solid rgba(255,255,255,.35);
+  overflow:hidden;
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.32),
+    inset 0 -14px 18px rgba(0,0,0,.25),
+    0 0 18px rgba(0,0,0,.35);
+  text-shadow:0 2px 6px rgba(0,0,0,.55);
+}
 
+.tier-badge::before{
+  content:"";
+  position:absolute;
+  inset:3px;
+  border-radius:999px;
+  background:linear-gradient(180deg,rgba(255,255,255,.28),transparent 58%);
+  pointer-events:none;
+}
+
+.tier-badge::after{
+  content:"";
+  position:absolute;
+  width:35px;
+  height:80px;
+  top:-25px;
+  left:-45px;
+  transform:rotate(28deg);
+  background:rgba(255,255,255,.32);
+  filter:blur(2px);
+}
+
+.tier-badge span{
+  position:relative;
+  z-index:2;
+}
+
+.tier-op{
+  background:linear-gradient(135deg,#450a0a,#b91c1c 45%,#fb7185);
+  border-color:#fb7185;
+  box-shadow:0 0 20px rgba(239,68,68,.62),inset 0 2px 0 rgba(255,255,255,.32),inset 0 -14px 18px rgba(0,0,0,.25);
+}
+
+.tier-s{
+  background:linear-gradient(135deg,#431407,#ea580c 45%,#fdba74);
+  border-color:#fb923c;
+  box-shadow:0 0 18px rgba(249,115,22,.55),inset 0 2px 0 rgba(255,255,255,.32),inset 0 -14px 18px rgba(0,0,0,.25);
+}
+
+.tier-a{
+  background:linear-gradient(135deg,#422006,#ca8a04 45%,#fde047);
+  border-color:#fde047;
+  color:#111827;
+  text-shadow:0 1px 0 rgba(255,255,255,.25);
+}
+
+.tier-b{
+  background:linear-gradient(135deg,#052e16,#16a34a 45%,#86efac);
+  border-color:#4ade80;
+  color:#052e16;
+  text-shadow:0 1px 0 rgba(255,255,255,.2);
+}
+
+.tier-c{
+  background:linear-gradient(135deg,#172554,#2563eb 45%,#93c5fd);
+  border-color:#60a5fa;
+}
+
+.tier-plus{
+  margin-left:6px;
+  padding:2px 7px;
+  border-radius:999px;
+  background:rgba(15,23,42,.8);
+  border:1px solid rgba(255,255,255,.25);
+  color:#e5e7eb;
+  font-size:13px;
+  font-weight:1000;
+}
 @media(max-width:1100px){
   body{padding:22px 0}
   .main-card,.detail-page,.top-tabs,.filter-row{width:95%}
@@ -326,8 +415,9 @@ function getParticipationGroup(participation){if(participation>=35)return 0;if(p
 
 function tierBadge(tier){
   const cls={OP:"tier-op",S:"tier-s",A:"tier-a",B:"tier-b",C:"tier-c"}[tier]||"tier-c";
-  return`<span class="tier-badge ${cls}"><span class="tier-num">${tier}</span><span class="tier-word"></span></span>`;
+  return`<span class="tier-badge ${cls}"><span>${tier}</span></span>`;
 }
+
 function tierColor(tier){
   return {
     OP:"#ef4444",
@@ -338,20 +428,24 @@ function tierColor(tier){
   }[tier] || "#60a5fa";
 }
 
+function bestTierFromList(tiers){
+  const tierOrder={OP:1,S:2,A:3,B:4,C:5};
+  const unique=[...new Set((tiers||[]).filter(Boolean))];
+  unique.sort((a,b)=>(tierOrder[a]||99)-(tierOrder[b]||99));
+  return unique[0] || "C";
+}
+
 function comboTierBadge(tiers){
   if(!tiers || !tiers.length)return tierBadge("C");
 
-  const unique=[...new Set(tiers)];
-
-  if(unique.length===1)return tierBadge(unique[0]);
+  const unique=[...new Set(tiers).filter(Boolean)];
+  const best=bestTierFromList(unique);
+  const extra=Math.max(unique.length-1,0);
 
   return `
-    <span class="tier-badge combo-tier">
-      ${unique.map(t=>`
-        <span class="combo-tier-part" style="background:${tierColor(t)};">
-          ${t}
-        </span>
-      `).join("")}
+    <span style="display:inline-flex;align-items:center;justify-content:center;gap:4px;">
+      ${tierBadge(best)}
+      ${extra>0 ? `<span class="tier-plus">+${extra}</span>` : ""}
     </span>
   `;
 }
@@ -398,13 +492,6 @@ function getAllChampionComboList(){
   }).filter(c=>c.games>=1);
 
   return assignChampionTiers(list);
-}
-
-function bestTierFromList(tiers){
-  const tierOrder={OP:1,S:2,A:3,B:4,C:5};
-  const unique=[...new Set((tiers||[]).filter(Boolean))];
-  unique.sort((a,b)=>(tierOrder[a]||99)-(tierOrder[b]||99));
-  return unique[0] || "C";
 }
 async function loadData(){
   await loadChampionMeta();
