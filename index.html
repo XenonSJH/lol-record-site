@@ -23,7 +23,7 @@ h1{text-align:center;font-size:42px;margin:0 0 12px;font-weight:1000}
 .lane-filter{display:flex;align-items:center;gap:7px;border:1px solid rgba(148,163,184,.25);background:rgba(30,41,59,.92);color:white;padding:10px 16px;border-radius:999px;font-weight:1000;cursor:pointer}
 .lane-filter.active{background:#2563eb;border-color:#60a5fa}
 .lane-icon{width:23px;height:23px;object-fit:contain}
-.main-card,.detail-page{width:100%; max-width:none; margin:0 auto}
+.main-card,.detail-page{width:90%; max-width:none; margin:0 auto}
 table{
   width:100%;
   border-collapse:separate;
@@ -201,6 +201,49 @@ button,
 .detail-table col.col-score { width: 8% !important; }
 .detail-table col.col-lane { width: 8% !important; }
 .detail-table col.col-auto { width: auto !important; }
+/* 전체 화면 폭: 양끝 5% 비우고 가운데 90% 사용 */
+.main-card,
+.detail-page {
+  width: 90% !important;
+  max-width: none !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* 테이블은 부모 90% 안에서 100% 꽉 채움 */
+#mainPage,
+#playerTable,
+#championTable,
+.detail-table {
+  width: 100% !important;
+  min-width: 100% !important;
+  table-layout: fixed !important;
+}
+
+/* 플레이어 홈화면 칸 비율 */
+#playerTable col.col-rank { width: 7% !important; }
+#playerTable col.col-name { width: 30% !important; }
+#playerTable col.col-small { width: 9% !important; }
+#playerTable col.col-rate { width: 12% !important; }
+
+/* 챔피언 홈화면 칸 비율 */
+#championTable col.col-rank { width: 6% !important; }
+#championTable col.col-tier { width: 9% !important; }
+#championTable col.col-champ { width: 27% !important; }
+#championTable col.col-small { width: 7% !important; }
+#championTable col.col-rate { width: 10% !important; }
+
+/* 상세 표 공통 */
+.detail-table col.col-rank { width: 6% !important; }
+.detail-table col.col-name { width: 18% !important; }
+.detail-table col.col-champ { width: 22% !important; }
+.detail-table col.col-small { width: 7% !important; }
+.detail-table col.col-rate { width: 9% !important; }
+.detail-table col.col-score { width: 8% !important; }
+.detail-table col.col-lane { width: 8% !important; }
+.detail-table col.col-auto { width: auto !important; }
 @media(max-width:850px){body{padding:20px}h1{font-size:30px}.stat-grid{grid-template-columns:repeat(2,1fr)}th,td{font-size:12px;padding:9px 5px}.detail-hero{align-items:flex-start}}
 </style>
 </head>
@@ -227,6 +270,16 @@ button,
   <div id="laneFilters" class="filter-row"></div>
 
   <table id="playerTable">
+    <colgroup>
+      <col style="width:7%">
+      <col style="width:25%">
+      <col style="width:9%">
+      <col style="width:9%">
+      <col style="width:9%">
+      <col style="width:13%">
+      <col style="width:14%">
+      <col style="width:14%">
+    </colgroup>
     <colgroup><col class="col-lane"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"></colgroup>
     <thead>
       <tr>
