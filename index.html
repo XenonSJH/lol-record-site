@@ -23,8 +23,13 @@ h1{text-align:center;font-size:42px;margin:0 0 12px;font-weight:1000}
 .lane-filter{display:flex;align-items:center;gap:7px;border:1px solid rgba(148,163,184,.25);background:rgba(30,41,59,.92);color:white;padding:10px 16px;border-radius:999px;font-weight:1000;cursor:pointer}
 .lane-filter.active{background:#2563eb;border-color:#60a5fa}
 .lane-icon{width:23px;height:23px;object-fit:contain}
-.main-card,.detail-page{max-width:1380px;margin:0 auto}
-table{width:100%;border-collapse:separate;border-spacing:0 10px;table-layout:fixed}
+.main-card,.detail-page{width:100%; max-width:none; margin:0 auto}
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 10px;
+  table-layout:fixed;
+}
 th{padding:10px 5px;background:rgba(51,65,85,.95);color:#93c5fd;text-align:center;font-weight:1000;white-space:nowrap}
 td{padding:14px 7px;text-align:center;background:rgba(51,65,85,.88);border-bottom:1px solid rgba(71,85,105,.55);vertical-align:middle;font-weight:900;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 th:first-child,td:first-child{border-radius:14px 0 0 14px}
@@ -86,14 +91,14 @@ tbody tr:hover td{background:rgba(71,85,105,.95)}
 .master-filter{border:none;border-radius:999px;padding:8px 12px;background:rgba(30,41,59,.95);color:white;font-weight:1000;cursor:pointer}
 .master-filter.active{background:#2563eb}
 .hide{display:none!important}
-.col-rank{width:54px}
-.col-tier{width:92px}
-.col-small{width:70px}
-.col-rate{width:92px}
-.col-name{width:150px}
-.col-champ{width:210px}
-.col-lane{width:72px}
-.col-score{width:82px}
+.col-rank{width:6%}
+.col-tier{width:9%}
+.col-small{width:8%}
+.col-rate{width:11%}
+.col-name{width:22%}
+.col-champ{width:28%}
+.col-lane{width:10%}
+.col-score{width:9%}
 .col-auto{width:auto}
 @media(max-width:850px){body{padding:20px}h1{font-size:30px}.stat-grid{grid-template-columns:repeat(2,1fr)}th,td{font-size:12px;padding:9px 5px}.detail-hero{align-items:flex-start}}
 </style>
