@@ -56,17 +56,13 @@ h1 {
   filter: grayscale(0%);
 }
 
-.tab:hover {
-  transform: translateY(-2px);
-}
-
 .search-box {
   width: 100%;
   padding: 15px;
   margin-bottom: 24px;
   border-radius: 14px;
   border: 1px solid #334155;
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(30, 41, 59, 0.95);
   color: white;
   font-size: 16px;
   outline: none;
@@ -85,8 +81,8 @@ table {
 }
 
 th {
-  padding: 16px;
-  background: rgba(30, 41, 59, 0.95);
+  padding: 15px 10px;
+  background: rgba(51, 65, 85, 0.95);
   color: #93c5fd;
   cursor: pointer;
   user-select: none;
@@ -94,11 +90,15 @@ th {
 }
 
 td {
-  padding: 16px;
+  padding: 15px 10px;
   text-align: center;
-  background: rgba(31, 41, 55, 0.95);
-  border-bottom: 1px solid rgba(55, 65, 81, 0.8);
+  background: rgba(51, 65, 85, 0.88);
+  border-bottom: 1px solid rgba(71, 85, 105, 0.55);
   vertical-align: middle;
+}
+
+tbody tr:hover td {
+  background: rgba(71, 85, 105, 0.95);
 }
 
 th:first-child,
@@ -111,45 +111,33 @@ td:last-child {
   border-radius: 0 14px 14px 0;
 }
 
-tbody tr {
-  transition: 0.15s;
-}
-
-tbody tr:hover {
-  transform: scale(1.01);
-}
-
-tbody tr:hover td {
-  background: #273449;
-}
-
 .nickname {
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .win {
   color: #22c55e;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .loss {
   color: #ef4444;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .rate-high {
   color: #22c55e;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .rate-mid {
   color: #facc15;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .rate-low {
   color: #f87171;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .tier-badge {
@@ -164,34 +152,14 @@ tbody tr:hover td {
   font-size: 20px;
 }
 
-.tier-s {
-  color: #ef4444;
-  border: 2px solid #ef4444;
-  box-shadow: 0 0 10px #ef4444;
-}
+.tier-s { color:#ef4444; border:2px solid #ef4444; box-shadow:0 0 10px #ef4444; }
+.tier-a { color:#f97316; border:2px solid #f97316; box-shadow:0 0 10px #f97316; }
+.tier-b { color:#facc15; border:2px solid #facc15; box-shadow:0 0 10px #facc15; }
+.tier-c { color:#22c55e; border:2px solid #22c55e; box-shadow:0 0 10px #22c55e; }
+.tier-d { color:#3b82f6; border:2px solid #3b82f6; box-shadow:0 0 10px #3b82f6; }
 
-.tier-a {
-  color: #f97316;
-  border: 2px solid #f97316;
-  box-shadow: 0 0 10px #f97316;
-}
-
-.tier-b {
-  color: #facc15;
-  border: 2px solid #facc15;
-  box-shadow: 0 0 10px #facc15;
-}
-
-.tier-c {
-  color: #22c55e;
-  border: 2px solid #22c55e;
-  box-shadow: 0 0 10px #22c55e;
-}
-
-.tier-d {
-  color: #3b82f6;
-  border: 2px solid #3b82f6;
-  box-shadow: 0 0 10px #3b82f6;
+.champ-row {
+  cursor: pointer;
 }
 
 .champ-cell {
@@ -211,30 +179,45 @@ tbody tr:hover td {
 }
 
 .champ-name {
-  font-weight: 800;
+  font-weight: 900;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.rank-1 td:first-child,
-.rank-2 td:first-child,
-.rank-3 td:first-child {
-  font-size: 20px;
-  font-weight: 800;
+.master-box {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  border-radius: 16px !important;
+  padding: 18px !important;
+}
+
+.master-title {
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 14px;
+  color: #bfdbfe;
+}
+
+.master-table {
+  border-spacing: 0 8px;
+}
+
+.master-table th {
+  background: rgba(30, 41, 59, 0.95);
+  font-size: 13px;
+  padding: 10px;
+}
+
+.master-table td {
+  background: rgba(51, 65, 85, 0.82);
+  font-size: 14px;
+  padding: 10px;
 }
 
 .low-participation td {
-  color: #9ca3af !important;
-  filter: grayscale(100%);
-}
-
-.low-participation .win,
-.low-participation .loss,
-.low-participation .rate-high,
-.low-participation .rate-mid,
-.low-participation .rate-low {
-  color: #9ca3af !important;
+  color: #cbd5e1 !important;
+  filter: grayscale(70%);
 }
 
 .group-divider td {
@@ -249,59 +232,24 @@ tbody tr:hover td {
   display: none;
 }
 
-#championPage th:nth-child(1),
-#championPage td:nth-child(1) { width: 8%; }
+#championPage th:nth-child(1), #championPage td:nth-child(1) { width: 7%; }
+#championPage th:nth-child(2), #championPage td:nth-child(2) { width: 8%; }
+#championPage th:nth-child(3), #championPage td:nth-child(3) { width: 20%; text-align: left; }
+#championPage th:nth-child(4), #championPage td:nth-child(4) { width: 7%; }
+#championPage th:nth-child(5), #championPage td:nth-child(5) { width: 7%; }
+#championPage th:nth-child(6), #championPage td:nth-child(6) { width: 7%; }
+#championPage th:nth-child(7), #championPage td:nth-child(7) { width: 8%; }
+#championPage th:nth-child(8), #championPage td:nth-child(8) { width: 8%; }
+#championPage th:nth-child(9), #championPage td:nth-child(9) { width: 12%; }
+#championPage th:nth-child(10), #championPage td:nth-child(10) { width: 8%; }
+#championPage th:nth-child(11), #championPage td:nth-child(11) { width: 8%; }
 
-#championPage th:nth-child(2),
-#championPage td:nth-child(2) { width: 9%; }
-
-#championPage th:nth-child(3),
-#championPage td:nth-child(3) {
-  width: 22%;
-  text-align: left;
-}
-
-#championPage th:nth-child(4),
-#championPage td:nth-child(4),
-#championPage th:nth-child(5),
-#championPage td:nth-child(5),
-#championPage th:nth-child(6),
-#championPage td:nth-child(6) { width: 7%; }
-
-#championPage th:nth-child(7),
-#championPage td:nth-child(7),
-#championPage th:nth-child(8),
-#championPage td:nth-child(8),
-#championPage th:nth-child(9),
-#championPage td:nth-child(9),
-#championPage th:nth-child(10),
-#championPage td:nth-child(10) { width: 8%; }
-
-@media (max-width: 700px) {
+@media (max-width: 800px) {
   body { padding: 20px; }
-  h1 { font-size: 32px; }
-
-  th,
-  td {
-    padding: 10px 6px;
-    font-size: 13px;
-  }
-
-  .tab {
-    padding: 10px 22px;
-    font-size: 15px;
-  }
-
-  .champ-icon {
-    width: 34px;
-    height: 34px;
-  }
-
-  .tier-badge {
-    width: 54px;
-    height: 34px;
-    font-size: 16px;
-  }
+  h1 { font-size: 30px; }
+  th, td { padding: 9px 5px; font-size: 12px; }
+  .champ-icon { width: 34px; height: 34px; }
+  .tier-badge { width: 48px; height: 32px; font-size: 15px; }
 }
 </style>
 </head>
@@ -342,19 +290,28 @@ tbody tr:hover td {
 </div>
 
 <div id="championPage">
+  <input
+    id="championSearchInput"
+    class="search-box"
+    type="text"
+    placeholder="챔피언 검색..."
+    oninput="renderChampionTable()"
+  />
+
   <table>
     <thead>
       <tr>
-        <th>순위</th>
-        <th>티어</th>
-        <th>챔피언</th>
-        <th>판수</th>
-        <th>승</th>
-        <th>패</th>
-        <th>승률</th>
-        <th>픽률</th>
-        <th>KDA</th>
-        <th>점수</th>
+        <th onclick="sortChampionBy('rank')">순위 ↕</th>
+        <th onclick="sortChampionBy('tier')">티어 ↕</th>
+        <th onclick="sortChampionBy('name')">챔피언 ↕</th>
+        <th onclick="sortChampionBy('games')">판수 ↕</th>
+        <th onclick="sortChampionBy('wins')">승 ↕</th>
+        <th onclick="sortChampionBy('losses')">패 ↕</th>
+        <th onclick="sortChampionBy('winRate')">승률 ↕</th>
+        <th onclick="sortChampionBy('pickRate')">픽률 ↕</th>
+        <th onclick="sortChampionBy('kdaText')">K/D/A ↕</th>
+        <th onclick="sortChampionBy('kda')">KDA ↕</th>
+        <th onclick="sortChampionBy('score')">점수 ↕</th>
       </tr>
     </thead>
     <tbody id="championRanking"></tbody>
@@ -371,9 +328,19 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentSort = "rate";
 let ascending = false;
+
+let championSort = "score";
+let championAscending = false;
+
+let masterSort = "score";
+let masterAscending = false;
+
+let selectedChampion = null;
+
 let playersData = [];
 let championData = [];
 let totalGames = 0;
+
 let latestVersion = "15.12.1";
 let championNameToId = {};
 
@@ -399,9 +366,8 @@ championBtn.onclick = () => {
 };
 
 window.sortBy = function(type) {
-  if (currentSort === type) {
-    ascending = !ascending;
-  } else {
+  if (currentSort === type) ascending = !ascending;
+  else {
     currentSort = type;
     ascending = type === "name";
   }
@@ -409,7 +375,33 @@ window.sortBy = function(type) {
   renderPlayerTable();
 };
 
+window.sortChampionBy = function(type) {
+  if (championSort === type) championAscending = !championAscending;
+  else {
+    championSort = type;
+    championAscending = type === "name";
+  }
+
+  renderChampionTable();
+};
+
+window.sortMasterBy = function(type) {
+  if (masterSort === type) masterAscending = !masterAscending;
+  else {
+    masterSort = type;
+    masterAscending = type === "name";
+  }
+
+  renderChampionTable();
+};
+
+window.toggleChampion = function(name) {
+  selectedChampion = selectedChampion === name ? null : name;
+  renderChampionTable();
+};
+
 window.renderPlayerTable = renderPlayerTable;
+window.renderChampionTable = renderChampionTable;
 
 async function loadChampionMeta() {
   try {
@@ -425,7 +417,6 @@ async function loadChampionMeta() {
     const champs = Object.values(champJson.data);
 
     championNameToId = {};
-
     champs.forEach(champ => {
       championNameToId[champ.name] = champ.id;
     });
@@ -438,7 +429,7 @@ function getChampionImageUrl(championName) {
   const champId = championNameToId[championName];
 
   if (!champId) {
-    return "https://ddragon.leagueoflegends.com/cdn/img/champion/tiles/Unknown_0.jpg";
+    return "";
   }
 
   return `https://ddragon.leagueoflegends.com/cdn/${latestVersion}/img/champion/${champId}.png`;
@@ -469,11 +460,9 @@ async function loadRanking() {
 
   const { data: champRows, error: champError } = await supabase
     .from("match_players")
-    .select("champion_name, kills, deaths, assists, win");
+    .select("champion_name, lol_name, kills, deaths, assists, win");
 
-  if (champError) {
-    console.error(champError);
-  }
+  if (champError) console.error(champError);
 
   playersData = data || [];
   championData = champRows || [];
@@ -488,12 +477,10 @@ async function loadRanking() {
 
 function getLanguageGroup(name) {
   const first = name.trim()[0];
-
   if (!first) return 4;
   if (/[가-힣]/.test(first)) return 1;
   if (/[a-zA-Z]/.test(first)) return 2;
   if (/[\u4e00-\u9fff]/.test(first)) return 3;
-
   return 4;
 }
 
@@ -505,7 +492,6 @@ function compareNames(aName, bName) {
   if (groupA === 1) return aName.localeCompare(bName, "ko");
   if (groupA === 2) return aName.localeCompare(bName, "en");
   if (groupA === 3) return aName.localeCompare(bName, "zh");
-
   return aName.localeCompare(bName);
 }
 
@@ -516,13 +502,7 @@ function getStats(player) {
   const rateNumber = games === 0 ? 0 : (wins / games) * 100;
   const participationNumber = totalGames === 0 ? 0 : (games / totalGames) * 100;
 
-  return {
-    wins,
-    losses,
-    games,
-    rateNumber,
-    participationNumber
-  };
+  return { wins, losses, games, rateNumber, participationNumber };
 }
 
 function getParticipationGroup(participationNumber) {
@@ -532,10 +512,7 @@ function getParticipationGroup(participationNumber) {
 }
 
 function renderPlayerTable() {
-  const keyword = document
-    .getElementById("searchInput")
-    .value
-    .toLowerCase();
+  const keyword = document.getElementById("searchInput").value.toLowerCase();
 
   const data = playersData.filter(player =>
     player.lol_name.toLowerCase().includes(keyword)
@@ -578,18 +555,11 @@ function renderPlayerTable() {
   data.forEach((player, index) => {
     const { wins, losses, games, rateNumber, participationNumber } = getStats(player);
 
-    const rate = rateNumber.toFixed(1);
-    const participation = participationNumber.toFixed(1);
-
     const currentGroup = getParticipationGroup(participationNumber);
     const isLowParticipation = participationNumber < 10;
     const isRanked = participationNumber >= 35;
 
-    if (
-      currentSort === "rate" &&
-      lastGroup !== null &&
-      lastGroup !== currentGroup
-    ) {
+    if (currentSort === "rate" && lastGroup !== null && lastGroup !== currentGroup) {
       tbody.innerHTML += `
         <tr class="group-divider">
           <td colspan="7"></td>
@@ -604,23 +574,15 @@ function renderPlayerTable() {
     if (currentSort === "rate") {
       if (isRanked) {
         rankedCount++;
-
-        if (ascending) {
-          realRank =
-            data.filter(p => getStats(p).participationNumber >= 35).length
-            - rankedCount + 1;
-        } else {
-          realRank = rankedCount;
-        }
+        realRank = ascending
+          ? data.filter(p => getStats(p).participationNumber >= 35).length - rankedCount + 1
+          : rankedCount;
       } else {
         realRank = "-";
       }
     } else {
-      if (currentSort === "name") {
-        realRank = ascending ? index + 1 : data.length - index;
-      } else {
-        realRank = ascending ? data.length - index : index + 1;
-      }
+      realRank = ascending ? data.length - index : index + 1;
+      if (currentSort === "name") realRank = ascending ? index + 1 : data.length - index;
     }
 
     const rankText =
@@ -629,38 +591,30 @@ function renderPlayerTable() {
       realRank === 3 ? "🥉" :
       realRank;
 
-    const rankClass =
-      realRank === 1 ? "rank-1" :
-      realRank === 2 ? "rank-2" :
-      realRank === 3 ? "rank-3" :
-      "";
-
     const rateClass =
       rateNumber >= 60 ? "rate-high" :
       rateNumber >= 50 ? "rate-mid" :
       "rate-low";
 
     tbody.innerHTML += `
-      <tr class="${rankClass} ${isLowParticipation ? "low-participation" : ""}">
+      <tr class="${isLowParticipation ? "low-participation" : ""}">
         <td>${rankText}</td>
         <td class="nickname">${player.lol_name}</td>
         <td>${games}</td>
         <td class="win">${wins}</td>
         <td class="loss">${losses}</td>
-        <td class="${rateClass}">${rate}%</td>
-        <td>${participation}%</td>
+        <td class="${rateClass}">${rateNumber.toFixed(1)}%</td>
+        <td>${participationNumber.toFixed(1)}%</td>
       </tr>
     `;
   });
 }
 
-function getChampionTier(rank, total) {
-  const ratio = rank / total;
-
-  if (ratio <= 0.1) return "S";
-  if (ratio <= 0.25) return "A";
-  if (ratio <= 0.55) return "B";
-  if (ratio <= 0.8) return "C";
+function getChampionTier(score) {
+  if (score >= 85) return "S";
+  if (score >= 70) return "A";
+  if (score >= 55) return "B";
+  if (score >= 40) return "C";
   return "D";
 }
 
@@ -672,12 +626,15 @@ function getTierClass(tier) {
   return "tier-d";
 }
 
-function renderChampionTable() {
+function getKda(kills, deaths, assists) {
+  return deaths === 0 ? kills + assists : (kills + assists) / deaths;
+}
+
+function getChampionStats() {
   const map = {};
 
   championData.forEach(row => {
     const champ = row.champion_name;
-
     if (!champ) return;
 
     if (!map[champ]) {
@@ -699,39 +656,210 @@ function renderChampionTable() {
     map[champ].assists += Number(row.assists) || 0;
   });
 
-  let champions = Object.values(map).map(champ => {
+  const maxGames = Math.max(
+    ...Object.values(map).map(c => c.wins + c.losses),
+    1
+  );
+
+  const raw = Object.values(map).map(champ => {
     const games = champ.wins + champ.losses;
     const winRate = games === 0 ? 0 : (champ.wins / games) * 100;
     const pickRate = totalGames === 0 ? 0 : (games / totalGames) * 100;
-    const kda = champ.deaths === 0
-      ? champ.kills + champ.assists
-      : (champ.kills + champ.assists) / champ.deaths;
+
+    const avgKills = games === 0 ? 0 : champ.kills / games;
+    const avgDeaths = games === 0 ? 0 : champ.deaths / games;
+    const avgAssists = games === 0 ? 0 : champ.assists / games;
+
+    const kda = getKda(champ.kills, champ.deaths, champ.assists);
 
     return {
       ...champ,
       games,
       winRate,
       pickRate,
+      avgKills,
+      avgDeaths,
+      avgAssists,
+      kda,
+      maxGames
+    };
+  });
+
+  const maxKda = Math.max(...raw.map(c => c.kda), 1);
+
+  return raw.map(champ => {
+    const winRateScore = champ.winRate * 0.42;
+    const pickRateScore = Math.min(champ.pickRate / 35, 1) * 23;
+    const gamesScore = Math.min(champ.games / 20, 1) * 15;
+    const kdaScore = Math.min(champ.kda / maxKda, 1) * 20;
+
+    const score = winRateScore + pickRateScore + gamesScore + kdaScore;
+    const tier = getChampionTier(score);
+
+    return {
+      ...champ,
+      score,
+      tier
+    };
+  });
+}
+
+function compareChampion(a, b) {
+  let result = 0;
+
+  if (championSort === "rank" || championSort === "score") result = a.score - b.score;
+  else if (championSort === "tier") {
+    const order = { S: 5, A: 4, B: 3, C: 2, D: 1 };
+    result = order[a.tier] - order[b.tier];
+  }
+  else if (championSort === "name") result = compareNames(a.name, b.name);
+  else if (championSort === "games") result = a.games - b.games;
+  else if (championSort === "wins") result = a.wins - b.wins;
+  else if (championSort === "losses") result = a.losses - b.losses;
+  else if (championSort === "winRate") result = a.winRate - b.winRate;
+  else if (championSort === "pickRate") result = a.pickRate - b.pickRate;
+  else if (championSort === "kdaText") result = a.avgKills - b.avgKills;
+  else if (championSort === "kda") result = a.kda - b.kda;
+
+  return championAscending ? result : -result;
+}
+
+function getMasterStats(championName) {
+  const map = {};
+
+  championData
+    .filter(row => row.champion_name === championName)
+    .forEach(row => {
+      const name = row.lol_name || "알 수 없음";
+
+      if (!map[name]) {
+        map[name] = {
+          name,
+          games: 0,
+          wins: 0,
+          losses: 0,
+          kills: 0,
+          deaths: 0,
+          assists: 0
+        };
+      }
+
+      map[name].games++;
+
+      if (row.win) map[name].wins++;
+      else map[name].losses++;
+
+      map[name].kills += Number(row.kills) || 0;
+      map[name].deaths += Number(row.deaths) || 0;
+      map[name].assists += Number(row.assists) || 0;
+    });
+
+  const raw = Object.values(map).map(player => {
+    const winRate = player.games === 0 ? 0 : (player.wins / player.games) * 100;
+    const avgKills = player.games === 0 ? 0 : player.kills / player.games;
+    const avgDeaths = player.games === 0 ? 0 : player.deaths / player.games;
+    const avgAssists = player.games === 0 ? 0 : player.assists / player.games;
+    const kda = getKda(player.kills, player.deaths, player.assists);
+
+    return {
+      ...player,
+      winRate,
+      avgKills,
+      avgDeaths,
+      avgAssists,
       kda
     };
   });
 
-  const maxGames = Math.max(...champions.map(c => c.games), 1);
-  const maxKda = Math.max(...champions.map(c => c.kda), 1);
+  const maxGames = Math.max(...raw.map(p => p.games), 1);
+  const maxKda = Math.max(...raw.map(p => p.kda), 1);
 
-  champions = champions.map(champ => {
-    const winRateScore = champ.winRate * 0.5;
-    const pickScore = (champ.games / maxGames) * 20;
-    const sampleScore = Math.min(champ.games / 20, 1) * 20;
-    const kdaScore = (champ.kda / maxKda) * 10;
+  return raw.map(player => {
+    const playScore = Math.min(player.games / maxGames, 1) * 30;
+    const winScore = player.winRate * 0.4;
+    const kdaScore = Math.min(player.kda / maxKda, 1) * 30;
 
     return {
-      ...champ,
-      score: winRateScore + pickScore + sampleScore + kdaScore
+      ...player,
+      score: playScore + winScore + kdaScore
     };
   });
+}
 
-  champions.sort((a, b) => b.score - a.score);
+function compareMaster(a, b) {
+  let result = 0;
+
+  if (masterSort === "name") result = compareNames(a.name, b.name);
+  else if (masterSort === "games") result = a.games - b.games;
+  else if (masterSort === "winRate") result = a.winRate - b.winRate;
+  else if (masterSort === "kdaText") result = a.avgKills - b.avgKills;
+  else if (masterSort === "kda") result = a.kda - b.kda;
+  else result = a.score - b.score;
+
+  return masterAscending ? result : -result;
+}
+
+function renderMasterRanking(championName) {
+  let masters = getMasterStats(championName);
+  masters.sort(compareMaster);
+
+  let html = `
+    <tr>
+      <td colspan="11" class="master-box">
+        <div class="master-title">${championName} 장인 랭킹</div>
+
+        <table class="master-table">
+          <thead>
+            <tr>
+              <th>순위</th>
+              <th onclick="sortMasterBy('name')">플레이어 ↕</th>
+              <th onclick="sortMasterBy('games')">횟수 ↕</th>
+              <th onclick="sortMasterBy('winRate')">승률 ↕</th>
+              <th onclick="sortMasterBy('kdaText')">K/D/A ↕</th>
+              <th onclick="sortMasterBy('kda')">KDA ↕</th>
+              <th onclick="sortMasterBy('score')">점수 ↕</th>
+            </tr>
+          </thead>
+          <tbody>
+  `;
+
+  masters.forEach((m, index) => {
+    const rank = masterAscending ? masters.length - index : index + 1;
+
+    html += `
+      <tr>
+        <td>${rank}</td>
+        <td class="nickname">${m.name}</td>
+        <td>${m.games}</td>
+        <td>${m.winRate.toFixed(1)}%</td>
+        <td>${m.avgKills.toFixed(1)} / ${m.avgDeaths.toFixed(1)} / ${m.avgAssists.toFixed(1)}</td>
+        <td>${m.kda.toFixed(2)}</td>
+        <td>${m.score.toFixed(1)}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  `;
+
+  return html;
+}
+
+function renderChampionTable() {
+  const keyword = document
+    .getElementById("championSearchInput")
+    .value
+    .toLowerCase();
+
+  let champions = getChampionStats().filter(champ =>
+    champ.name.toLowerCase().includes(keyword)
+  );
+
+  champions.sort(compareChampion);
 
   const tbody = document.getElementById("championRanking");
   tbody.innerHTML = "";
@@ -739,41 +867,32 @@ function renderChampionTable() {
   if (champions.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="10">아직 챔피언 통계 데이터가 없습니다.</td>
+        <td colspan="11">아직 챔피언 통계 데이터가 없습니다.</td>
       </tr>
     `;
     return;
   }
 
   champions.forEach((champ, index) => {
-    const rank = index + 1;
-    const tier = getChampionTier(rank, champions.length);
-    const tierClass = getTierClass(tier);
-
+    const displayRank = championAscending ? champions.length - index : index + 1;
     const rankText =
-      rank === 1 ? "🥇" :
-      rank === 2 ? "🥈" :
-      rank === 3 ? "🥉" :
-      rank;
+      displayRank === 1 ? "🥇" :
+      displayRank === 2 ? "🥈" :
+      displayRank === 3 ? "🥉" :
+      displayRank;
 
     const imageUrl = getChampionImageUrl(champ.name);
+    const tierClass = getTierClass(champ.tier);
 
     tbody.innerHTML += `
-      <tr>
+      <tr class="champ-row" onclick="toggleChampion('${champ.name.replaceAll("'", "\\'")}')">
         <td>${rankText}</td>
         <td>
-          <div class="tier-badge ${tierClass}">
-            ${tier}
-          </div>
+          <div class="tier-badge ${tierClass}">${champ.tier}</div>
         </td>
         <td>
           <div class="champ-cell">
-            <img
-              class="champ-icon"
-              src="${imageUrl}"
-              alt="${champ.name}"
-              onerror="this.style.display='none'"
-            />
+            <img class="champ-icon" src="${imageUrl}" onerror="this.style.display='none'" />
             <span class="champ-name">${champ.name}</span>
           </div>
         </td>
@@ -782,10 +901,15 @@ function renderChampionTable() {
         <td class="loss">${champ.losses}</td>
         <td>${champ.winRate.toFixed(1)}%</td>
         <td>${champ.pickRate.toFixed(1)}%</td>
+        <td>${champ.avgKills.toFixed(1)} / ${champ.avgDeaths.toFixed(1)} / ${champ.avgAssists.toFixed(1)}</td>
         <td>${champ.kda.toFixed(2)}</td>
         <td>${champ.score.toFixed(1)}</td>
       </tr>
     `;
+
+    if (selectedChampion === champ.name) {
+      tbody.innerHTML += renderMasterRanking(champ.name);
+    }
   });
 }
 
