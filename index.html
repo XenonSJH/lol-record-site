@@ -27,8 +27,9 @@ h1{text-align:center;font-size:42px;margin:0 0 12px;font-weight:1000}
 
 .combo-portrait-wrap{
   border-radius:12px;
-  padding:2px;
+  padding:0;
   display:inline-flex;
+  background:none !important;
 }
 .summary{text-align:center;margin-bottom:20px;color:#cbd5e1;font-size:17px;font-weight:1000}
 .top-tabs{width:95%;margin:0 auto 18px;display:flex;justify-content:center;gap:12px}
@@ -677,7 +678,7 @@ function renderChampionRanking(){
     const tierList=c.tierList?.length ? c.tierList : [c.tier];
     const isMixed=isBanMerged && tierList.length>1;
     const portraitClass=isMixed ? "" : tierClass;
-    const portraitStyle=isMixed ? comboPortraitStyle(tierList) : "";
+    const portraitStyle="";
 
     return`
       <tr class="clickable-row" onclick="openChampionDetail('${safe(c.name)}','ALL')">
