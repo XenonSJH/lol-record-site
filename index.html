@@ -148,7 +148,7 @@ h1 {
 }
 
 .main-card {
-  max-width: 1250px;
+  max-width: 1280px;
   margin: 0 auto;
 }
 
@@ -164,6 +164,7 @@ th {
   background: rgba(51,65,85,.95);
   color: #93c5fd;
   text-align: center;
+  font-weight: 900;
 }
 
 td {
@@ -205,6 +206,19 @@ tbody tr:hover td { background: rgba(71,85,105,.95); }
 .rate-mid { color: #facc15; font-weight: 900; }
 .rate-low { color: #f87171; font-weight: 900; }
 
+.low-participation td {
+  color: #cbd5e1 !important;
+  filter: grayscale(70%);
+}
+
+.group-divider td {
+  height: 18px;
+  padding: 0 !important;
+  background: transparent !important;
+  border-bottom: 2px solid rgba(147,197,253,.5);
+  border-radius: 0 !important;
+}
+
 .champ-cell {
   display: flex;
   align-items: center;
@@ -217,7 +231,7 @@ tbody tr:hover td { background: rgba(71,85,105,.95); }
   width: 44px;
   height: 44px;
   border-radius: 10px;
-  border: 1px solid #334155;
+  border: 2px solid #334155;
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -227,6 +241,29 @@ tbody tr:hover td { background: rgba(71,85,105,.95); }
   height: 106px;
   border-radius: 22px;
 }
+
+.tier-red { border-color: #ef4444 !important; box-shadow: 0 0 14px rgba(239,68,68,.5); }
+.tier-orange { border-color: #f97316 !important; box-shadow: 0 0 14px rgba(249,115,22,.5); }
+.tier-yellow { border-color: #facc15 !important; box-shadow: 0 0 14px rgba(250,204,21,.45); }
+.tier-green { border-color: #22c55e !important; box-shadow: 0 0 14px rgba(34,197,94,.45); }
+.tier-blue { border-color: #3b82f6 !important; box-shadow: 0 0 14px rgba(59,130,246,.45); }
+
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 62px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-weight: 1000;
+  color: white;
+}
+
+.tier-badge.tier-1 { background: #dc2626; }
+.tier-badge.tier-2 { background: #ea580c; }
+.tier-badge.tier-3 { background: #ca8a04; }
+.tier-badge.tier-4 { background: #16a34a; }
+.tier-badge.tier-5 { background: #2563eb; }
 
 .champ-name {
   font-weight: 900;
@@ -247,7 +284,7 @@ tbody tr:hover td { background: rgba(71,85,105,.95); }
 }
 
 .detail-page {
-  max-width: 1250px;
+  max-width: 1280px;
   margin: 0 auto;
   display: none;
 }
@@ -496,12 +533,13 @@ tbody tr:hover td { background: rgba(71,85,105,.95); }
   <table id="playerTable">
     <thead>
       <tr>
-        <th><button class="sort-btn" onclick="sortPlayer('rank')">순위</button></th>
+        <th>순위</th>
         <th><button class="sort-btn" onclick="sortPlayer('name')">닉네임</button></th>
         <th><button class="sort-btn" onclick="sortPlayer('games')">판수</button></th>
         <th><button class="sort-btn" onclick="sortPlayer('wins')">승</button></th>
         <th><button class="sort-btn" onclick="sortPlayer('losses')">패</button></th>
         <th><button class="sort-btn" onclick="sortPlayer('winRate')">승률</button></th>
+        <th><button class="sort-btn" onclick="sortPlayer('participation')">참여율</button></th>
         <th><button class="sort-btn" onclick="sortPlayer('kp')">킬관여율</button></th>
       </tr>
     </thead>
@@ -511,13 +549,15 @@ tbody tr:hover td { background: rgba(71,85,105,.95); }
   <table id="championTable" class="hide">
     <thead>
       <tr>
-        <th><button class="sort-btn" onclick="sortChampion('rank')">순위</button></th>
+        <th>순위</th>
+        <th><button class="sort-btn" onclick="sortChampion('tier')">티어</button></th>
         <th><button class="sort-btn" onclick="sortChampion('name')">챔피언</button></th>
         <th><button class="sort-btn" onclick="sortChampion('games')">판수</button></th>
         <th><button class="sort-btn" onclick="sortChampion('wins')">승</button></th>
         <th><button class="sort-btn" onclick="sortChampion('losses')">패</button></th>
         <th><button class="sort-btn" onclick="sortChampion('winRate')">승률</button></th>
         <th><button class="sort-btn" onclick="sortChampion('pickRate')">픽률</button></th>
+        <th><button class="sort-btn" onclick="sortChampion('banRate')">밴율</button></th>
         <th><button class="sort-btn" onclick="sortChampion('kp')">킬관여율</button></th>
       </tr>
     </thead>
@@ -557,6 +597,14 @@ const LANE_ICON_URLS = {
   SUPPORT: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-utility.svg"
 };
 
+const TIER_CLASS = {
+  1: "tier-red",
+  2: "tier-orange",
+  3: "tier-yellow",
+  4: "tier-green",
+  5: "tier-blue"
+};
+
 let players = [];
 let rows = [];
 let matches = [];
@@ -568,8 +616,8 @@ let activeSearch = "";
 
 let playerSort = "winRate";
 let playerAsc = false;
-let championSort = "winRate";
-let championAsc = false;
+let championSort = "tier";
+let championAsc = true;
 let mostSort = "score";
 let mostAsc = false;
 let masterSort = "score";
@@ -622,7 +670,7 @@ searchBtn.onclick = () => runSearch(searchInput.value.trim());
 window.sortPlayer = function(type) {
   if (playerSort === type) playerAsc = !playerAsc;
   else {
-    playerSort = type === "rank" ? "winRate" : type;
+    playerSort = type;
     playerAsc = type === "name";
   }
   renderMain();
@@ -631,8 +679,8 @@ window.sortPlayer = function(type) {
 window.sortChampion = function(type) {
   if (championSort === type) championAsc = !championAsc;
   else {
-    championSort = type === "rank" ? "winRate" : type;
-    championAsc = type === "name";
+    championSort = type;
+    championAsc = type === "name" || type === "tier";
   }
   renderMain();
 };
@@ -640,29 +688,30 @@ window.sortChampion = function(type) {
 window.sortMost = function(type, playerName) {
   if (mostSort === type) mostAsc = !mostAsc;
   else {
-    mostSort = type === "rank" ? "score" : type;
+    mostSort = type;
     mostAsc = type === "name";
   }
-  openPlayerDetail(playerName);
+  renderMostChampionArea(playerName);
 };
 
 window.sortMaster = function(type, championName) {
   if (masterSort === type) masterAsc = !masterAsc;
   else {
-    masterSort = type === "rank" ? "score" : type;
+    masterSort = type;
     masterAsc = type === "name";
   }
-  openChampionDetail(championName);
+  renderMasterRankingArea(championName);
 };
 
 window.setMasterLane = function(lane, championName) {
   masterLane = lane;
-  openChampionDetail(championName);
+  renderMasterRankingArea(championName);
 };
 
 window.openPlayerDetail = openPlayerDetail;
 window.openChampionDetail = openChampionDetail;
 window.goBack = goBack;
+window.runSearch = runSearch;
 
 async function loadChampionMeta() {
   try {
@@ -678,7 +727,7 @@ async function loadChampionMeta() {
       championNameToId[champ.name] = champ.id;
     });
   } catch (e) {
-    console.error(e);
+    console.error("챔피언 메타 로드 실패:", e);
   }
 }
 
@@ -697,8 +746,11 @@ function lanePill(lane) {
   return `<span class="lane-pill">${laneIcon(lane)} ${LANE_LABELS[lane] || lane}</span>`;
 }
 
-function clean(v) {
-  return String(v ?? "").replaceAll("'", "\\'").replaceAll('"', "&quot;");
+function safe(value) {
+  return String(value ?? "")
+    .replaceAll("\\", "\\\\")
+    .replaceAll("'", "\\'")
+    .replaceAll('"', "&quot;");
 }
 
 function num(v) {
@@ -716,7 +768,7 @@ function rateClass(rate) {
   return "rate-low";
 }
 
-function kda(k, d, a) {
+function getKda(k, d, a) {
   return d === 0 ? k + a : (k + a) / d;
 }
 
@@ -731,19 +783,45 @@ function average(arr) {
   return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
 
-function getRegisteredNames() {
-  return new Set(players.map(p => p.lol_name));
+function rankText(rank) {
+  if (rank === 1) return "🥇";
+  if (rank === 2) return "🥈";
+  if (rank === 3) return "🥉";
+  return rank;
 }
 
-function rowsByLane(data) {
-  if (currentLane === "ALL") return data;
-  return data.filter(r => r.lane === currentLane);
+function compareName(a, b) {
+  return String(a).localeCompare(String(b), "ko");
 }
 
-function rowsBySearch(data, keyField) {
-  if (!activeSearch) return data;
-  const q = activeSearch.toLowerCase();
-  return data.filter(item => String(item[keyField] || item.name || "").toLowerCase().includes(q));
+function effectiveLane() {
+  return activeSearch ? "ALL" : currentLane;
+}
+
+function getParticipationGroup(participation) {
+  if (participation >= 35) return 0;
+  if (participation >= 10) return 1;
+  return 2;
+}
+
+function getChampionTier(champ) {
+  if (champ.games <= 0) return 5;
+
+  const score =
+    champ.winRate * 0.45 +
+    champ.pickRate * 1.35 +
+    champ.kp * 0.13 +
+    Math.min(champ.games, 20) * 1.25;
+
+  if (score >= 75) return 1;
+  if (score >= 60) return 2;
+  if (score >= 45) return 3;
+  if (score >= 30) return 4;
+  return 5;
+}
+
+function tierBadge(tier) {
+  return `<span class="tier-badge tier-${tier}">${tier}티어</span>`;
 }
 
 async function loadData() {
@@ -821,13 +899,11 @@ function renderSuggestions() {
   }
 
   suggestBox.innerHTML = list.map(item => `
-    <div class="suggest-item" onclick="runSearch('${clean(item)}')">${item}</div>
+    <div class="suggest-item" onclick="runSearch('${safe(item)}')">${item}</div>
   `).join("");
 
   suggestBox.style.display = "block";
 }
-
-window.runSearch = runSearch;
 
 function runSearch(value) {
   activeSearch = value.trim();
@@ -836,11 +912,7 @@ function runSearch(value) {
   renderMain();
 }
 
-function compareName(a, b) {
-  return String(a).localeCompare(String(b), "ko");
-}
-
-function calcPlayerStats(playerName, lane = currentLane) {
+function calcPlayerStats(playerName, lane = "ALL") {
   let data = rows.filter(r => r.lol_name === playerName);
 
   if (lane !== "ALL") data = data.filter(r => r.lane === lane);
@@ -849,6 +921,8 @@ function calcPlayerStats(playerName, lane = currentLane) {
   const wins = data.filter(r => r.win).length;
   const losses = games - wins;
   const winRate = games ? wins / games * 100 : 0;
+  const participation = totalGames ? games / totalGames * 100 : 0;
+
   const kills = data.reduce((s, r) => s + num(r.kills), 0);
   const deaths = data.reduce((s, r) => s + num(r.deaths), 0);
   const assists = data.reduce((s, r) => s + num(r.assists), 0);
@@ -860,25 +934,28 @@ function calcPlayerStats(playerName, lane = currentLane) {
     wins,
     losses,
     winRate,
+    participation,
     avgKills: games ? kills / games : 0,
     avgDeaths: games ? deaths / games : 0,
     avgAssists: games ? assists / games : 0,
-    kda: kda(kills, deaths, assists),
+    kda: getKda(kills, deaths, assists),
     kp: average(kpList),
     rows: data
   };
 }
 
 function getPlayerRanking() {
+  const lane = effectiveLane();
+
   let list = players.map(p => {
-    const s = calcPlayerStats(p.lol_name, currentLane);
+    const s = calcPlayerStats(p.lol_name, lane);
     return {
       ...s,
       profile_image_url: p.profile_image_url || ""
     };
   });
 
-  if (currentLane !== "ALL") {
+  if (lane !== "ALL") {
     list = list.filter(p => p.games > 0);
   }
 
@@ -888,11 +965,21 @@ function getPlayerRanking() {
   }
 
   list.sort((a, b) => {
+    if (playerSort === "winRate" && !activeSearch) {
+      const ga = getParticipationGroup(a.participation);
+      const gb = getParticipationGroup(b.participation);
+
+      if (ga !== gb) return ga - gb;
+      return playerAsc ? a.winRate - b.winRate : b.winRate - a.winRate;
+    }
+
     let result = 0;
+
     if (playerSort === "name") result = compareName(a.name, b.name);
     else if (playerSort === "games") result = a.games - b.games;
     else if (playerSort === "wins") result = a.wins - b.wins;
     else if (playerSort === "losses") result = a.losses - b.losses;
+    else if (playerSort === "participation") result = a.participation - b.participation;
     else if (playerSort === "kp") result = a.kp - b.kp;
     else result = a.winRate - b.winRate;
 
@@ -907,28 +994,54 @@ function renderPlayerRanking() {
   const list = getPlayerRanking();
 
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="7">플레이어 데이터가 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8">플레이어 데이터가 없습니다.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = list.map((p, i) => {
-    const rank = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1;
+  let html = "";
+  let rankedCount = 0;
+  let lastGroup = null;
 
-    return `
-      <tr class="clickable-row" onclick="openPlayerDetail('${clean(p.name)}')">
+  list.forEach((p, i) => {
+    const group = getParticipationGroup(p.participation);
+
+    if (playerSort === "winRate" && !activeSearch && lastGroup !== null && lastGroup !== group) {
+      html += `<tr class="group-divider"><td colspan="8"></td></tr>`;
+    }
+
+    lastGroup = group;
+
+    let rank;
+
+    if (playerSort === "winRate" && !activeSearch) {
+      if (p.participation >= 35) {
+        rankedCount++;
+        rank = rankText(rankedCount);
+      } else {
+        rank = "-";
+      }
+    } else {
+      rank = rankText(i + 1);
+    }
+
+    html += `
+      <tr class="clickable-row ${p.participation < 10 ? "low-participation" : ""}" onclick="openPlayerDetail('${safe(p.name)}')">
         <td>${rank}</td>
         <td class="nickname">${p.name}</td>
         <td>${p.games}</td>
         <td class="win">${p.wins}</td>
         <td class="loss">${p.losses}</td>
         <td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td>
+        <td>${pct(p.participation)}</td>
         <td>${pct(p.kp)}</td>
       </tr>
     `;
-  }).join("");
+  });
+
+  tbody.innerHTML = html;
 }
 
-function calcChampionStats(championName, lane = currentLane) {
+function calcChampionStats(championName, lane = "ALL") {
   let data = rows.filter(r => r.champion_name === championName);
 
   if (lane !== "ALL") data = data.filter(r => r.lane === lane);
@@ -938,12 +1051,13 @@ function calcChampionStats(championName, lane = currentLane) {
   const losses = games - wins;
   const winRate = games ? wins / games * 100 : 0;
   const pickRate = totalGames ? games / totalGames * 100 : 0;
+
   const kills = data.reduce((s, r) => s + num(r.kills), 0);
   const deaths = data.reduce((s, r) => s + num(r.deaths), 0);
   const assists = data.reduce((s, r) => s + num(r.assists), 0);
   const kpList = data.map(kp).filter(v => v !== null);
 
-  return {
+  const stat = {
     name: championName,
     games,
     wins,
@@ -954,18 +1068,22 @@ function calcChampionStats(championName, lane = currentLane) {
     avgKills: games ? kills / games : 0,
     avgDeaths: games ? deaths / games : 0,
     avgAssists: games ? assists / games : 0,
-    kda: kda(kills, deaths, assists),
+    kda: getKda(kills, deaths, assists),
     kp: average(kpList),
     rows: data
   };
+
+  stat.tier = getChampionTier(stat);
+  return stat;
 }
 
 function getChampionRanking() {
+  const lane = effectiveLane();
   let names = [...new Set(rows.map(r => r.champion_name).filter(Boolean))];
 
-  let list = names.map(name => calcChampionStats(name, currentLane));
+  let list = names.map(name => calcChampionStats(name, lane));
 
-  if (currentLane !== "ALL") {
+  if (lane !== "ALL") {
     list = list.filter(c => c.games > 0);
   }
 
@@ -976,11 +1094,14 @@ function getChampionRanking() {
 
   list.sort((a, b) => {
     let result = 0;
-    if (championSort === "name") result = compareName(a.name, b.name);
+
+    if (championSort === "tier") result = a.tier - b.tier;
+    else if (championSort === "name") result = compareName(a.name, b.name);
     else if (championSort === "games") result = a.games - b.games;
     else if (championSort === "wins") result = a.wins - b.wins;
     else if (championSort === "losses") result = a.losses - b.losses;
     else if (championSort === "pickRate") result = a.pickRate - b.pickRate;
+    else if (championSort === "banRate") result = a.banRate - b.banRate;
     else if (championSort === "kp") result = a.kp - b.kp;
     else result = a.winRate - b.winRate;
 
@@ -995,20 +1116,21 @@ function renderChampionRanking() {
   const list = getChampionRanking();
 
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="8">챔피언 데이터가 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10">챔피언 데이터가 없습니다.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = list.map((c, i) => {
-    const rank = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1;
     const img = champImg(c.name);
+    const tierClass = TIER_CLASS[c.tier] || "";
 
     return `
-      <tr class="clickable-row" onclick="openChampionDetail('${clean(c.name)}')">
-        <td>${rank}</td>
+      <tr class="clickable-row" onclick="openChampionDetail('${safe(c.name)}')">
+        <td>${rankText(i + 1)}</td>
+        <td>${tierBadge(c.tier)}</td>
         <td>
           <div class="champ-cell">
-            <img class="champ-icon" src="${img}" onerror="this.style.display='none'" />
+            <img class="champ-icon ${tierClass}" src="${img}" onerror="this.style.display='none'" />
             <span class="champ-name">${c.name}</span>
           </div>
         </td>
@@ -1017,6 +1139,7 @@ function renderChampionRanking() {
         <td class="loss">${c.losses}</td>
         <td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td>
         <td>${pct(c.pickRate)}</td>
+        <td>${pct(c.banRate)}</td>
         <td>${pct(c.kp)}</td>
       </tr>
     `;
@@ -1068,7 +1191,9 @@ function recentBlocks(data) {
   return `
     <div class="record-blocks">
       ${recent.map(r => `
-        <div class="result-block ${r.win ? "result-win" : "result-loss"}">${r.win ? "승" : "패"}</div>
+        <div class="result-block ${r.win ? "result-win" : "result-loss"}" title="${r.champion_name || ""} / ${LANE_LABELS[r.lane] || r.lane || ""}">
+          ${r.win ? "승" : "패"}
+        </div>
       `).join("")}
     </div>
   `;
@@ -1076,7 +1201,10 @@ function recentBlocks(data) {
 
 function streaks(data) {
   const sorted = [...data].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-  let maxWin = 0, maxLose = 0, curWin = 0, curLose = 0;
+  let maxWin = 0;
+  let maxLose = 0;
+  let curWin = 0;
+  let curLose = 0;
 
   sorted.forEach(r => {
     if (r.win) {
@@ -1086,6 +1214,7 @@ function streaks(data) {
       curLose++;
       curWin = 0;
     }
+
     maxWin = Math.max(maxWin, curWin);
     maxLose = Math.max(maxLose, curLose);
   });
@@ -1093,17 +1222,17 @@ function streaks(data) {
   return { maxWin, maxLose };
 }
 
-function bestRecord(data, field, mode = "max") {
+function bestRecord(data, field) {
   if (!data.length) return null;
 
   return [...data].sort((a, b) => {
-    let av = field === "kp" ? (kp(a) ?? -1) : num(a[field]);
-    let bv = field === "kp" ? (kp(b) ?? -1) : num(b[field]);
-    return mode === "max" ? bv - av : av - bv;
+    const av = field === "kp" ? (kp(a) ?? -1) : num(a[field]);
+    const bv = field === "kp" ? (kp(b) ?? -1) : num(b[field]);
+    return bv - av;
   })[0];
 }
 
-function recordExtra(row) {
+function playerRecordExtra(row) {
   if (!row) return "";
   return `
     <div class="record-icons">
@@ -1113,8 +1242,19 @@ function recordExtra(row) {
   `;
 }
 
+function championRecordExtra(row) {
+  if (!row) return "";
+  return `
+    <div style="font-size:12px;color:#cbd5e1;margin-top:5px;">${row.lol_name || "-"}</div>
+    <div class="record-icons">
+      ${laneIcon(row.lane)}
+    </div>
+  `;
+}
+
 function mainLanes(data) {
   const map = {};
+
   data.forEach(r => {
     if (!r.lane) return;
     map[r.lane] = (map[r.lane] || 0) + 1;
@@ -1127,9 +1267,11 @@ function mainLanes(data) {
 
 function laneRatio(data) {
   const total = data.length;
+
   if (!total) return `<div>라인 데이터가 없습니다.</div>`;
 
   const map = {};
+
   data.forEach(r => {
     if (!r.lane) return;
     map[r.lane] = (map[r.lane] || 0) + 1;
@@ -1138,6 +1280,7 @@ function laneRatio(data) {
   return LANE_ORDER.filter(l => map[l]).map(lane => {
     const value = map[lane];
     const percent = value / total * 100;
+
     return `
       <div class="lane-ratio-row">
         <div class="ratio-head">${laneIcon(lane)} ${LANE_LABELS[lane]} ${pct(percent)} · ${value}판</div>
@@ -1148,6 +1291,8 @@ function laneRatio(data) {
 }
 
 function tableStatsRows(statsList, firstTitle = "구분") {
+  if (!statsList.length) return `<div>데이터가 없습니다.</div>`;
+
   return `
     <table class="detail-table">
       <thead>
@@ -1214,7 +1359,7 @@ function getPlayerMostStats(playerName) {
     const avgKills = games ? kills / games : 0;
     const avgDeaths = games ? deaths / games : 0;
     const avgAssists = games ? assists / games : 0;
-    const kdaValue = kda(kills, deaths, assists);
+    const kdaValue = getKda(kills, deaths, assists);
     const kpAvg = average(kpList);
     const score = games * 8 + winRate * .45 + kdaValue * 4 + kpAvg * .15;
 
@@ -1236,6 +1381,7 @@ function getPlayerMostStats(playerName) {
 
   list.sort((a, b) => {
     let result = 0;
+
     if (mostSort === "name") result = compareName(a.champion, b.champion);
     else if (mostSort === "games") result = a.games - b.games;
     else if (mostSort === "winRate") result = a.winRate - b.winRate;
@@ -1245,35 +1391,39 @@ function getPlayerMostStats(playerName) {
     else if (mostSort === "kda") result = a.kda - b.kda;
     else if (mostSort === "kp") result = a.kp - b.kp;
     else result = a.score - b.score;
+
     return mostAsc ? result : -result;
   });
 
   return list;
 }
 
-function renderMostTable(playerName) {
+function renderMostChampionArea(playerName) {
+  const area = document.getElementById("mostChampionArea");
+  if (!area) return;
+
   const list = getPlayerMostStats(playerName);
 
-  return `
+  area.innerHTML = `
     <table class="detail-table">
       <thead>
         <tr>
-          <th><button class="sort-btn" onclick="sortMost('rank','${clean(playerName)}')">순위</button></th>
-          <th><button class="sort-btn" onclick="sortMost('name','${clean(playerName)}')">챔피언</button></th>
-          <th><button class="sort-btn" onclick="sortMost('games','${clean(playerName)}')">판수</button></th>
-          <th><button class="sort-btn" onclick="sortMost('winRate','${clean(playerName)}')">승률</button></th>
-          <th><button class="sort-btn" onclick="sortMost('avgKills','${clean(playerName)}')">평균 킬</button></th>
-          <th><button class="sort-btn" onclick="sortMost('avgDeaths','${clean(playerName)}')">평균 데스</button></th>
-          <th><button class="sort-btn" onclick="sortMost('avgAssists','${clean(playerName)}')">평균 어시</button></th>
-          <th><button class="sort-btn" onclick="sortMost('kda','${clean(playerName)}')">KDA</button></th>
-          <th><button class="sort-btn" onclick="sortMost('kp','${clean(playerName)}')">킬관여율</button></th>
-          <th><button class="sort-btn" onclick="sortMost('score','${clean(playerName)}')">점수</button></th>
+          <th>순위</th>
+          <th><button class="sort-btn" onclick="sortMost('name','${safe(playerName)}')">챔피언</button></th>
+          <th><button class="sort-btn" onclick="sortMost('games','${safe(playerName)}')">판수</button></th>
+          <th><button class="sort-btn" onclick="sortMost('winRate','${safe(playerName)}')">승률</button></th>
+          <th><button class="sort-btn" onclick="sortMost('avgKills','${safe(playerName)}')">평균 킬</button></th>
+          <th><button class="sort-btn" onclick="sortMost('avgDeaths','${safe(playerName)}')">평균 데스</button></th>
+          <th><button class="sort-btn" onclick="sortMost('avgAssists','${safe(playerName)}')">평균 어시</button></th>
+          <th><button class="sort-btn" onclick="sortMost('kda','${safe(playerName)}')">KDA</button></th>
+          <th><button class="sort-btn" onclick="sortMost('kp','${safe(playerName)}')">킬관여율</button></th>
+          <th><button class="sort-btn" onclick="sortMost('score','${safe(playerName)}')">점수</button></th>
         </tr>
       </thead>
       <tbody>
         ${list.map((c, i) => `
           <tr>
-            <td>${i + 1}</td>
+            <td>${rankText(i + 1)}</td>
             <td>
               <div class="champ-cell">
                 <img class="champ-icon" src="${champImg(c.champion)}" onerror="this.style.display='none'" />
@@ -1344,10 +1494,10 @@ function openPlayerDetail(playerName) {
     <div class="section">
       <div class="section-title">최고 기록</div>
       ${statCards([
-        { label:"최다 킬", value:bestKill ? num(bestKill.kills) : "-", extra:recordExtra(bestKill) },
-        { label:"최다 데스", value:bestDeath ? num(bestDeath.deaths) : "-", extra:recordExtra(bestDeath) },
-        { label:"최다 어시스트", value:bestAssist ? num(bestAssist.assists) : "-", extra:recordExtra(bestAssist) },
-        { label:"최대 킬관여율", value:bestKp ? pct(kp(bestKp) || 0) : "-", extra:recordExtra(bestKp) }
+        { label:"최다 킬", value:bestKill ? num(bestKill.kills) : "-", extra:playerRecordExtra(bestKill) },
+        { label:"최다 데스", value:bestDeath ? num(bestDeath.deaths) : "-", extra:playerRecordExtra(bestDeath) },
+        { label:"최다 어시스트", value:bestAssist ? num(bestAssist.assists) : "-", extra:playerRecordExtra(bestAssist) },
+        { label:"최대 킬관여율", value:bestKp ? pct(kp(bestKp) || 0) : "-", extra:playerRecordExtra(bestKp) }
       ])}
     </div>
 
@@ -1368,11 +1518,12 @@ function openPlayerDetail(playerName) {
 
     <div class="section">
       <div class="section-title">모스트 챔피언</div>
-      ${renderMostTable(playerName)}
+      <div id="mostChampionArea"></div>
     </div>
   `;
 
   showDetail(html);
+  renderMostChampionArea(playerName);
 }
 
 function getChampionLaneStats(championName) {
@@ -1388,6 +1539,7 @@ function getMasterStats(championName, lane = masterLane) {
   if (lane !== "ALL") data = data.filter(r => r.lane === lane);
 
   const map = {};
+
   data.forEach(r => {
     if (!map[r.lol_name]) map[r.lol_name] = [];
     map[r.lol_name].push(r);
@@ -1405,7 +1557,7 @@ function getMasterStats(championName, lane = masterLane) {
     const avgKills = games ? kills / games : 0;
     const avgDeaths = games ? deaths / games : 0;
     const avgAssists = games ? assists / games : 0;
-    const kdaValue = kda(kills, deaths, assists);
+    const kdaValue = getKda(kills, deaths, assists);
     const kpAvg = average(kpList);
     const score = games * 8 + winRate * .45 + kdaValue * 4 + kpAvg * .15;
 
@@ -1426,6 +1578,7 @@ function getMasterStats(championName, lane = masterLane) {
 
   list.sort((a, b) => {
     let result = 0;
+
     if (masterSort === "name") result = compareName(a.name, b.name);
     else if (masterSort === "games") result = a.games - b.games;
     else if (masterSort === "winRate") result = a.winRate - b.winRate;
@@ -1435,19 +1588,23 @@ function getMasterStats(championName, lane = masterLane) {
     else if (masterSort === "kda") result = a.kda - b.kda;
     else if (masterSort === "kp") result = a.kp - b.kp;
     else result = a.score - b.score;
+
     return masterAsc ? result : -result;
   });
 
   return list;
 }
 
-function renderMasterTable(championName) {
+function renderMasterRankingArea(championName) {
+  const area = document.getElementById("masterRankingArea");
+  if (!area) return;
+
   const list = getMasterStats(championName, masterLane);
 
-  return `
+  area.innerHTML = `
     <div class="master-filter-row">
       ${["ALL", ...LANE_ORDER].map(lane => `
-        <button class="master-filter ${masterLane === lane ? "active" : ""}" onclick="setMasterLane('${lane}','${clean(championName)}')">
+        <button class="master-filter ${masterLane === lane ? "active" : ""}" onclick="setMasterLane('${lane}','${safe(championName)}')">
           ${lane === "ALL" ? "" : laneIcon(lane)} ${LANE_LABELS[lane]}
         </button>
       `).join("")}
@@ -1456,22 +1613,22 @@ function renderMasterTable(championName) {
     <table class="detail-table">
       <thead>
         <tr>
-          <th><button class="sort-btn" onclick="sortMaster('rank','${clean(championName)}')">순위</button></th>
-          <th><button class="sort-btn" onclick="sortMaster('name','${clean(championName)}')">플레이어</button></th>
-          <th><button class="sort-btn" onclick="sortMaster('games','${clean(championName)}')">판수</button></th>
-          <th><button class="sort-btn" onclick="sortMaster('winRate','${clean(championName)}')">승률</button></th>
-          <th><button class="sort-btn" onclick="sortMaster('avgKills','${clean(championName)}')">평균 킬</button></th>
-          <th><button class="sort-btn" onclick="sortMaster('avgDeaths','${clean(championName)}')">평균 데스</button></th>
-          <th><button class="sort-btn" onclick="sortMaster('avgAssists','${clean(championName)}')">평균 어시</button></th>
-          <th><button class="sort-btn" onclick="sortMaster('kda','${clean(championName)}')">KDA</button></th>
-          <th><button class="sort-btn" onclick="sortMaster('kp','${clean(championName)}')">킬관여율</button></th>
-          <th><button class="sort-btn" onclick="sortMaster('score','${clean(championName)}')">점수</button></th>
+          <th>순위</th>
+          <th><button class="sort-btn" onclick="sortMaster('name','${safe(championName)}')">플레이어</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('games','${safe(championName)}')">판수</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('winRate','${safe(championName)}')">승률</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('avgKills','${safe(championName)}')">평균 킬</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('avgDeaths','${safe(championName)}')">평균 데스</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('avgAssists','${safe(championName)}')">평균 어시</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('kda','${safe(championName)}')">KDA</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('kp','${safe(championName)}')">킬관여율</button></th>
+          <th><button class="sort-btn" onclick="sortMaster('score','${safe(championName)}')">점수</button></th>
         </tr>
       </thead>
       <tbody>
         ${list.map((p, i) => `
           <tr>
-            <td>${i + 1}</td>
+            <td>${rankText(i + 1)}</td>
             <td class="nickname">${p.name}</td>
             <td>${p.games}</td>
             <td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td>
@@ -1489,6 +1646,8 @@ function renderMasterTable(championName) {
 }
 
 function openChampionDetail(championName) {
+  masterLane = "ALL";
+
   const s = calcChampionStats(championName, "ALL");
   const data = s.rows;
   const lanes = mainLanes(data);
@@ -1497,11 +1656,13 @@ function openChampionDetail(championName) {
   const bestDeath = bestRecord(data, "deaths");
   const bestAssist = bestRecord(data, "assists");
 
+  const tierClass = TIER_CLASS[s.tier] || "";
+
   const html = `
     <div class="detail-hero">
-      <img class="champ-icon big" src="${champImg(championName)}" onerror="this.style.display='none'" />
+      <img class="champ-icon big ${tierClass}" src="${champImg(championName)}" onerror="this.style.display='none'" />
       <div>
-        <div class="hero-title">${championName}</div>
+        <div class="hero-title">${championName} ${tierBadge(s.tier)}</div>
         <div class="hero-sub">
           ${lanes.length ? lanes.map(lanePill).join("") : `<span class="lane-pill">라인 기록 없음</span>`}
         </div>
@@ -1521,16 +1682,17 @@ function openChampionDetail(championName) {
         { label:"평균 데스", value:s.avgDeaths.toFixed(1) },
         { label:"평균 어시", value:s.avgAssists.toFixed(1) },
         { label:"KDA", value:s.kda.toFixed(2) },
-        { label:"평균 킬관여율", value:pct(s.kp) }
+        { label:"평균 킬관여율", value:pct(s.kp) },
+        { label:"티어", value:`${s.tier}티어` }
       ])}
     </div>
 
     <div class="section">
       <div class="section-title">최고 기록</div>
       ${statCards([
-        { label:"최다 킬", value:bestKill ? `${num(bestKill.kills)}회` : "-", extra:bestKill ? `<div style="font-size:12px;color:#cbd5e1;margin-top:5px;">${bestKill.lol_name}</div>${recordExtra(bestKill)}` : "" },
-        { label:"최다 데스", value:bestDeath ? `${num(bestDeath.deaths)}회` : "-", extra:bestDeath ? `<div style="font-size:12px;color:#cbd5e1;margin-top:5px;">${bestDeath.lol_name}</div>${recordExtra(bestDeath)}` : "" },
-        { label:"최다 어시스트", value:bestAssist ? `${num(bestAssist.assists)}회` : "-", extra:bestAssist ? `<div style="font-size:12px;color:#cbd5e1;margin-top:5px;">${bestAssist.lol_name}</div>${recordExtra(bestAssist)}` : "" }
+        { label:"최다 킬", value:bestKill ? `${num(bestKill.kills)}회` : "-", extra:championRecordExtra(bestKill) },
+        { label:"최다 데스", value:bestDeath ? `${num(bestDeath.deaths)}회` : "-", extra:championRecordExtra(bestDeath) },
+        { label:"최다 어시스트", value:bestAssist ? `${num(bestAssist.assists)}회` : "-", extra:championRecordExtra(bestAssist) }
       ])}
     </div>
 
@@ -1551,11 +1713,12 @@ function openChampionDetail(championName) {
 
     <div class="section">
       <div class="section-title">${championName} 장인 랭킹</div>
-      ${renderMasterTable(championName)}
+      <div id="masterRankingArea"></div>
     </div>
   `;
 
   showDetail(html);
+  renderMasterRankingArea(championName);
 }
 
 loadData();
