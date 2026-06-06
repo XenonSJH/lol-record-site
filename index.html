@@ -377,6 +377,22 @@ function getPlayerRanking(){
   let list=players.map(p=>({...calcPlayerStats(p.lol_name,lane),profile_image_url:p.profile_image_url||""}));
   if(lane!=="ALL")list=list.filter(p=>p.games>0);
   if(activeSearch){const q=activeSearch.toLowerCase();list=list.filter(p=>p.name.toLowerCase().includes(q))}
+  if(championSort==="banRate"){
+    const champMap={};
+
+    list.forEach(c=>{
+      if(!champMap[c.name]){
+        champMap[c.name]={
+          ...c,
+          games:0
+        };
+      }
+
+      champMap[c.name].games+=c.games;
+    });
+
+    list=Object.values(champMap);
+  }
   list.sort((a,b)=>{
     if(playerSort==="winRate"&&!activeSearch){
       const ga=getParticipationGroup(a.participation),gb=getParticipationGroup(b.participation);
@@ -494,7 +510,16 @@ function getChampionRanking(){
     else if(championSort==="wins")result=a.wins-b.wins;
     else if(championSort==="losses")result=a.losses-b.losses;
     else if(championSort==="pickRate")result=a.pickRate-b.pickRate;
-    else if(championSort==="banRate")result=a.banRate-b.banRate;
+    else if(championSort==="banRate"){
+      result=a.banRate-b.banRate;
+
+      if(result===0){
+          const aGames=rows.filter(r=>r.champion_name===a.name).length;
+          const bGames=rows.filter(r=>r.champion_name===b.name).length;
+
+          result=aGames-bGames;
+      }
+    }
     else if(championSort==="kp")result=a.kp-b.kp;
     else if(championSort==="winRate")result=a.winRate-b.winRate;
     else result=a.score-b.score;
@@ -527,7 +552,7 @@ function renderChampionRanking(){
           <div class="champ-cell" title="${c.name}">
             <img class="champ-icon ${tierClass}" src="${img}" onerror="this.style.display='none'" />
             <span class="champ-name">${c.name}</span>
-            ${laneIcon(c.displayLane)}
+            ${championSort==="banRate" ? "" : laneIcon(c.displayLane)}
           </div>
         </td>
         <td>${c.games}</td>
