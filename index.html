@@ -805,7 +805,7 @@ function openChampionDetail(championName, detailLane="ALL"){
   masterLane="ALL";
   const s=calcChampionStats(championName,"ALL");
 
-  const laneTierList=getChampionRanking()
+  const laneTierList=getAllChampionComboList()
     .filter(c=>c.name===championName)
     .sort((a,b)=>LANE_ORDER.indexOf(a.displayLane)-LANE_ORDER.indexOf(b.displayLane));
 
