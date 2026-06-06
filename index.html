@@ -86,7 +86,15 @@ tbody tr:hover td{background:rgba(71,85,105,.95)}
 .master-filter{border:none;border-radius:999px;padding:8px 12px;background:rgba(30,41,59,.95);color:white;font-weight:1000;cursor:pointer}
 .master-filter.active{background:#2563eb}
 .hide{display:none!important}
-.col-rank{width:58px}.col-tier{width:86px}.col-small{width:64px}.col-rate{width:86px}.col-name{width:auto}.col-champ{width:280px}.col-score{width:78px}
+.col-rank{width:54px}
+.col-tier{width:92px}
+.col-small{width:70px}
+.col-rate{width:92px}
+.col-name{width:150px}
+.col-champ{width:210px}
+.col-lane{width:72px}
+.col-score{width:82px}
+.col-auto{width:auto}
 @media(max-width:850px){body{padding:20px}h1{font-size:30px}.stat-grid{grid-template-columns:repeat(2,1fr)}th,td{font-size:12px;padding:9px 5px}.detail-hero{align-items:flex-start}}
 </style>
 </head>
@@ -113,9 +121,7 @@ tbody tr:hover td{background:rgba(71,85,105,.95)}
   <div id="laneFilters" class="filter-row"></div>
 
   <table id="playerTable">
-    <colgroup>
-      <col class="col-rank"><col class="col-name"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate">
-    </colgroup>
+    <colgroup><col class="col-lane"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"></colgroup>
     <thead>
       <tr>
         <th>순위</th>
