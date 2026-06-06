@@ -513,7 +513,68 @@ function getPlayerRanking(){
   return list;
 }
 
+function getChampionRanking(){
+  const lane=effectiveLane();
+  const allList=getAllChampionComboList();
+  let list=[];
 
+  if(championSort==="banRate"){
+    const champMap={};
+
+    allList.forEach(c=>{
+      if(!champMap[c.name]){
+        const allStat=calcChampionStats(c.name,"ALL");
+        champMap[c.name]={
+          ...allStat,
+          displayLane:"BAN_MERGED",
+          tierList:[],
+          scoreList:[]
+        };
+      }
+
+      champMap[c.name].tierList.push(c.tier);
+      champMap[c.name].scoreList.push(c.score);
+    });
+
+    list=Object.values(champMap).map(c=>{
+      c.tierList=[...new Set(c.tierList)];
+      c.tier=bestTierFromList(c.tierList);
+      c.score=Math.max(...c.scoreList,0);
+      return c;
+    });
+  }else{
+    list=allList;
+
+    if(lane!=="ALL"){
+      list=list.filter(c=>c.displayLane===lane);
+    }
+  }
+
+  if(activeSearch){
+    const q=activeSearch.toLowerCase();
+    list=list.filter(c=>c.name.toLowerCase().includes(q));
+  }
+
+  list.sort((a,b)=>{
+    const tierOrder={OP:1,S:2,A:3,B:4,C:5};
+    let result=0;
+
+    if(championSort==="tier")result=tierOrder[a.tier]-tierOrder[b.tier]||b.score-a.score;
+    else if(championSort==="name")result=compareName(a.name,b.name);
+    else if(championSort==="games")result=a.games-b.games;
+    else if(championSort==="wins")result=a.wins-b.wins;
+    else if(championSort==="losses")result=a.losses-b.losses;
+    else if(championSort==="pickRate")result=a.pickRate-b.pickRate;
+    else if(championSort==="banRate")result=a.banRate-b.banRate || a.games-b.games;
+    else if(championSort==="kp")result=a.kp-b.kp;
+    else if(championSort==="winRate")result=a.winRate-b.winRate;
+    else result=a.score-b.score;
+
+    return championAsc?result:-result;
+  });
+
+  return list;
+}
 function renderChampionRanking(){
   const tbody=document.getElementById("championRanking");
   const list=getChampionRanking();
@@ -555,7 +616,91 @@ function renderChampionRanking(){
       </tr>`;
   }).join("");
 }
+function getPlayerRanking(){
+  const lane=effectiveLane();
+  let list=players.map(p=>({...calcPlayerStats(p.lol_name,lane),profile_image_url:p.profile_image_url||""}));
 
+  if(lane!=="ALL")list=list.filter(p=>p.games>0);
+
+  if(activeSearch){
+    const q=activeSearch.toLowerCase();
+    list=list.filter(p=>p.name.toLowerCase().includes(q));
+  }
+
+  list.sort((a,b)=>{
+    if(playerSort==="winRate"&&!activeSearch){
+      const ga=getParticipationGroup(a.participation),gb=getParticipationGroup(b.participation);
+      if(ga!==gb)return ga-gb;
+      return playerAsc?a.winRate-b.winRate:b.winRate-a.winRate;
+    }
+
+    let result=0;
+    if(playerSort==="name")result=compareName(a.name,b.name);
+    else if(playerSort==="games")result=a.games-b.games;
+    else if(playerSort==="wins")result=a.wins-b.wins;
+    else if(playerSort==="losses")result=a.losses-b.losses;
+    else if(playerSort==="participation")result=a.participation-b.participation;
+    else if(playerSort==="kp")result=a.kp-b.kp;
+    else result=a.winRate-b.winRate;
+
+    return playerAsc?result:-result;
+  });
+
+  return list;
+}
+
+function renderPlayerRanking(){
+  const tbody=document.getElementById("playerRanking");
+  const list=getPlayerRanking();
+
+  if(!list.length){
+    tbody.innerHTML=`<tr><td colspan="8">플레이어 데이터가 없습니다.</td></tr>`;
+    return;
+  }
+
+  let html="",rankedCount=0,lastGroup=null;
+
+  list.forEach((p,i)=>{
+    const group=getParticipationGroup(p.participation);
+
+    if(playerSort==="winRate"&&!activeSearch&&lastGroup!==null&&lastGroup!==group){
+      html+=`<tr class="group-divider"><td colspan="8"></td></tr>`;
+    }
+
+    lastGroup=group;
+
+    let rank;
+    if(playerSort==="winRate"&&!activeSearch){
+      if(p.participation>=35){
+        rankedCount++;
+        rank=rankText(rankedCount);
+      }else rank="-";
+    }else rank=rankText(i+1);
+
+    html+=`
+      <tr class="clickable-row ${p.participation<10?"low-participation":""}" onclick="openPlayerDetail('${safe(p.name)}')">
+        <td>${rank}</td>
+        <td class="nickname" title="${p.name}">
+          <div class="player-name-cell">
+            <img
+              class="player-avatar"
+              src="${p.profile_image_url || 'https://cdn.discordapp.com/embed/avatars/0.png'}"
+              onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"
+            >
+            <span>${p.name}</span>
+          </div>
+        </td>
+        <td>${p.games}</td>
+        <td class="win">${p.wins}</td>
+        <td class="loss">${p.losses}</td>
+        <td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td>
+        <td>${pct(p.participation)}</td>
+        <td>${pct(p.kp)}</td>
+      </tr>`;
+  });
+
+  tbody.innerHTML=html;
+}
 function renderMain(){if(currentTab==="player")renderPlayerRanking();else renderChampionRanking()}
 
 function goBack(){
