@@ -381,7 +381,31 @@ function assignChampionTiers(list){
   });
   return ranked;
 }
+function getAllChampionComboList(){
+  const map={};
 
+  rows.forEach(r=>{
+    if(!r.champion_name || !r.lane)return;
+    const key=`${r.champion_name}__${r.lane}`;
+    map[key]={champion:r.champion_name,lane:r.lane};
+  });
+
+  const list=Object.values(map).map(item=>{
+    const stat=calcChampionStats(item.champion,item.lane);
+    stat.displayName=item.champion;
+    stat.displayLane=item.lane;
+    return stat;
+  }).filter(c=>c.games>=1);
+
+  return assignChampionTiers(list);
+}
+
+function bestTierFromList(tiers){
+  const tierOrder={OP:1,S:2,A:3,B:4,C:5};
+  const unique=[...new Set((tiers||[]).filter(Boolean))];
+  unique.sort((a,b)=>(tierOrder[a]||99)-(tierOrder[b]||99));
+  return unique[0] || "C";
+}
 async function loadData(){
   await loadChampionMeta();
   const {data:pData}=await supabase.from("players").select("discord_id,lol_name,wins,losses,profile_image_url,profile_updated_at");
@@ -433,38 +457,14 @@ function getPlayerRanking(){
   let list=players.map(p=>({...calcPlayerStats(p.lol_name,lane),profile_image_url:p.profile_image_url||""}));
   if(lane!=="ALL")list=list.filter(p=>p.games>0);
   if(activeSearch){const q=activeSearch.toLowerCase();list=list.filter(p=>p.name.toLowerCase().includes(q))}
-  if(championSort==="banRate"){
-    const champMap={};
 
-    list.forEach(c=>{
-      if(!champMap[c.name]){
-        champMap[c.name]={
-          ...c,
-          games:0,
-          wins:0,
-          losses:0,
-          tierList:[],
-          displayLane:"BAN_MERGED"
-        };
-      }
-
-      champMap[c.name].games+=c.games;
-      champMap[c.name].wins+=c.wins;
-      champMap[c.name].losses+=c.losses;
-      champMap[c.name].tierList.push(c.tier);
-    });
-
-    list=Object.values(champMap).map(c=>{
-      c.winRate=c.games?c.wins/c.games*100:0;
-      return c;
-    });
-  }
   list.sort((a,b)=>{
     if(playerSort==="winRate"&&!activeSearch){
       const ga=getParticipationGroup(a.participation),gb=getParticipationGroup(b.participation);
       if(ga!==gb)return ga-gb;
       return playerAsc?a.winRate-b.winRate:b.winRate-a.winRate;
     }
+
     let result=0;
     if(playerSort==="name")result=compareName(a.name,b.name);
     else if(playerSort==="games")result=a.games-b.games;
@@ -473,11 +473,12 @@ function getPlayerRanking(){
     else if(playerSort==="participation")result=a.participation-b.participation;
     else if(playerSort==="kp")result=a.kp-b.kp;
     else result=a.winRate-b.winRate;
+
     return playerAsc?result:-result;
   });
+
   return list;
 }
-
 function renderPlayerRanking(){
   const tbody=document.getElementById("playerRanking");
   const list=getPlayerRanking();
@@ -536,61 +537,29 @@ function calcChampionStats(championName,lane="ALL"){
   return stat;
 }
 
-function getChampionRanking(){
+function getPlayerRanking(){
   const lane=effectiveLane();
-  const map={};
-
-  rows.forEach(r=>{
-    if(!r.champion_name || !r.lane)return;
-    const key=`${r.champion_name}__${r.lane}`;
-    map[key]={champion:r.champion_name,lane:r.lane};
-  });
-
-  let allList=Object.values(map).map(item=>{
-    const stat=calcChampionStats(item.champion,item.lane);
-    stat.displayName=item.champion;
-    stat.displayLane=item.lane;
-    return stat;
-  }).filter(c=>c.games>=1);
-
-  allList=assignChampionTiers(allList);
-
-  let list=allList;
-
-  if(lane!=="ALL"){
-    list=list.filter(c=>c.displayLane===lane);
-  }
-
-  if(activeSearch){
-    const q=activeSearch.toLowerCase();
-    list=list.filter(c=>c.name.toLowerCase().includes(q));
-  }
+  let list=players.map(p=>({...calcPlayerStats(p.lol_name,lane),profile_image_url:p.profile_image_url||""}));
+  if(lane!=="ALL")list=list.filter(p=>p.games>0);
+  if(activeSearch){const q=activeSearch.toLowerCase();list=list.filter(p=>p.name.toLowerCase().includes(q))}
 
   list.sort((a,b)=>{
-    const tierOrder={OP:1,S:2,A:3,B:4,C:5};
-    let result=0;
-
-    if(championSort==="tier")result=tierOrder[a.tier]-tierOrder[b.tier]||b.score-a.score;
-    else if(championSort==="name")result=compareName(a.name,b.name);
-    else if(championSort==="games")result=a.games-b.games;
-    else if(championSort==="wins")result=a.wins-b.wins;
-    else if(championSort==="losses")result=a.losses-b.losses;
-    else if(championSort==="pickRate")result=a.pickRate-b.pickRate;
-    else if(championSort==="banRate"){
-      result=a.banRate-b.banRate;
-
-      if(result===0){
-          const aGames=rows.filter(r=>r.champion_name===a.name).length;
-          const bGames=rows.filter(r=>r.champion_name===b.name).length;
-
-          result=aGames-bGames;
-      }
+    if(playerSort==="winRate"&&!activeSearch){
+      const ga=getParticipationGroup(a.participation),gb=getParticipationGroup(b.participation);
+      if(ga!==gb)return ga-gb;
+      return playerAsc?a.winRate-b.winRate:b.winRate-a.winRate;
     }
-    else if(championSort==="kp")result=a.kp-b.kp;
-    else if(championSort==="winRate")result=a.winRate-b.winRate;
-    else result=a.score-b.score;
 
-    return championAsc?result:-result;
+    let result=0;
+    if(playerSort==="name")result=compareName(a.name,b.name);
+    else if(playerSort==="games")result=a.games-b.games;
+    else if(playerSort==="wins")result=a.wins-b.wins;
+    else if(playerSort==="losses")result=a.losses-b.losses;
+    else if(playerSort==="participation")result=a.participation-b.participation;
+    else if(playerSort==="kp")result=a.kp-b.kp;
+    else result=a.winRate-b.winRate;
+
+    return playerAsc?result:-result;
   });
 
   return list;
@@ -609,18 +578,23 @@ function renderChampionRanking(){
   tbody.innerHTML=list.map((c,i)=>{
     const img=champImg(c.name);
     const tierClass=TIER_CLASS[c.tier]||"tier-blue";
+    const isBanMerged=championSort==="banRate";
+    const tierList=c.tierList?.length ? c.tierList : [c.tier];
+    const isMixed=isBanMerged && tierList.length>1;
+    const portraitClass=isMixed ? "" : tierClass;
+    const portraitStyle=isMixed ? comboPortraitStyle(tierList) : "";
 
     return`
       <tr class="clickable-row" onclick="openChampionDetail('${safe(c.name)}','ALL')">
         <td>${rankText(i+1)}</td>
-        <td>${championSort==="banRate" ? comboTierBadge(c.tierList) : tierBadge(c.tier)}</td>
+        <td>${isBanMerged ? comboTierBadge(tierList) : tierBadge(c.tier)}</td>
         <td>
           <div class="champ-cell" title="${c.name}">
-            <span class="combo-portrait-wrap" style="${championSort==="banRate" ? comboPortraitStyle(c.tierList) : ""}">
-  <img class="champ-icon ${championSort==="banRate" ? "" : tierClass}" src="${img}" onerror="this.style.display='none'" />
-</span>
+            <span class="combo-portrait-wrap" style="${portraitStyle}">
+              <img class="champ-icon ${portraitClass}" src="${img}" onerror="this.style.display='none'" />
+            </span>
             <span class="champ-name">${c.name}</span>
-            ${championSort==="banRate" ? "" : laneIcon(c.displayLane)}
+            ${isBanMerged ? "" : laneIcon(c.displayLane)}
           </div>
         </td>
         <td>${c.games}</td>
