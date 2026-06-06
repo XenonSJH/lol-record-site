@@ -6,61 +6,66 @@
 <title>🏆 BANDLE.GG 🏆</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:radial-gradient(circle at left,rgba(15,23,42,.55),transparent 28%),radial-gradient(circle at right,rgba(15,23,42,.55),transparent 28%),linear-gradient(90deg,#111827,#1e293b 18%,#1e293b 82%,#111827);color:white;padding:38px;min-height:100vh}
-h1{text-align:center;font-size:42px;margin:0 0 12px}
-.summary{text-align:center;margin-bottom:20px;color:#cbd5e1;font-size:17px}
+body{margin:0;font-family:"맑은 고딕","Malgun Gothic",Arial,sans-serif;background:radial-gradient(circle at left,rgba(15,23,42,.55),transparent 28%),radial-gradient(circle at right,rgba(15,23,42,.55),transparent 28%),linear-gradient(90deg,#111827,#1e293b 18%,#1e293b 82%,#111827);color:white;padding:38px;min-height:100vh;font-weight:800}
+h1{text-align:center;font-size:42px;margin:0 0 12px;font-weight:1000}
+.summary{text-align:center;margin-bottom:20px;color:#cbd5e1;font-size:17px;font-weight:900}
 .top-tabs{display:flex;justify-content:center;gap:12px;margin-bottom:18px}
-.tab{padding:12px 34px;border-radius:14px;border:none;color:white;font-size:17px;font-weight:900;cursor:pointer;background:#4b5563;filter:grayscale(100%)}
+.tab{padding:12px 34px;border-radius:14px;border:none;color:white;font-size:17px;font-weight:1000;cursor:pointer;background:#4b5563;filter:grayscale(100%)}
 .tab.active{background:#dc2626;filter:grayscale(0)}
 .search-wrap{position:relative;max-width:900px;margin:0 auto 18px}
 .search-row{display:flex;gap:8px}
-.search-box{width:100%;padding:15px 16px;border-radius:14px;border:1px solid #334155;background:rgba(30,41,59,.95);color:white;font-size:16px;outline:none}
-.search-btn{width:58px;border:none;border-radius:14px;background:#2563eb;color:white;font-size:22px;cursor:pointer;font-weight:900}
+.search-box{width:100%;padding:15px 16px;border-radius:14px;border:1px solid #334155;background:rgba(30,41,59,.95);color:white;font-size:16px;outline:none;font-weight:900}
+.search-btn{width:58px;border:none;border-radius:14px;background:#2563eb;color:white;font-size:22px;cursor:pointer;font-weight:1000}
 .suggest-box{position:absolute;top:58px;left:0;right:66px;background:rgba(15,23,42,.98);border:1px solid rgba(96,165,250,.35);border-radius:14px;overflow:hidden;z-index:20;display:none}
-.suggest-item{padding:13px 16px;cursor:pointer;color:#e5e7eb;border-bottom:1px solid rgba(51,65,85,.7)}
+.suggest-item{padding:13px 16px;cursor:pointer;color:#e5e7eb;border-bottom:1px solid rgba(51,65,85,.7);font-weight:900}
 .suggest-item:hover{background:rgba(59,130,246,.22)}
 .filter-row{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-bottom:22px}
-.lane-filter{display:flex;align-items:center;gap:7px;border:1px solid rgba(148,163,184,.25);background:rgba(30,41,59,.92);color:white;padding:10px 16px;border-radius:999px;font-weight:900;cursor:pointer}
+.lane-filter{display:flex;align-items:center;gap:7px;border:1px solid rgba(148,163,184,.25);background:rgba(30,41,59,.92);color:white;padding:10px 16px;border-radius:999px;font-weight:1000;cursor:pointer}
 .lane-filter.active{background:#2563eb;border-color:#60a5fa}
 .lane-icon{width:23px;height:23px;object-fit:contain}
-.main-card,.detail-page{max-width:1280px;margin:0 auto}
+.main-card,.detail-page{max-width:1380px;margin:0 auto}
 table{width:100%;border-collapse:separate;border-spacing:0 10px;table-layout:fixed}
-th{padding:10px 6px;background:rgba(51,65,85,.95);color:#93c5fd;text-align:center;font-weight:900}
-td{padding:14px 8px;text-align:center;background:rgba(51,65,85,.88);border-bottom:1px solid rgba(71,85,105,.55);vertical-align:middle}
+th{padding:10px 5px;background:rgba(51,65,85,.95);color:#93c5fd;text-align:center;font-weight:1000;white-space:nowrap}
+td{padding:14px 7px;text-align:center;background:rgba(51,65,85,.88);border-bottom:1px solid rgba(71,85,105,.55);vertical-align:middle;font-weight:900;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 th:first-child,td:first-child{border-radius:14px 0 0 14px}
 th:last-child,td:last-child{border-radius:0 14px 14px 0}
 tbody tr:hover td{background:rgba(71,85,105,.95)}
-.sort-btn{border:none;border-radius:10px;padding:8px 10px;background:rgba(30,64,175,.7);color:#dbeafe;cursor:pointer;font-weight:900;width:100%}
+.sort-btn{border:none;border-radius:10px;padding:8px 8px;background:rgba(30,64,175,.78);color:#dbeafe;cursor:pointer;font-weight:1000;width:100%;font-family:"맑은 고딕","Malgun Gothic",Arial,sans-serif}
+.sort-btn:hover{background:#1d4ed8;color:white}
 .clickable-row{cursor:pointer}
-.nickname{font-weight:900}
-.win{color:#22c55e;font-weight:900}.loss{color:#ef4444;font-weight:900}
-.rate-high{color:#22c55e;font-weight:900}.rate-mid{color:#facc15;font-weight:900}.rate-low{color:#f87171;font-weight:900}
+.nickname{font-weight:1000;color:white}
+.win{color:#22c55e!important;font-weight:1000}.loss{color:#ef4444!important;font-weight:1000}
+.rate-high{color:#22c55e!important;font-weight:1000}.rate-mid{color:#facc15!important;font-weight:1000}.rate-low{color:#f87171!important;font-weight:1000}
 .low-participation td{color:#cbd5e1!important;filter:grayscale(70%)}
 .group-divider td{height:18px;padding:0!important;background:transparent!important;border-bottom:2px solid rgba(147,197,253,.5);border-radius:0!important}
-.champ-cell{display:flex;align-items:center;justify-content:flex-start;gap:12px;min-width:0}
+.champ-cell{display:flex;align-items:center;justify-content:flex-start;gap:12px;min-width:0;overflow:hidden}
+.champ-cell span,.champ-name{font-weight:1000;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .champ-icon{width:44px;height:44px;border-radius:10px;border:2px solid #334155;object-fit:cover;flex-shrink:0}
-.champ-icon.big{width:106px;height:106px;border-radius:22px}
-.tier-red{border-color:#ef4444!important;box-shadow:0 0 14px rgba(239,68,68,.5)}
-.tier-orange{border-color:#f97316!important;box-shadow:0 0 14px rgba(249,115,22,.5)}
-.tier-yellow{border-color:#facc15!important;box-shadow:0 0 14px rgba(250,204,21,.45)}
-.tier-green{border-color:#22c55e!important;box-shadow:0 0 14px rgba(34,197,94,.45)}
-.tier-blue{border-color:#3b82f6!important;box-shadow:0 0 14px rgba(59,130,246,.45)}
-.tier-badge{display:inline-flex;align-items:center;justify-content:center;min-width:62px;padding:7px 10px;border-radius:999px;font-weight:1000;color:white}
-.tier-badge.tier-1{background:#dc2626}.tier-badge.tier-2{background:#ea580c}.tier-badge.tier-3{background:#ca8a04}.tier-badge.tier-4{background:#16a34a}.tier-badge.tier-5{background:#2563eb}
-.champ-name{font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.back-btn{border:none;background:rgba(30,41,59,.85);color:#cbd5e1;border-radius:12px;padding:9px 14px;font-weight:900;cursor:pointer;margin-bottom:18px}
+.champ-icon.big{width:112px;height:112px;border-radius:24px}
+.tier-red{border-color:#ff334e!important;box-shadow:0 0 18px rgba(239,68,68,.65),inset 0 0 10px rgba(255,255,255,.18)}
+.tier-orange{border-color:#ff8a1c!important;box-shadow:0 0 18px rgba(249,115,22,.6),inset 0 0 10px rgba(255,255,255,.16)}
+.tier-yellow{border-color:#ffe14d!important;box-shadow:0 0 18px rgba(250,204,21,.55),inset 0 0 10px rgba(255,255,255,.14)}
+.tier-green{border-color:#31e981!important;box-shadow:0 0 18px rgba(34,197,94,.55),inset 0 0 10px rgba(255,255,255,.13)}
+.tier-blue{border-color:#60a5fa!important;box-shadow:0 0 18px rgba(59,130,246,.55),inset 0 0 10px rgba(255,255,255,.12)}
+.tier-badge{display:inline-flex;align-items:center;justify-content:center;min-width:70px;padding:7px 12px;border-radius:999px;font-weight:1000;color:white;letter-spacing:-.5px;border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 7px 18px rgba(0,0,0,.25)}
+.tier-badge.tier-1{background:linear-gradient(135deg,#7f1d1d,#ef4444,#fb7185)}
+.tier-badge.tier-2{background:linear-gradient(135deg,#7c2d12,#f97316,#fdba74)}
+.tier-badge.tier-3{background:linear-gradient(135deg,#713f12,#eab308,#fde047);color:#111827}
+.tier-badge.tier-4{background:linear-gradient(135deg,#14532d,#22c55e,#86efac);color:#06210f}
+.tier-badge.tier-5{background:linear-gradient(135deg,#1e3a8a,#3b82f6,#93c5fd)}
+.back-btn{border:none;background:rgba(30,41,59,.85);color:#cbd5e1;border-radius:12px;padding:9px 14px;font-weight:1000;cursor:pointer;margin-bottom:18px}
 .detail-page{display:none}
 .detail-hero{background:rgba(15,23,42,.92);border:1px solid rgba(96,165,250,.35);border-radius:22px;padding:22px;display:flex;align-items:center;gap:20px;margin-bottom:18px}
-.profile-box{width:106px;height:106px;border-radius:22px;background:#020617;border:1px solid rgba(148,163,184,.25);display:flex;align-items:center;justify-content:center;text-align:center;color:#94a3b8;font-size:12px;font-weight:900;overflow:hidden;flex-shrink:0}
+.profile-box{width:106px;height:106px;border-radius:22px;background:#020617;border:1px solid rgba(148,163,184,.25);display:flex;align-items:center;justify-content:center;text-align:center;color:#94a3b8;font-size:12px;font-weight:1000;overflow:hidden;flex-shrink:0}
 .profile-box img{width:100%;height:100%;object-fit:cover}
 .hero-title{font-size:34px;font-weight:1000;margin-bottom:10px}
 .hero-sub{display:flex;gap:8px;flex-wrap:wrap}
-.lane-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:rgba(30,41,59,.95);border:1px solid rgba(148,163,184,.25);font-weight:900;color:#dbeafe}
+.lane-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:rgba(30,41,59,.95);border:1px solid rgba(148,163,184,.25);font-weight:1000;color:#dbeafe}
 .section{background:rgba(15,23,42,.92);border:1px solid rgba(96,165,250,.26);border-radius:22px;padding:18px;margin-bottom:18px}
 .section-title{font-size:20px;font-weight:1000;color:#bfdbfe;margin-bottom:14px}
 .stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
 .stat-card{background:rgba(30,41,59,.95);border:1px solid rgba(148,163,184,.25);border-radius:15px;padding:14px 10px;text-align:center}
-.stat-label{color:#cbd5e1;font-size:13px;margin-bottom:6px;font-weight:800}
+.stat-label{color:#cbd5e1;font-size:13px;margin-bottom:6px;font-weight:1000}
 .stat-value{font-size:21px;font-weight:1000}
 .record-blocks{display:flex;gap:0;flex-wrap:wrap}
 .result-block{width:38px;height:38px;display:flex;align-items:center;justify-content:center;color:white;font-weight:1000;border-right:1px solid rgba(15,23,42,.45)}
@@ -68,19 +73,20 @@ tbody tr:hover td{background:rgba(71,85,105,.95)}
 .result-block:last-child{border-radius:0 12px 12px 0;border-right:none}
 .result-win{background:#22c55e}.result-loss{background:#ef4444}
 .lane-ratio-row{margin-bottom:12px}
-.ratio-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-weight:900}
+.ratio-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-weight:1000}
 .ratio-bar-bg{background:rgba(30,41,59,.95);height:15px;border-radius:999px;overflow:hidden}
 .ratio-bar{height:100%;background:#2563eb;border-radius:999px}
 .detail-table{width:100%;border-spacing:0 8px;table-layout:fixed}
-.detail-table th,.detail-table td{font-size:13px}
+.detail-table th,.detail-table td{font-size:13px;font-weight:1000}
 .detail-table th{background:rgba(30,41,59,.95)}
 .detail-table td{background:rgba(51,65,85,.82)}
 .record-icons{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px}
 .small-champ-icon{width:28px;height:28px;border-radius:8px;object-fit:cover}
 .master-filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.master-filter{border:none;border-radius:999px;padding:8px 12px;background:rgba(30,41,59,.95);color:white;font-weight:900;cursor:pointer}
+.master-filter{border:none;border-radius:999px;padding:8px 12px;background:rgba(30,41,59,.95);color:white;font-weight:1000;cursor:pointer}
 .master-filter.active{background:#2563eb}
 .hide{display:none!important}
+.col-rank{width:58px}.col-tier{width:86px}.col-small{width:64px}.col-rate{width:86px}.col-name{width:auto}.col-champ{width:280px}.col-score{width:78px}
 @media(max-width:850px){body{padding:20px}h1{font-size:30px}.stat-grid{grid-template-columns:repeat(2,1fr)}th,td{font-size:12px;padding:9px 5px}.detail-hero{align-items:flex-start}}
 </style>
 </head>
@@ -107,6 +113,9 @@ tbody tr:hover td{background:rgba(71,85,105,.95)}
   <div id="laneFilters" class="filter-row"></div>
 
   <table id="playerTable">
+    <colgroup>
+      <col class="col-rank"><col class="col-name"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate">
+    </colgroup>
     <thead>
       <tr>
         <th>순위</th>
@@ -123,6 +132,9 @@ tbody tr:hover td{background:rgba(71,85,105,.95)}
   </table>
 
   <table id="championTable" class="hide">
+    <colgroup>
+      <col class="col-rank"><col class="col-tier"><col class="col-champ"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate">
+    </colgroup>
     <thead>
       <tr>
         <th>순위</th>
@@ -149,20 +161,20 @@ tbody tr:hover td{background:rgba(71,85,105,.95)}
 <script type="module">
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-const SUPABASE_URL = "https://ehligpqxjczgcggjpzwn.supabase.co";
-const SUPABASE_KEY = "sb_publishable_QHDiR1qAWGVaKSDZguc0qg_fE_eVCwZ";
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL="https://ehligpqxjczgcggjpzwn.supabase.co";
+const SUPABASE_KEY="sb_publishable_QHDiR1qAWGVaKSDZguc0qg_fE_eVCwZ";
+const supabase=createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const LANE_ORDER = ["TOP", "JUNGLE", "MID", "ADC", "SUPPORT"];
-const LANE_LABELS = {ALL:"전체",TOP:"탑",JUNGLE:"정글",MID:"미드",ADC:"원딜",SUPPORT:"서폿"};
-const LANE_ICON_URLS = {
+const LANE_ORDER=["TOP","JUNGLE","MID","ADC","SUPPORT"];
+const LANE_LABELS={ALL:"전체",TOP:"탑",JUNGLE:"정글",MID:"미드",ADC:"원딜",SUPPORT:"서폿"};
+const LANE_ICON_URLS={
   TOP:"https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-top.svg",
   JUNGLE:"https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-jungle.svg",
   MID:"https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-middle.svg",
   ADC:"https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-bottom.svg",
   SUPPORT:"https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-utility.svg"
 };
-const TIER_CLASS = {1:"tier-red",2:"tier-orange",3:"tier-yellow",4:"tier-green",5:"tier-blue"};
+const TIER_CLASS={1:"tier-red",2:"tier-orange",3:"tier-yellow",4:"tier-green",5:"tier-blue"};
 
 let players=[],rows=[],bans=[],matches=[],totalGames=0;
 let currentTab="player",currentLane="ALL",activeSearch="";
@@ -220,29 +232,32 @@ function getParticipationGroup(participation){if(participation>=35)return 0;if(p
 function tierBadge(tier){return`<span class="tier-badge tier-${tier}">${tier}티어</span>`}
 
 function getChampionTier(champ){
-  if(champ.games<=0)return 5;
-  const score=champ.winRate*.42+champ.pickRate*1.2+champ.banRate*.8+champ.kp*.12+Math.min(champ.games,20)*1.2;
-  if(score>=75)return 1;
-  if(score>=60)return 2;
-  if(score>=45)return 3;
-  if(score>=30)return 4;
+  const score=
+    champ.winRate*.42+
+    champ.pickRate*1.15+
+    champ.banRate*.75+
+    champ.kp*.10+
+    Math.min(champ.games,25)*1.05;
+
+  if(champ.games<2&&champ.banRate<5)return 5;
+  if(score>=82)return 1;
+  if(score>=66)return 2;
+  if(score>=50)return 3;
+  if(score>=34)return 4;
   return 5;
 }
 
 async function loadData(){
   await loadChampionMeta();
-
   const {data:pData}=await supabase.from("players").select("discord_id,lol_name,wins,losses,profile_image_url,profile_updated_at");
   const {data:rData}=await supabase.from("match_players").select("id,match_id,created_at,lol_name,champion_name,lane,kills,deaths,assists,team_kills,win");
   const {data:bData}=await supabase.from("match_bans").select("id,match_id,champion_name,team_id,created_at");
   const {data:mData,count}=await supabase.from("matches").select("*",{count:"exact"});
-
   players=pData||[];
   rows=rData||[];
   bans=bData||[];
   matches=mData||[];
   totalGames=count||matches.length||0;
-
   document.getElementById("summary").innerText=`총 판수: ${totalGames}판 ㅣ 멤버 수: ${players.length}명`;
   renderLaneFilters();
   renderMain();
@@ -281,14 +296,9 @@ function runSearch(value){activeSearch=value.trim();searchInput.value=activeSear
 function calcPlayerStats(playerName,lane="ALL"){
   let data=rows.filter(r=>r.lol_name===playerName);
   if(lane!=="ALL")data=data.filter(r=>r.lane===lane);
-  const games=data.length;
-  const wins=data.filter(r=>r.win).length;
-  const losses=games-wins;
-  const winRate=games?wins/games*100:0;
-  const participation=totalGames?games/totalGames*100:0;
-  const kills=data.reduce((s,r)=>s+num(r.kills),0);
-  const deaths=data.reduce((s,r)=>s+num(r.deaths),0);
-  const assists=data.reduce((s,r)=>s+num(r.assists),0);
+  const games=data.length,wins=data.filter(r=>r.win).length,losses=games-wins;
+  const winRate=games?wins/games*100:0,participation=totalGames?games/totalGames*100:0;
+  const kills=data.reduce((s,r)=>s+num(r.kills),0),deaths=data.reduce((s,r)=>s+num(r.deaths),0),assists=data.reduce((s,r)=>s+num(r.assists),0);
   const kpList=data.map(kp).filter(v=>v!==null);
   return{name:playerName,games,wins,losses,winRate,participation,avgKills:games?kills/games:0,avgDeaths:games?deaths/games:0,avgAssists:games?assists/games:0,kda:getKda(kills,deaths,assists),kp:average(kpList),rows:data};
 }
@@ -332,7 +342,7 @@ function renderPlayerRanking(){
     }else rank=rankText(i+1);
     html+=`
       <tr class="clickable-row ${p.participation<10?"low-participation":""}" onclick="openPlayerDetail('${safe(p.name)}')">
-        <td>${rank}</td><td class="nickname">${p.name}</td><td>${p.games}</td><td class="win">${p.wins}</td><td class="loss">${p.losses}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${pct(p.participation)}</td><td>${pct(p.kp)}</td>
+        <td>${rank}</td><td class="nickname" title="${p.name}">${p.name}</td><td>${p.games}</td><td class="win">${p.wins}</td><td class="loss">${p.losses}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${pct(p.participation)}</td><td>${pct(p.kp)}</td>
       </tr>`;
   });
   tbody.innerHTML=html;
@@ -341,16 +351,11 @@ function renderPlayerRanking(){
 function calcChampionStats(championName,lane="ALL"){
   let data=rows.filter(r=>r.champion_name===championName);
   if(lane!=="ALL")data=data.filter(r=>r.lane===lane);
-  const games=data.length;
-  const wins=data.filter(r=>r.win).length;
-  const losses=games-wins;
-  const winRate=games?wins/games*100:0;
-  const pickRate=totalGames?games/totalGames*100:0;
+  const games=data.length,wins=data.filter(r=>r.win).length,losses=games-wins;
+  const winRate=games?wins/games*100:0,pickRate=totalGames?games/totalGames*100:0;
   const banCount=bans.filter(b=>b.champion_name===championName).length;
   const banRate=totalGames?banCount/totalGames*100:0;
-  const kills=data.reduce((s,r)=>s+num(r.kills),0);
-  const deaths=data.reduce((s,r)=>s+num(r.deaths),0);
-  const assists=data.reduce((s,r)=>s+num(r.assists),0);
+  const kills=data.reduce((s,r)=>s+num(r.kills),0),deaths=data.reduce((s,r)=>s+num(r.deaths),0),assists=data.reduce((s,r)=>s+num(r.assists),0);
   const kpList=data.map(kp).filter(v=>v!==null);
   const stat={name:championName,games,wins,losses,winRate,pickRate,banRate,avgKills:games?kills/games:0,avgDeaths:games?deaths/games:0,avgAssists:games?assists/games:0,kda:getKda(kills,deaths,assists),kp:average(kpList),rows:data};
   stat.tier=getChampionTier(stat);
@@ -365,7 +370,7 @@ function getChampionRanking(){
   if(activeSearch){const q=activeSearch.toLowerCase();list=list.filter(c=>c.name.toLowerCase().includes(q))}
   list.sort((a,b)=>{
     let result=0;
-    if(championSort==="tier")result=a.tier-b.tier;
+    if(championSort==="tier")result=a.tier-b.tier||b.games-a.games||b.winRate-a.winRate;
     else if(championSort==="name")result=compareName(a.name,b.name);
     else if(championSort==="games")result=a.games-b.games;
     else if(championSort==="wins")result=a.wins-b.wins;
@@ -388,7 +393,7 @@ function renderChampionRanking(){
     return`
       <tr class="clickable-row" onclick="openChampionDetail('${safe(c.name)}')">
         <td>${rankText(i+1)}</td><td>${tierBadge(c.tier)}</td>
-        <td><div class="champ-cell"><img class="champ-icon ${tierClass}" src="${img}" onerror="this.style.display='none'" /><span class="champ-name">${c.name}</span></div></td>
+        <td><div class="champ-cell" title="${c.name}"><img class="champ-icon ${tierClass}" src="${img}" onerror="this.style.display='none'" /><span class="champ-name">${c.name}</span></div></td>
         <td>${c.games}</td><td class="win">${c.wins}</td><td class="loss">${c.losses}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${pct(c.pickRate)}</td><td>${pct(c.banRate)}</td><td>${pct(c.kp)}</td>
       </tr>`;
   }).join("");
@@ -449,7 +454,7 @@ function playerRecordExtra(row){
 
 function championRecordExtra(row){
   if(!row)return"";
-  return`<div style="font-size:12px;color:#cbd5e1;margin-top:5px;">${row.lol_name||"-"}</div><div class="record-icons">${laneIcon(row.lane)}</div>`;
+  return`<div style="font-size:12px;color:#cbd5e1;margin-top:5px;font-weight:1000;">${row.lol_name||"-"}</div><div class="record-icons">${laneIcon(row.lane)}</div>`;
 }
 
 function mainLanes(data){
@@ -473,9 +478,10 @@ function tableStatsRows(statsList,firstTitle="구분"){
   if(!statsList.length)return`<div>데이터가 없습니다.</div>`;
   return`
     <table class="detail-table">
+      <colgroup><col class="col-name"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"></colgroup>
       <thead><tr><th>${firstTitle}</th><th>판수</th><th>승</th><th>패</th><th>승률</th><th>평균 킬</th><th>평균 데스</th><th>평균 어시</th><th>KDA</th><th>킬관여율</th></tr></thead>
       <tbody>
-        ${statsList.map(s=>`<tr><td>${s.label}</td><td>${s.games}</td><td class="win">${s.wins}</td><td class="loss">${s.losses}</td><td class="${rateClass(s.winRate)}">${pct(s.winRate)}</td><td>${s.avgKills.toFixed(1)}</td><td>${s.avgDeaths.toFixed(1)}</td><td>${s.avgAssists.toFixed(1)}</td><td>${s.kda.toFixed(2)}</td><td>${pct(s.kp)}</td></tr>`).join("")}
+        ${statsList.map(s=>`<tr><td title="${String(s.label).replace(/<[^>]*>/g,"")}">${s.label}</td><td>${s.games}</td><td class="win">${s.wins}</td><td class="loss">${s.losses}</td><td class="${rateClass(s.winRate)}">${pct(s.winRate)}</td><td>${s.avgKills.toFixed(1)}</td><td>${s.avgDeaths.toFixed(1)}</td><td>${s.avgAssists.toFixed(1)}</td><td>${s.kda.toFixed(2)}</td><td>${pct(s.kp)}</td></tr>`).join("")}
       </tbody>
     </table>`;
 }
@@ -526,9 +532,10 @@ function renderMostChampionArea(playerName){
   const list=getPlayerMostStats(playerName);
   area.innerHTML=`
     <table class="detail-table">
+      <colgroup><col class="col-rank"><col class="col-champ"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-score"></colgroup>
       <thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortMost('name','${safe(playerName)}')">챔피언</button></th><th><button class="sort-btn" onclick="sortMost('games','${safe(playerName)}')">판수</button></th><th><button class="sort-btn" onclick="sortMost('winRate','${safe(playerName)}')">승률</button></th><th><button class="sort-btn" onclick="sortMost('avgKills','${safe(playerName)}')">평균 킬</button></th><th><button class="sort-btn" onclick="sortMost('avgDeaths','${safe(playerName)}')">평균 데스</button></th><th><button class="sort-btn" onclick="sortMost('avgAssists','${safe(playerName)}')">평균 어시</button></th><th><button class="sort-btn" onclick="sortMost('kda','${safe(playerName)}')">KDA</button></th><th><button class="sort-btn" onclick="sortMost('kp','${safe(playerName)}')">킬관여율</button></th><th><button class="sort-btn" onclick="sortMost('score','${safe(playerName)}')">점수</button></th></tr></thead>
       <tbody>
-        ${list.map((c,i)=>`<tr><td>${rankText(i+1)}</td><td><div class="champ-cell"><img class="champ-icon" src="${champImg(c.champion)}" onerror="this.style.display='none'" /><span>${c.champion}</span>${laneIcon(c.lane)}</div></td><td>${c.games}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${c.avgKills.toFixed(1)}</td><td>${c.avgDeaths.toFixed(1)}</td><td>${c.avgAssists.toFixed(1)}</td><td>${c.kda.toFixed(2)}</td><td>${pct(c.kp)}</td><td>${c.score.toFixed(1)}</td></tr>`).join("")}
+        ${list.map((c,i)=>`<tr><td>${rankText(i+1)}</td><td><div class="champ-cell" title="${c.champion}"><img class="champ-icon" src="${champImg(c.champion)}" onerror="this.style.display='none'" /><span>${c.champion}</span>${laneIcon(c.lane)}</div></td><td>${c.games}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${c.avgKills.toFixed(1)}</td><td>${c.avgDeaths.toFixed(1)}</td><td>${c.avgAssists.toFixed(1)}</td><td>${c.kda.toFixed(2)}</td><td>${pct(c.kp)}</td><td>${c.score.toFixed(1)}</td></tr>`).join("")}
       </tbody>
     </table>`;
 }
@@ -597,8 +604,9 @@ function renderMasterRankingArea(championName){
   area.innerHTML=`
     <div class="master-filter-row">${["ALL",...LANE_ORDER].map(lane=>`<button class="master-filter ${masterLane===lane?"active":""}" onclick="setMasterLane('${lane}','${safe(championName)}')">${lane==="ALL"?"":laneIcon(lane)} ${LANE_LABELS[lane]}</button>`).join("")}</div>
     <table class="detail-table">
+      <colgroup><col class="col-rank"><col class="col-name"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-score"></colgroup>
       <thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortMaster('name','${safe(championName)}')">플레이어</button></th><th><button class="sort-btn" onclick="sortMaster('games','${safe(championName)}')">판수</button></th><th><button class="sort-btn" onclick="sortMaster('winRate','${safe(championName)}')">승률</button></th><th><button class="sort-btn" onclick="sortMaster('avgKills','${safe(championName)}')">평균 킬</button></th><th><button class="sort-btn" onclick="sortMaster('avgDeaths','${safe(championName)}')">평균 데스</button></th><th><button class="sort-btn" onclick="sortMaster('avgAssists','${safe(championName)}')">평균 어시</button></th><th><button class="sort-btn" onclick="sortMaster('kda','${safe(championName)}')">KDA</button></th><th><button class="sort-btn" onclick="sortMaster('kp','${safe(championName)}')">킬관여율</button></th><th><button class="sort-btn" onclick="sortMaster('score','${safe(championName)}')">점수</button></th></tr></thead>
-      <tbody>${list.map((p,i)=>`<tr><td>${rankText(i+1)}</td><td class="nickname">${p.name}</td><td>${p.games}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${p.avgKills.toFixed(1)}</td><td>${p.avgDeaths.toFixed(1)}</td><td>${p.avgAssists.toFixed(1)}</td><td>${p.kda.toFixed(2)}</td><td>${pct(p.kp)}</td><td>${p.score.toFixed(1)}</td></tr>`).join("")}</tbody>
+      <tbody>${list.map((p,i)=>`<tr><td>${rankText(i+1)}</td><td class="nickname" title="${p.name}">${p.name}</td><td>${p.games}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${p.avgKills.toFixed(1)}</td><td>${p.avgDeaths.toFixed(1)}</td><td>${p.avgAssists.toFixed(1)}</td><td>${p.kda.toFixed(2)}</td><td>${pct(p.kp)}</td><td>${p.score.toFixed(1)}</td></tr>`).join("")}</tbody>
     </table>`;
 }
 
