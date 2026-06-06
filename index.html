@@ -35,6 +35,21 @@ tbody tr:hover td{background:rgba(71,85,105,.95)}
 .sort-btn:hover{background:#1d4ed8;color:white}
 .clickable-row{cursor:pointer}
 .nickname{font-weight:1000;color:white}
+.player-name-cell{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  justify-content:flex-start;
+}
+
+.player-avatar{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid rgba(255,255,255,.2);
+  flex-shrink:0;
+}
 .win{color:#22c55e!important;font-weight:1000}.loss{color:#ef4444!important;font-weight:1000}
 .rate-high{color:#22c55e!important;font-weight:1000}.rate-mid{color:#facc15!important;font-weight:1000}.rate-low{color:#f87171!important;font-weight:1000}
 .low-participation td{color:#cbd5e1!important;filter:grayscale(70%)}
@@ -378,7 +393,16 @@ function renderPlayerRanking(){
     if(playerSort==="winRate"&&!activeSearch){
       if(p.participation>=35){rankedCount++;rank=rankText(rankedCount)}else rank="-";
     }else rank=rankText(i+1);
-    html+=`<tr class="clickable-row ${p.participation<10?"low-participation":""}" onclick="openPlayerDetail('${safe(p.name)}')"><td>${rank}</td><td class="nickname" title="${p.name}">${p.name}</td><td>${p.games}</td><td class="win">${p.wins}</td><td class="loss">${p.losses}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${pct(p.participation)}</td><td>${pct(p.kp)}</td></tr>`;
+    html+=`<tr class="clickable-row ${p.participation<10?"low-participation":""}" onclick="openPlayerDetail('${safe(p.name)}')"><td>${rank}</td><td class="nickname" title="${p.name}">
+<div class="player-name-cell">
+  <img
+    class="player-avatar"
+    src="${p.profile_image_url || 'https://cdn.discordapp.com/embed/avatars/0.png'}"
+    onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"
+  >
+  <span>${p.name}</span>
+</div>
+</td><td>${p.games}</td><td class="win">${p.wins}</td><td class="loss">${p.losses}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${pct(p.participation)}</td><td>${pct(p.kp)}</td></tr>`;
   });
   tbody.innerHTML=html;
 }
