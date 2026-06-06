@@ -493,13 +493,13 @@ function comboTierBadge(tiers){
 function comboPortraitStyle(tiers){
   if(!tiers || !tiers.length)return "background:transparent;";
 
-  const unique=[...new Set(tiers.filter(Boolean))];
+  const colors=tiers
+    .filter(Boolean)
+    .map(t=>tierColor(t));
 
-  if(unique.length<=1){
-    return "background:transparent;";
-  }
+  if(colors.length<=1)return "background:transparent;";
 
-  return `background:conic-gradient(${unique.map(t=>tierColor(t)).join(",")});`;
+  return `background:conic-gradient(${colors.join(",")});`;
 }
 function championScore(champ){
   return champ.winRate*.48+champ.pickRate*1.7+champ.banRate*1.05+champ.kp*.12+Math.min(champ.games,30)*.85;
@@ -667,7 +667,7 @@ function getChampionRanking(){
     });
 
     list=Object.values(champMap).map(c=>{
-      c.tierList=[...new Set(c.tierList)];
+      c.tierList=c.tierList.filter(Boolean);
       c.tier=bestTierFromList(c.tierList);
       c.score=Math.max(...c.scoreList,0);
       return c;
@@ -814,7 +814,7 @@ function showDetail(html){
   document.querySelector(".top-tabs").style.display="none";
   document.getElementById("summary").style.display="none";
   document.getElementById("detailPage").style.display="block";
-  window.scrollTo({top:0,behavior:"smooth"});
+  window.scrollTo(0,0);
 }
 
 function statCards(items){return`<div class="stat-grid">${items.map(item=>`<div class="stat-card"><div class="stat-label">${item.label}</div><div class="stat-value ${item.cls||""}">${item.value}</div>${item.extra||""}</div>`).join("")}</div>`}
