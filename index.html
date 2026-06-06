@@ -455,8 +455,13 @@ function calcPlayerStats(playerName,lane="ALL"){
 function getPlayerRanking(){
   const lane=effectiveLane();
   let list=players.map(p=>({...calcPlayerStats(p.lol_name,lane),profile_image_url:p.profile_image_url||""}));
+
   if(lane!=="ALL")list=list.filter(p=>p.games>0);
-  if(activeSearch){const q=activeSearch.toLowerCase();list=list.filter(p=>p.name.toLowerCase().includes(q))}
+
+  if(activeSearch){
+    const q=activeSearch.toLowerCase();
+    list=list.filter(p=>p.name.toLowerCase().includes(q));
+  }
 
   list.sort((a,b)=>{
     if(playerSort==="winRate"&&!activeSearch){
