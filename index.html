@@ -137,6 +137,37 @@ body {
 #championTable col.col-champ { width: 30% !important; }
 #championTable col.col-small { width: 7% !important; }
 #championTable col.col-rate { width: 9% !important; }
+/* 글씨체/두께 통일 */
+body, button, input, table, th, td, .summary, .tab, .sort-btn,
+.section-title, .stat-label, .stat-value, .nickname, .champ-name,
+.lane-filter, .lane-pill, .master-filter, .suggest-item {
+  font-family: "맑은 고딕", "Malgun Gothic", Arial, sans-serif !important;
+  font-weight: 1000 !important;
+}
+
+/* 홈화면 숫자/한글 더 굵게 */
+#playerTable th,
+#playerTable td,
+#championTable th,
+#championTable td {
+  font-weight: 1000 !important;
+  color: #f8fafc;
+}
+
+/* 이름칸도 얇게 안 보이게 */
+#playerTable .nickname,
+#championTable .champ-name,
+.detail-table .nickname,
+.detail-table td {
+  font-weight: 1000 !important;
+}
+
+/* 버튼 안 글씨도 통일 */
+button,
+.sort-btn {
+  font-family: "맑은 고딕", "Malgun Gothic", Arial, sans-serif !important;
+  font-weight: 1000 !important;
+}
 @media(max-width:850px){body{padding:20px}h1{font-size:30px}.stat-grid{grid-template-columns:repeat(2,1fr)}th,td{font-size:12px;padding:9px 5px}.detail-hero{align-items:flex-start}}
 </style>
 </head>
