@@ -311,24 +311,6 @@ function assignChampionTiers(list){
   });
   return ranked;
 }
-function getGlobalChampionTierMap(){
-  const names=[...new Set(rows.map(r=>r.champion_name).filter(Boolean))];
-  const globalList=names
-    .map(name=>calcChampionStats(name,"ALL"))
-    .filter(c=>c.games>=1);
-
-  const tiered=assignChampionTiers(globalList);
-  const map={};
-
-  tiered.forEach(c=>{
-    map[c.name]={
-      tier:c.tier,
-      score:c.score
-    };
-  });
-
-  return map;
-}
 
 async function loadData(){
   await loadChampionMeta();
@@ -427,43 +409,77 @@ function renderPlayerRanking(){
 
 function calcChampionStats(championName,lane="ALL"){
   let data=rows.filter(r=>r.champion_name===championName);
+
   if(lane!=="ALL")data=data.filter(r=>r.lane===lane);
+
   const games=data.length,wins=data.filter(r=>r.win).length,losses=games-wins;
   const winRate=games?wins/games*100:0,pickRate=totalGames?games/totalGames*100:0;
   const banCount=bans.filter(b=>b.champion_name===championName).length;
   const banRate=totalGames?banCount/totalGames*100:0;
-  const kills=data.reduce((s,r)=>s+num(r.kills),0),deaths=data.reduce((s,r)=>s+num(r.deaths),0),assists=data.reduce((s,r)=>s+num(r.assists),0);
+  const kills=data.reduce((s,r)=>s+num(r.kills),0);
+  const deaths=data.reduce((s,r)=>s+num(r.deaths),0);
+  const assists=data.reduce((s,r)=>s+num(r.assists),0);
   const kpList=data.map(kp).filter(v=>v!==null);
-  const stat={name:championName,games,wins,losses,winRate,pickRate,banRate,avgKills:games?kills/games:0,avgDeaths:games?deaths/games:0,avgAssists:games?assists/games:0,kda:getKda(kills,deaths,assists),kp:average(kpList),rows:data,tier:"C"};
+
+  const stat={
+    name:championName,
+    lane,
+    games,wins,losses,winRate,pickRate,banRate,
+    avgKills:games?kills/games:0,
+    avgDeaths:games?deaths/games:0,
+    avgAssists:games?assists/games:0,
+    kda:getKda(kills,deaths,assists),
+    kp:average(kpList),
+    rows:data,
+    tier:"C"
+  };
+
   stat.score=championScore(stat);
   return stat;
 }
 
 function getChampionRanking(){
   const lane=effectiveLane();
-  const globalTierMap=getGlobalChampionTierMap();
+  let list=[];
 
-  let names=[...new Set(rows.map(r=>r.champion_name).filter(Boolean))];
+  if(lane==="ALL"){
+    const map={};
 
-  let list=names
-    .map(name=>{
-      const stat=calcChampionStats(name,lane);
-      stat.tier=globalTierMap[name]?.tier || "C";
-      stat.globalScore=globalTierMap[name]?.score || 0;
+    rows.forEach(r=>{
+      if(!r.champion_name || !r.lane)return;
+      const key=`${r.champion_name}__${r.lane}`;
+      map[key]={champion:r.champion_name,lane:r.lane};
+    });
+
+    list=Object.values(map).map(item=>{
+      const stat=calcChampionStats(item.champion,item.lane);
+      stat.displayName=item.champion;
+      stat.displayLane=item.lane;
       return stat;
-    })
-    .filter(c=>c.games>=1);
+    }).filter(c=>c.games>=1);
+  }else{
+    const names=[...new Set(rows.filter(r=>r.lane===lane).map(r=>r.champion_name).filter(Boolean))];
+
+    list=names.map(name=>{
+      const stat=calcChampionStats(name,lane);
+      stat.displayName=name;
+      stat.displayLane=lane;
+      return stat;
+    }).filter(c=>c.games>=1);
+  }
 
   if(activeSearch){
     const q=activeSearch.toLowerCase();
     list=list.filter(c=>c.name.toLowerCase().includes(q));
   }
 
+  list=assignChampionTiers(list);
+
   list.sort((a,b)=>{
     const tierOrder={OP:1,S:2,A:3,B:4,C:5};
     let result=0;
 
-    if(championSort==="tier")result=tierOrder[a.tier]-tierOrder[b.tier]||b.globalScore-a.globalScore;
+    if(championSort==="tier")result=tierOrder[a.tier]-tierOrder[b.tier]||b.score-a.score;
     else if(championSort==="name")result=compareName(a.name,b.name);
     else if(championSort==="games")result=a.games-b.games;
     else if(championSort==="wins")result=a.wins-b.wins;
@@ -472,7 +488,7 @@ function getChampionRanking(){
     else if(championSort==="banRate")result=a.banRate-b.banRate;
     else if(championSort==="kp")result=a.kp-b.kp;
     else if(championSort==="winRate")result=a.winRate-b.winRate;
-    else result=a.globalScore-b.globalScore;
+    else result=a.score-b.score;
 
     return championAsc?result:-result;
   });
@@ -480,13 +496,39 @@ function getChampionRanking(){
   return list;
 }
 
+
 function renderChampionRanking(){
   const tbody=document.getElementById("championRanking");
   const list=getChampionRanking();
-  if(!list.length){tbody.innerHTML=`<tr><td colspan="10">챔피언 데이터가 없습니다.</td></tr>`;return}
+
+  if(!list.length){
+    tbody.innerHTML=`<tr><td colspan="10">챔피언 데이터가 없습니다.</td></tr>`;
+    return;
+  }
+
   tbody.innerHTML=list.map((c,i)=>{
-    const img=champImg(c.name),tierClass=TIER_CLASS[c.tier]||"tier-blue";
-    return`<tr class="clickable-row" onclick="openChampionDetail('${safe(c.name)}')"><td>${rankText(i+1)}</td><td>${tierBadge(c.tier)}</td><td><div class="champ-cell" title="${c.name}"><img class="champ-icon ${tierClass}" src="${img}" onerror="this.style.display='none'" /><span class="champ-name">${c.name}</span></div></td><td>${c.games}</td><td class="win">${c.wins}</td><td class="loss">${c.losses}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${pct(c.pickRate)}</td><td>${pct(c.banRate)}</td><td>${pct(c.kp)}</td></tr>`;
+    const img=champImg(c.name);
+    const tierClass=TIER_CLASS[c.tier]||"tier-blue";
+
+    return`
+      <tr class="clickable-row" onclick="openChampionDetail('${safe(c.name)}')">
+        <td>${rankText(i+1)}</td>
+        <td>${tierBadge(c.tier)}</td>
+        <td>
+          <div class="champ-cell" title="${c.name}">
+            <img class="champ-icon ${tierClass}" src="${img}" onerror="this.style.display='none'" />
+            <span class="champ-name">${c.name}</span>
+            ${laneIcon(c.displayLane)}
+          </div>
+        </td>
+        <td>${c.games}</td>
+        <td class="win">${c.wins}</td>
+        <td class="loss">${c.losses}</td>
+        <td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td>
+        <td>${pct(c.pickRate)}</td>
+        <td>${pct(c.banRate)}</td>
+        <td>${pct(c.kp)}</td>
+      </tr>`;
   }).join("");
 }
 
