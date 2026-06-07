@@ -1126,6 +1126,13 @@ function collapsibleSection(id,title,content){
 
 function setRecentLane(lane,playerName){
   recentLane=lane;
+
+  const section=document.getElementById("recentMatchSection");
+  if(section){
+    section.querySelector(".collapsible-content").innerHTML =
+      recentControls(playerName);
+  }
+
   renderRecentMatchArea(playerName);
 }
 
