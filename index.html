@@ -101,24 +101,24 @@ function recentTableRows(data,mode){
     <table class="detail-table recent-table">
       <colgroup>
         <col style="width:4%">
-        <col style="width:13%">
-        <col style="width:4%">
+        <col style="width:16%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:8%">
         <col style="width:6%">
-        <col style="width:5%">
+        <col style="width:16%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:8%">
         <col style="width:6%">
-        <col style="width:4%">
-        <col style="width:13%">
-        <col style="width:4%">
-        <col style="width:6%">
-        <col style="width:5%">
-        <col style="width:6%">
-        <col style="width:4%">
       </colgroup>
 
       <thead>
         <tr>
           <th>승패</th>
-          <th>챔피언 / 플레이어</th>
+          <th>${mode==="player"?"챔피언":"챔피언 / 플레이어"}</th>
           <th>라인</th>
           <th>K/D/A</th>
           <th>KDA</th>
@@ -160,42 +160,41 @@ function recentTableRows(data,mode){
               </td>
 
               <td style="text-align:left">
-                <div class="champ-cell" title="${htmlSafe(r.champion_name||"-")} / ${htmlSafe(r.lol_name||"-")}">
-                  <img class="champ-icon"
-                       src="${champImg(r.champion_name)}"
-                       onerror="this.style.display='none'"/>
-
-                  <div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-                    <span class="champ-name" style="width:100%;">
-                      ${htmlSafe(r.champion_name||"-")}
-                    </span>
-                    <span class="nickname" style="font-size:11px;color:#cbd5e1;max-width:100%;overflow:hidden;text-overflow:ellipsis;">
-                      ${htmlSafe(r.lol_name||"-")}
-                    </span>
-                  </div>
-                </div>
+                ${
+                  mode==="player"
+                  ? `
+                    <div class="champ-cell" title="${htmlSafe(r.champion_name||"-")}">
+                      <img class="champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'"/>
+                      <span class="champ-name">${htmlSafe(r.champion_name||"-")}</span>
+                    </div>
+                  `
+                  : `
+                    <div class="champ-cell" title="${htmlSafe(r.champion_name||"-")} / ${htmlSafe(r.lol_name||"-")}">
+                      <img class="champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'"/>
+                      <div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+                        <span class="champ-name" style="width:100%;">${htmlSafe(r.champion_name||"-")}</span>
+                        <span style="font-size:11px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                          ${htmlSafe(r.lol_name||"-")}
+                        </span>
+                      </div>
+                    </div>
+                  `
+                }
               </td>
 
-              <td>
-                ${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||"-"}
-              </td>
-
+              <td>${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||"-"}</td>
               <td>${k}/${d}/${a}</td>
               <td>${kdaValue.toFixed(2)}</td>
               <td>${kpValue===null?"-":pct(kpValue)}</td>
               <td>${score.toFixed(1)}</td>
+
               <td style="text-align:left">
                 ${o?`
                   <div class="champ-cell" title="${htmlSafe(o.champion_name||"-")} / ${htmlSafe(o.lol_name||"-")}">
-                    <img class="champ-icon"
-                         src="${champImg(o.champion_name)}"
-                         onerror="this.style.display='none'"/>
-
+                    <img class="champ-icon" src="${champImg(o.champion_name)}" onerror="this.style.display='none'"/>
                     <div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-                      <span class="champ-name" style="width:100%;">
-                        ${htmlSafe(o.champion_name||"-")}
-                      </span>
-                      <span class="nickname" style="font-size:11px;color:#cbd5e1;max-width:100%;overflow:hidden;text-overflow:ellipsis;">
+                      <span class="champ-name" style="width:100%;">${htmlSafe(o.champion_name||"-")}</span>
+                      <span style="font-size:11px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                         ${htmlSafe(o.lol_name||"-")}
                       </span>
                     </div>
@@ -203,10 +202,7 @@ function recentTableRows(data,mode){
                 `:"-"}
               </td>
 
-              <td>
-                ${o?`${laneIcon(o.lane)} ${LANE_LABELS[o.lane]||o.lane||"-"}`:"-"}
-              </td>
-
+              <td>${o?`${laneIcon(o.lane)} ${LANE_LABELS[o.lane]||o.lane||"-"}`:"-"}</td>
               <td>${o?`${ok}/${od}/${oa}`:"-"}</td>
               <td>${o?okda.toFixed(2):"-"}</td>
               <td>${o?(okp===null?"-":pct(okp)):"-"}</td>
