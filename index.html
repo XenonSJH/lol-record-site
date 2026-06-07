@@ -452,7 +452,7 @@ function average(arr){if(!arr.length)return 0;return arr.reduce((a,b)=>a+b,0)/ar
 function rankText(rank){if(rank===1)return"🥇";if(rank===2)return"🥈";if(rank===3)return"🥉";return rank}
 function compareName(a,b){return String(a).localeCompare(String(b),"ko")}
 function effectiveLane(){return activeSearch?"ALL":currentLane}
-function getParticipationGroup(participation){if(participation>=35)return 0;if(participation>=10)return 1;return 2}
+function getParticipationGroup(participation){if(participation>=30)return 0;if(participation>=10)return 1;return 2}
 
 function tierBadge(tier){
   const cls={OP:"tier-op",S:"tier-s",A:"tier-a",B:"tier-b",C:"tier-c"}[tier]||"tier-c";
@@ -484,7 +484,7 @@ function comboTierBadge(tiers){
 
   return `
     <span style="display:inline-flex;align-items:center;justify-content:center;gap:4px;">
-      ${tierBadge(최고)}
+      ${tierBadge(best)}
       ${extra>0 ? `<span class="tier-plus">+${extra}</span>` : ""}
     </span>
   `;
@@ -493,13 +493,20 @@ function comboTierBadge(tiers){
 function comboPortraitStyle(tiers){
   if(!tiers || !tiers.length)return "background:transparent;";
 
-  const colors=tiers
-    .filter(Boolean)
-    .map(t=>tierColor(t));
+  const filtered=tiers.filter(Boolean);
+  if(filtered.length<=1)return "background:transparent;";
 
-  if(colors.length<=1)return "background:transparent;";
+  const total=filtered.length;
+  let current=0;
+  const parts=filtered.map(t=>{
+    const start=current;
+    current+=100/total;
+    const end=current;
+    const color=tierColor(t);
+    return `${color} ${start}% ${end}%`;
+  });
 
-  return `background:conic-gradient(${colors.join(",")});`;
+  return `background:conic-gradient(${parts.join(",")});`;
 }
 function championScore(champ){
   return champ.winRate*.48+champ.pickRate*1.7+champ.banRate*1.05+champ.kp*.12+Math.min(champ.games,30)*.85;
@@ -769,7 +776,7 @@ function renderPlayerRanking(){
 
     let rank;
     if(playerSort==="winRate"&&!activeSearch){
-      if(p.participation>=35){
+      if(p.participation>=30){
         rankedCount++;
         rank=rankText(rankedCount);
       }else rank="-";
@@ -939,16 +946,8 @@ function openChampionDetail(championName, detailLane="ALL"){
     .filter(c=>c.name===championName)
     .sort((a,b)=>LANE_ORDER.indexOf(a.displayLane)-LANE_ORDER.indexOf(b.displayLane));
 
-  const tierColorMap={
-    OP:"#ef4444",
-    S:"#fb923c",
-    A:"#fde047",
-    B:"#4ade80",
-    C:"#60a5fa"
-  };
-
   const portraitBorder=laneTierList.length
-    ? `background:conic-gradient(${laneTierList.map(c=>tierColorMap[c.tier]||"#60a5fa").join(",")});padding:3px;`
+    ? comboPortraitStyle(laneTierList.map(c=>c.tier)) + "padding:3px;"
     : "";
 
   const data=s.rows;
