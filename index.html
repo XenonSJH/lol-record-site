@@ -96,6 +96,7 @@ function setChampionRecentLane(lane,championName){recentLane=lane;const sec=docu
 function findOpponent(row){const same=rows.filter(r=>r.match_id===row.match_id&&r.lol_name!==row.lol_name);let o=same.find(r=>r.lane===row.lane&&r.win!==row.win);if(!o)o=same.find(r=>r.lane===row.lane);return o||null}function recentMatchScore(r){const k=num(r.kills),d=num(r.deaths),a=num(r.assists),kdaValue=getKda(k,d,a),kpValue=kp(r)||0,resultBonus=r.win?12:0;return k*3+a*2-d*2+kdaValue*4+kpValue*.25+resultBonus}
 function recentTableRows(data,mode){
   if(!data.length)return`<div class="recent-empty">조건에 맞는 전적이 없습니다.</div>`;
+
   return`
     <table class="detail-table recent-table">
       <colgroup>
@@ -114,10 +115,11 @@ function recentTableRows(data,mode){
         <col style="width:6%">
         <col style="width:4%">
       </colgroup>
+
       <thead>
         <tr>
           <th>승패</th>
-          <th>${mode==="player"?"챔피언":"챔피언 / 플레이어"}</th>
+          <th>챔피언 / 플레이어</th>
           <th>라인</th>
           <th>K/D/A</th>
           <th>KDA</th>
@@ -132,57 +134,86 @@ function recentTableRows(data,mode){
           <th>상대 점수</th>
         </tr>
       </thead>
+
       <tbody>
         ${data.map(r=>{
           const o=findOpponent(r);
-          const k=num(r.kills),d=num(r.deaths),a=num(r.assists);
-          const kdaValue=getKda(k,d,a),kpValue=kp(r),score=recentMatchScore(r);
-          const ok=o?num(o.kills):0,od=o?num(o.deaths):0,oa=o?num(o.assists):0;
-          const okda=o?getKda(ok,od,oa):0,okp=o?kp(o):null,oscore=o?recentMatchScore(o):0;
+
+          const k=num(r.kills);
+          const d=num(r.deaths);
+          const a=num(r.assists);
+          const kdaValue=getKda(k,d,a);
+          const kpValue=kp(r);
+          const score=recentMatchScore(r);
+
+          const ok=o?num(o.kills):0;
+          const od=o?num(o.deaths):0;
+          const oa=o?num(o.assists):0;
+          const okda=o?getKda(ok,od,oa):0;
+          const okp=o?kp(o):null;
+          const oscore=o?recentMatchScore(o):0;
 
           return`
             <tr>
-              <td><div class="recent-result-block ${r.win?"result-win":"result-loss"}">${r.win?"승":"패"}</div></td>
-
-              <td style="text-align:left">
-                ${
-                  mode==="player"
-                  ? `
-                    <div class="champ-cell" title="${htmlSafe(r.champion_name||"-")}">
-                      <img class="champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'"/>
-                      <span class="champ-name">${htmlSafe(r.champion_name||"-")}</span>
-                    </div>
-                  `
-                  : `
-                    <div class="champ-cell" title="${htmlSafe(r.champion_name||"-")} / ${htmlSafe(r.lol_name||"-")}">
-                      <img class="champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'"/>
-                      <div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-                        <span class="champ-name" style="width:100%;">${htmlSafe(r.champion_name||"-")}</span>
-                        <span class="nickname" style="font-size:11px;color:#cbd5e1;max-width:100%;overflow:hidden;text-overflow:ellipsis;">${htmlSafe(r.lol_name||"-")}</span>
-                      </div>
-                    </div>
-                  `
-                }
+              <td>
+                <div class="recent-result-block ${r.win?"result-win":"result-loss"}">
+                  ${r.win?"승":"패"}
+                </div>
               </td>
 
-              <td>${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||"-"}</td>
+              <td style="text-align:left">
+                <div class="champ-cell" title="${htmlSafe(r.champion_name||"-")} / ${htmlSafe(r.lol_name||"-")}">
+                  <img class="champ-icon"
+                       src="${champImg(r.champion_name)}"
+                       onerror="this.style.display='none'"/>
+
+                  <div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+                    <span class="champ-name" style="width:100%;">
+                      ${htmlSafe(r.champion_name||"-")}
+                    </span>
+                    <span class="nickname" style="font-size:11px;color:#cbd5e1;max-width:100%;overflow:hidden;text-overflow:ellipsis;">
+                      ${htmlSafe(r.lol_name||"-")}
+                    </span>
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                ${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||"-"}
+              </td>
+
               <td>${k}/${d}/${a}</td>
               <td>${kdaValue.toFixed(2)}</td>
               <td>${kpValue===null?"-":pct(kpValue)}</td>
               <td>${score.toFixed(1)}</td>
 
-              <td class="opponent-name">${htmlSafe(o?.lol_name||"-")}</td>
+              <td class="opponent-name">
+                ${htmlSafe(o?.lol_name||"-")}
+              </td>
 
               <td style="text-align:left">
                 ${o?`
-                  <div class="champ-cell" title="${htmlSafe(o.champion_name||"-")}">
-                    <img class="champ-icon" src="${champImg(o.champion_name)}" onerror="this.style.display='none'"/>
-                    <span class="champ-name">${htmlSafe(o.champion_name||"-")}</span>
+                  <div class="champ-cell" title="${htmlSafe(o.champion_name||"-")} / ${htmlSafe(o.lol_name||"-")}">
+                    <img class="champ-icon"
+                         src="${champImg(o.champion_name)}"
+                         onerror="this.style.display='none'"/>
+
+                    <div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+                      <span class="champ-name" style="width:100%;">
+                        ${htmlSafe(o.champion_name||"-")}
+                      </span>
+                      <span class="nickname" style="font-size:11px;color:#cbd5e1;max-width:100%;overflow:hidden;text-overflow:ellipsis;">
+                        ${htmlSafe(o.lol_name||"-")}
+                      </span>
+                    </div>
                   </div>
                 `:"-"}
               </td>
 
-              <td>${o?`${laneIcon(o.lane)} ${LANE_LABELS[o.lane]||o.lane||"-"}`:"-"}</td>
+              <td>
+                ${o?`${laneIcon(o.lane)} ${LANE_LABELS[o.lane]||o.lane||"-"}`:"-"}
+              </td>
+
               <td>${o?`${ok}/${od}/${oa}`:"-"}</td>
               <td>${o?okda.toFixed(2):"-"}</td>
               <td>${o?(okp===null?"-":pct(okp)):"-"}</td>
