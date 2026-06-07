@@ -546,7 +546,7 @@ function getAllChampionComboList(){
 async function loadData(){
   await loadChampionMeta();
   const {data:pData}=await supabase.from("players").select("discord_id,lol_name,wins,losses,profile_image_url,profile_updated_at");
-  const {data:rData}=await supabase.from("match_players").select("id,match_id,created_at,lol_name,champion_name,lane,kills,deaths,assists,team_kills,team_id,win");
+  const {data:rData}=await supabase.from("match_players").select("id,match_id,created_at,lol_name,champion_name,lane,kills,deaths,assists,team_kills,win");
   const {data:bData}=await supabase.from("match_bans").select("id,match_id,champion_name,team_id,created_at");
   const {data:mData,count}=await supabase.from("matches").select("*",{count:"exact"});
   players=pData||[];rows=rData||[];bans=bData||[];matches=mData||[];totalGames=count||matches.length||0;
@@ -983,11 +983,8 @@ function playerRecentMatchRows(playerName){
 function findOpponent(row){
   const sameMatch=rows.filter(r=>r.match_id===row.match_id && r.lol_name!==row.lol_name);
 
-  let opponent=null;
-
-  if(row.team_id!==undefined && row.team_id!==null){
-    opponent=sameMatch.find(r=>r.lane===row.lane && r.team_id!==row.team_id);
-  }
+  // team_id 컬럼이 없는 DB에서도 터지지 않게, 같은 경기 + 같은 라인 + 승패 반대인 사람을 우선 상대팀으로 잡음
+  let opponent=sameMatch.find(r=>r.lane===row.lane && r.win!==row.win);
 
   if(!opponent){
     opponent=sameMatch.find(r=>r.lane===row.lane);
