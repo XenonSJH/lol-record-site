@@ -1324,7 +1324,7 @@ function getBestChampionSynergy(championName){
 
   baseRows.forEach(base=>{
     sameTeamRows(base).forEach(mate=>{
-      const key=`${base.lane}__${championName}__${mate.lane}__${mate.champion_name}`;
+      const key=`${base.lane}__${mate.lane}__${mate.champion_name}`;
       if(!map[key]){
         map[key]={
           baseLane:base.lane,
@@ -1346,8 +1346,15 @@ function getBestChampionSynergy(championName){
       ...x,
       winRate:x.games?x.wins/x.games*100:0
     }))
-    .sort((a,b)=>b.winRate-a.winRate || b.games-a.games)
-    .slice(0,5);
+    .sort((a,b)=>{
+      if(a.baseLane!==b.baseLane){
+        return LANE_ORDER.indexOf(a.baseLane)-LANE_ORDER.indexOf(b.baseLane);
+      }
+      if(a.mateLane!==b.mateLane){
+        return LANE_ORDER.indexOf(a.mateLane)-LANE_ORDER.indexOf(b.mateLane);
+      }
+      return b.winRate-a.winRate || b.games-a.games;
+    });
 }
 
 function getBestPlayerDuo(playerName){
@@ -1356,7 +1363,7 @@ function getBestPlayerDuo(playerName){
 
   baseRows.forEach(base=>{
     sameTeamRows(base).forEach(mate=>{
-      const key=`${base.lane}__${playerName}__${mate.lane}__${mate.lol_name}`;
+      const key=`${base.lane}__${mate.lane}__${mate.lol_name}`;
       if(!map[key]){
         map[key]={
           baseLane:base.lane,
@@ -1371,56 +1378,81 @@ function getBestPlayerDuo(playerName){
       if(base.win)map[key].wins++;
     });
   });
-
   return Object.values(map)
-    .filter(x=>x.games>=1)
+    .filter(x=>x.games>=3)
     .map(x=>({
       ...x,
-      winRate:x.games?x.wins/x.games*100:0
+      winRate:x.games?x.wins/x.games*100:0,
+      score:(x.games?x.wins/x.games*100:0)+(x.games*3)
     }))
-    .sort((a,b)=>b.winRate-a.winRate || b.games-a.games)
-    .slice(0,5);
+    .sort((a,b)=>{
+      if(a.baseLane!==b.baseLane){
+        return LANE_ORDER.indexOf(a.baseLane)-LANE_ORDER.indexOf(b.baseLane);
+      }
+
+      if(a.mateLane!==b.mateLane){
+        return LANE_ORDER.indexOf(a.mateLane)-LANE_ORDER.indexOf(b.mateLane);
+      }
+
+      return b.score-a.score;
+    });
 }
 
 function synergyTable(list,type){
   if(!list.length)return`<div>데이터가 없습니다.</div>`;
 
+  const baseLaneMap={};
+
+  list.forEach(x=>{
+    if(!baseLaneMap[x.baseLane])baseLaneMap[x.baseLane]=[];
+    baseLaneMap[x.baseLane].push(x);
+  });
+
+  const existingBaseLanes=LANE_ORDER.filter(lane=>baseLaneMap[lane]?.length);
+
   return`
-    <table class="detail-table">
-      <colgroup>
-        <col class="col-rank">
-        <col class="col-champ">
-        <col class="col-champ">
-        <col class="col-small">
-        <col class="col-rate">
-      </colgroup>
-      <thead>
-        <tr>
-          <th>순위</th>
-          <th>기준</th>
-          <th>조합</th>
-          <th>판수</th>
-          <th>승률</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${list.map((x,i)=>`
-          <tr>
-            <td>${rankText(i+1)}</td>
-            <td>
-              ${laneIcon(x.baseLane)} ${LANE_LABELS[x.baseLane]||x.baseLane}
-              ${type==="champion" ? htmlSafe(x.baseChampion) : htmlSafe(x.basePlayer)}
-            </td>
-            <td>
-              ${laneIcon(x.mateLane)} ${LANE_LABELS[x.mateLane]||x.mateLane}
-              ${type==="champion" ? htmlSafe(x.mateChampion) : htmlSafe(x.matePlayer)}
-            </td>
-            <td>${x.games}</td>
-            <td class="${rateClass(x.winRate)}">${pct(x.winRate)}</td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
+    <div style="display:flex;flex-direction:column;gap:18px;">
+      ${existingBaseLanes.map(baseLane=>{
+        const baseList=baseLaneMap[baseLane];
+        const mateLaneMap={};
+
+        baseList.forEach(x=>{
+          if(!mateLaneMap[x.mateLane])mateLaneMap[x.mateLane]=[];
+          mateLaneMap[x.mateLane].push(x);
+        });
+
+        const existingMateLanes=LANE_ORDER.filter(lane=>mateLaneMap[lane]?.length);
+
+        return`
+          <div style="background:rgba(15,23,42,.55);border:1px solid rgba(96,165,250,.18);border-radius:18px;padding:14px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;color:#bfdbfe;font-size:17px;font-weight:1000;">
+              기준: ${laneIcon(baseLane)} ${LANE_LABELS[baseLane]||baseLane}
+              ${type==="champion" ? htmlSafe(baseList[0].baseChampion) : htmlSafe(baseList[0].basePlayer)}
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(${Math.max(existingMateLanes.length,1)},1fr);gap:12px;">
+              ${existingMateLanes.map(mateLane=>`
+                <div style="background:rgba(30,41,59,.92);border:1px solid rgba(148,163,184,.25);border-radius:16px;padding:12px;">
+                  <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;color:#bfdbfe;font-weight:1000;">
+                    ${laneIcon(mateLane)} ${LANE_LABELS[mateLane]||mateLane}
+                  </div>
+
+                  ${mateLaneMap[mateLane]
+                    .sort((a,b)=>b.winRate-a.winRate || b.games-a.games)
+                    .slice(0,5)
+                    .map((x,i)=>`
+                      <div style="display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-top:1px solid rgba(51,65,85,.7);font-weight:1000;">
+                        <span>${i+1}. ${type==="champion" ? htmlSafe(x.mateChampion) : htmlSafe(x.matePlayer)}</span>
+                        <span class="${rateClass(x.winRate)}">${pct(x.winRate)}</span>
+                      </div>
+                    `).join("")}
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      }).join("")}
+    </div>
   `;
 }
 function playerRecentMatchRows(playerName){
