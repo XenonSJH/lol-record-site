@@ -1196,7 +1196,10 @@ function recentControls(playerName){
 
       <div class="recent-filter-row">
         ${["ALL",...LANE_ORDER].map(lane=>`
-          <button class="recent-lane-filter ${recentLane===lane?"active":""}" type="button" onclick="setRecentLane('${lane}','${safe(playerName)}')">
+          <button
+            class="recent-lane-filter ${recentLane===lane ? 'active' : ''}"
+            type="button"
+            onclick="setRecentLane('${lane}','${safe(playerName)}')">
             ${lane==="ALL"?"":laneIcon(lane)}
             <span>${LANE_LABELS[lane]}</span>
           </button>
