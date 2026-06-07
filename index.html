@@ -1223,7 +1223,119 @@ function renderRecentMatchArea(playerName){
   if(!area)return;
   area.innerHTML=playerRecentMatchRows(playerName);
 }
+function sameTeamRows(row){
+  return rows.filter(r =>
+    r.match_id===row.match_id &&
+    r.win===row.win &&
+    r.lol_name!==row.lol_name
+  );
+}
 
+function getBestChampionSynergy(championName){
+  const baseRows=rows.filter(r=>r.champion_name===championName);
+  const map={};
+
+  baseRows.forEach(base=>{
+    sameTeamRows(base).forEach(mate=>{
+      const key=`${base.lane}__${championName}__${mate.lane}__${mate.champion_name}`;
+      if(!map[key]){
+        map[key]={
+          baseLane:base.lane,
+          baseChampion:championName,
+          mateLane:mate.lane,
+          mateChampion:mate.champion_name,
+          games:0,
+          wins:0
+        };
+      }
+      map[key].games++;
+      if(base.win)map[key].wins++;
+    });
+  });
+
+  return Object.values(map)
+    .filter(x=>x.games>=1)
+    .map(x=>({
+      ...x,
+      winRate:x.games?x.wins/x.games*100:0
+    }))
+    .sort((a,b)=>b.winRate-a.winRate || b.games-a.games)
+    .slice(0,5);
+}
+
+function getBestPlayerDuo(playerName){
+  const baseRows=rows.filter(r=>r.lol_name===playerName);
+  const map={};
+
+  baseRows.forEach(base=>{
+    sameTeamRows(base).forEach(mate=>{
+      const key=`${base.lane}__${playerName}__${mate.lane}__${mate.lol_name}`;
+      if(!map[key]){
+        map[key]={
+          baseLane:base.lane,
+          basePlayer:playerName,
+          mateLane:mate.lane,
+          matePlayer:mate.lol_name,
+          games:0,
+          wins:0
+        };
+      }
+      map[key].games++;
+      if(base.win)map[key].wins++;
+    });
+  });
+
+  return Object.values(map)
+    .filter(x=>x.games>=1)
+    .map(x=>({
+      ...x,
+      winRate:x.games?x.wins/x.games*100:0
+    }))
+    .sort((a,b)=>b.winRate-a.winRate || b.games-a.games)
+    .slice(0,5);
+}
+
+function synergyTable(list,type){
+  if(!list.length)return`<div>데이터가 없습니다.</div>`;
+
+  return`
+    <table class="detail-table">
+      <colgroup>
+        <col class="col-rank">
+        <col class="col-champ">
+        <col class="col-champ">
+        <col class="col-small">
+        <col class="col-rate">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>순위</th>
+          <th>기준</th>
+          <th>조합</th>
+          <th>판수</th>
+          <th>승률</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map((x,i)=>`
+          <tr>
+            <td>${rankText(i+1)}</td>
+            <td>
+              ${laneIcon(x.baseLane)} ${LANE_LABELS[x.baseLane]||x.baseLane}
+              ${type==="champion" ? htmlSafe(x.baseChampion) : htmlSafe(x.basePlayer)}
+            </td>
+            <td>
+              ${laneIcon(x.mateLane)} ${LANE_LABELS[x.mateLane]||x.mateLane}
+              ${type==="champion" ? htmlSafe(x.mateChampion) : htmlSafe(x.matePlayer)}
+            </td>
+            <td>${x.games}</td>
+            <td class="${rateClass(x.winRate)}">${pct(x.winRate)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
 function openPlayerDetail(playerName){
   recentLane="ALL";
   recentChampionSearch="";
@@ -1296,15 +1408,133 @@ function openPlayerDetail(playerName){
       ${tableStatsRows(getPlayerLaneStats(playerName),"라인")}
     </div>
 
+    <div class="section">
+      <div class="section-title">최고의 듀오 TOP 5</div>
+      ${synergyTable(getBestPlayerDuo(playerName),"player")}
+    </div>
+
     ${collapsibleSection("mostChampionSection","모스트 챔피언",`<div id="mostChampionArea"></div>`)}
-    ${collapsibleSection("recentMatchSection","최근 전적 20판",recentControls(playerName))}
+
+    ${collapsibleSection("recentMatchSection","전적",recentControls(playerName))}
   `;
 
   showDetail(html);
   renderMostChampionArea(playerName);
   renderRecentMatchArea(playerName);
 }
+function sameTeamRows(row){
+  return rows.filter(r =>
+    r.match_id===row.match_id &&
+    r.win===row.win &&
+    r.lol_name!==row.lol_name
+  );
+}
 
+function getBestChampionSynergy(championName){
+  const baseRows=rows.filter(r=>r.champion_name===championName);
+  const map={};
+
+  baseRows.forEach(base=>{
+    sameTeamRows(base).forEach(mate=>{
+      const key=`${base.lane}__${championName}__${mate.lane}__${mate.champion_name}`;
+      if(!map[key]){
+        map[key]={
+          baseLane:base.lane,
+          baseChampion:championName,
+          mateLane:mate.lane,
+          mateChampion:mate.champion_name,
+          games:0,
+          wins:0
+        };
+      }
+      map[key].games++;
+      if(base.win)map[key].wins++;
+    });
+  });
+
+  return Object.values(map)
+    .filter(x=>x.games>=1)
+    .map(x=>({
+      ...x,
+      winRate:x.games?x.wins/x.games*100:0
+    }))
+    .sort((a,b)=>b.winRate-a.winRate || b.games-a.games)
+    .slice(0,5);
+}
+
+function getBestPlayerDuo(playerName){
+  const baseRows=rows.filter(r=>r.lol_name===playerName);
+  const map={};
+
+  baseRows.forEach(base=>{
+    sameTeamRows(base).forEach(mate=>{
+      const key=`${base.lane}__${playerName}__${mate.lane}__${mate.lol_name}`;
+      if(!map[key]){
+        map[key]={
+          baseLane:base.lane,
+          basePlayer:playerName,
+          mateLane:mate.lane,
+          matePlayer:mate.lol_name,
+          games:0,
+          wins:0
+        };
+      }
+      map[key].games++;
+      if(base.win)map[key].wins++;
+    });
+  });
+
+  return Object.values(map)
+    .filter(x=>x.games>=1)
+    .map(x=>({
+      ...x,
+      winRate:x.games?x.wins/x.games*100:0
+    }))
+    .sort((a,b)=>b.winRate-a.winRate || b.games-a.games)
+    .slice(0,5);
+}
+
+function synergyTable(list,type){
+  if(!list.length)return`<div>데이터가 없습니다.</div>`;
+
+  return`
+    <table class="detail-table">
+      <colgroup>
+        <col class="col-rank">
+        <col class="col-champ">
+        <col class="col-champ">
+        <col class="col-small">
+        <col class="col-rate">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>순위</th>
+          <th>기준</th>
+          <th>조합</th>
+          <th>판수</th>
+          <th>승률</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map((x,i)=>`
+          <tr>
+            <td>${rankText(i+1)}</td>
+            <td>
+              ${laneIcon(x.baseLane)} ${LANE_LABELS[x.baseLane]||x.baseLane}
+              ${type==="champion" ? htmlSafe(x.baseChampion) : htmlSafe(x.basePlayer)}
+            </td>
+            <td>
+              ${laneIcon(x.mateLane)} ${LANE_LABELS[x.mateLane]||x.mateLane}
+              ${type==="champion" ? htmlSafe(x.mateChampion) : htmlSafe(x.matePlayer)}
+            </td>
+            <td>${x.games}</td>
+            <td class="${rateClass(x.winRate)}">${pct(x.winRate)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
 function playerRecentMatchRows(playerName){
   let data=rows.filter(r=>r.lol_name===playerName);
 
@@ -1319,7 +1549,6 @@ function playerRecentMatchRows(playerName){
 
   data=data
     .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))
-    .slice(0,20);
 
   if(!data.length)return`<div class="recent-empty">조건에 맞는 최근 전적이 없습니다.</div>`;
 
@@ -1593,6 +1822,11 @@ function openChampionDetail(championName){
     <div class="section">
       <div class="section-title">라인별 통계</div>
       ${tableStatsRows(getChampionLaneStats(championName),"라인")}
+    </div>
+
+    <div class="section">
+      <div class="section-title">같이 조합되면 좋은 챔피언 TOP 5</div>
+      ${synergyTable(getBestChampionSynergy(championName),"champion")}
     </div>
 
     <div class="section">
