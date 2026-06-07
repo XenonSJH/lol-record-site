@@ -107,7 +107,6 @@ function recentTableRows(data,mode){
         <col style="width:5%">
         <col style="width:6%">
         <col style="width:4%">
-        <col style="width:10%">
         <col style="width:13%">
         <col style="width:4%">
         <col style="width:6%">
@@ -125,7 +124,6 @@ function recentTableRows(data,mode){
           <th>KDA</th>
           <th>킬관여율</th>
           <th>점수</th>
-          <th>상대</th>
           <th>상대 챔프</th>
           <th>상대 라인</th>
           <th>상대 K/D/A</th>
@@ -186,11 +184,6 @@ function recentTableRows(data,mode){
               <td>${kdaValue.toFixed(2)}</td>
               <td>${kpValue===null?"-":pct(kpValue)}</td>
               <td>${score.toFixed(1)}</td>
-
-              <td class="opponent-name">
-                ${htmlSafe(o?.lol_name||"-")}
-              </td>
-
               <td style="text-align:left">
                 ${o?`
                   <div class="champ-cell" title="${htmlSafe(o.champion_name||"-")} / ${htmlSafe(o.lol_name||"-")}">
