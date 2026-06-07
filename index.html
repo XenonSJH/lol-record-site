@@ -136,15 +136,28 @@ tbody tr:hover td{background:rgba(71,85,105,.95)}
 .recent-filter-row{display:flex;gap:8px;flex-wrap:wrap}
 .recent-lane-filter{padding:9px 12px}
 .recent-table{table-layout:fixed}
-.recent-table .recent-col-champ{width:15%}
+.recent-table .recent-col-result{width:8%}
+.recent-table .recent-col-champ{width:13%}
 .recent-table .recent-col-lane{width:8%}
 .recent-table .recent-col-kda{width:12%}
 .recent-table .recent-col-kdarate{width:10%}
 .recent-table .recent-col-kp{width:11%}
 .recent-table .recent-col-score{width:10%}
-.recent-table .recent-col-oppchamp{width:15%}
+.recent-table .recent-col-oppchamp{width:13%}
 .recent-table .recent-col-opplane{width:8%}
-.recent-table .recent-col-oppname{width:11%}
+.recent-table .recent-col-oppname{width:7%}
+.recent-result-block{
+  width:52px;
+  height:52px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:14px;
+  color:white;
+  font-weight:1000;
+  font-size:18px;
+  margin:0 auto;
+}
 .recent-table td{padding:10px 6px}
 .recent-table .champ-icon{width:34px;height:34px;border-radius:9px}
 .recent-empty{color:#cbd5e1;font-weight:1000;padding:10px 0}
@@ -1292,6 +1305,7 @@ function playerRecentMatchRows(playerName){
   return`
     <table class="detail-table recent-table">
       <colgroup>
+        <col class="recent-col-result">
         <col class="recent-col-champ">
         <col class="recent-col-lane">
         <col class="recent-col-kda">
@@ -1304,6 +1318,7 @@ function playerRecentMatchRows(playerName){
       </colgroup>
       <thead>
         <tr>
+          <th>승패</th>
           <th>챔피언</th>
           <th>라인</th>
           <th>킬/데스/어시</th>
@@ -1327,17 +1342,25 @@ function playerRecentMatchRows(playerName){
 
           return`
             <tr>
+              <td>
+                <div class="recent-result-block ${r.win?"result-win":"result-loss"}">
+                  ${r.win?"승":"패"}
+                </div>
+              </td>
+
               <td style="text-align:left">
                 <div class="champ-cell" title="${htmlSafe(r.champion_name||"-")}">
                   <img class="champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'" />
                   <span class="champ-name">${htmlSafe(r.champion_name||"-")}</span>
                 </div>
               </td>
+
               <td>${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||"-"}</td>
               <td>${k}/${d}/${a}</td>
               <td>${kdaValue.toFixed(2)}</td>
               <td>${kpValue===null?"-":pct(kpValue)}</td>
               <td>${score.toFixed(1)}</td>
+
               <td style="text-align:left">
                 ${opponent?`
                   <div class="champ-cell" title="${htmlSafe(opponent.champion_name||"-")}">
@@ -1346,6 +1369,7 @@ function playerRecentMatchRows(playerName){
                   </div>
                 `:"-"}
               </td>
+
               <td>${opponent?`${laneIcon(opponent.lane)} ${LANE_LABELS[opponent.lane]||opponent.lane||"-"}`:"-"}</td>
               <td class="nickname">${htmlSafe(opponent?.lol_name||"-")}</td>
             </tr>
