@@ -348,8 +348,8 @@ tbody tr:hover td{background:rgba(71,85,105,.95)}
         <th><button class="sort-btn" onclick="sortPlayer('wins')">승</button></th>
         <th><button class="sort-btn" onclick="sortPlayer('losses')">패</button></th>
         <th><button class="sort-btn" onclick="sortPlayer('winRate')">승률</button></th>
-        <th><button class="sort-btn" onclick="sortPlayer('participation')">참여율</button></th>
         <th><button class="sort-btn" onclick="sortPlayer('kp')">킬관여율</button></th>
+        <th><button class="sort-btn" onclick="sortPlayer('participation')">참여율</button></th>
       </tr>
     </thead>
     <tbody id="playerRanking"></tbody>
@@ -546,7 +546,7 @@ function getAllChampionComboList(){
 async function loadData(){
   await loadChampionMeta();
   const {data:pData}=await supabase.from("players").select("discord_id,lol_name,wins,losses,profile_image_url,profile_updated_at");
-  const {data:rData}=await supabase.from("match_players").select("id,match_id,created_at,lol_name,champion_name,lane,kills,deaths,assists,team_kills,win");
+  const {data:rData}=await supabase.from("match_players").select("id,match_id,created_at,lol_name,champion_name,lane,kills,deaths,assists,team_kills,team_id,win");
   const {data:bData}=await supabase.from("match_bans").select("id,match_id,champion_name,team_id,created_at");
   const {data:mData,count}=await supabase.from("matches").select("*",{count:"exact"});
   players=pData||[];rows=rData||[];bans=bData||[];matches=mData||[];totalGames=count||matches.length||0;
@@ -799,8 +799,8 @@ function renderPlayerRanking(){
         <td class="win">${p.wins}</td>
         <td class="loss">${p.losses}</td>
         <td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td>
-        <td>${pct(p.participation)}</td>
         <td>${pct(p.kp)}</td>
+        <td>${pct(p.participation)}</td>
       </tr>`;
   });
 
@@ -913,8 +913,95 @@ function openPlayerDetail(playerName){
   const player=players.find(p=>p.lol_name===playerName)||{},s=calcPlayerStats(playerName,"ALL"),data=s.rows,lanes=mainLanes(data),st=streaks(data);
   const bestKill=bestRecord(data,"kills"),bestDeath=bestRecord(data,"deaths"),bestAssist=bestRecord(data,"assists"),bestKp=bestRecord(data,"kp");
   const profile=player.profile_image_url?`<img src="${player.profile_image_url}" onerror="this.parentElement.innerHTML='프로필 사진을<br>추가해주세요!'" />`:`프로필 사진을<br>추가해주세요!`;
-  const html=`<div class="detail-hero"><div class="profile-box">${profile}</div><div><div class="hero-title">${playerName}</div><div class="hero-sub">${lanes.length?lanes.map(lanePill).join(""):`<span class="lane-pill">라인 기록 없음</span>`}</div></div></div><div class="section"><div class="section-title">전체 전적</div>${statCards([{label:"판수",value:s.games},{label:"승",value:s.wins,cls:"win"},{label:"패",value:s.losses,cls:"loss"},{label:"승률",value:pct(s.winRate),cls:rateClass(s.winRate)},{label:"평균 킬",value:s.avgKills.toFixed(1)},{label:"평균 데스",value:s.avgDeaths.toFixed(1)},{label:"평균 어시",value:s.avgAssists.toFixed(1)},{label:"평균 KDA",value:s.kda.toFixed(2)},{label:"평균 킬관여율",value:pct(s.kp)},{label:"주 라인",value:lanes[0]?LANE_LABELS[lanes[0]]:"-"}])}</div><div class="section"><div class="section-title">최고 기록</div>${statCards([{label:"최다 킬",value:bestKill?num(bestKill.kills):"-",extra:playerRecordExtra(bestKill)},{label:"최다 데스",value:bestDeath?num(bestDeath.deaths):"-",extra:playerRecordExtra(bestDeath)},{label:"최다 어시스트",value:bestAssist?num(bestAssist.assists):"-",extra:playerRecordExtra(bestAssist)},{label:"최대 킬관여율",value:bestKp?pct(kp(bestKp)||0):"-",extra:playerRecordExtra(bestKp)},{label:"최대 연승",value:`${st.maxWin}연승`,cls:"win"},{label:"최대 연패",value:`${st.maxLose}연패`,cls:"loss"}])}</div><div class="section"><div class="section-title">최근 전적 10판</div>${recentBlocks(data)}</div><div class="section"><div class="section-title">라인 비율</div>${laneRatio(data)}</div><div class="section"><div class="section-title">라인별 전적</div>${tableStatsRows(getPlayerLaneStats(playerName),"라인")}</div><div class="section"><div class="section-title">모스트 챔피언</div><div id="mostChampionArea"></div></div>`;
+  const html=`<div class="detail-hero"><div class="profile-box">${profile}</div><div><div class="hero-title">${playerName}</div><div class="hero-sub">${lanes.length?lanes.map(lanePill).join(""):`<span class="lane-pill">라인 기록 없음</span>`}</div></div></div><div class="section"><div class="section-title">전체 전적</div>${statCards([{label:"판수",value:s.games},{label:"승",value:s.wins,cls:"win"},{label:"패",value:s.losses,cls:"loss"},{label:"승률",value:pct(s.winRate),cls:rateClass(s.winRate)},{label:"평균 킬",value:s.avgKills.toFixed(1)},{label:"평균 데스",value:s.avgDeaths.toFixed(1)},{label:"평균 어시",value:s.avgAssists.toFixed(1)},{label:"평균 KDA",value:s.kda.toFixed(2)},{label:"평균 킬관여율",value:pct(s.kp)},{label:"주 라인",value:lanes[0]?LANE_LABELS[lanes[0]]:"-"}])}</div><div class="section"><div class="section-title">최고 기록</div>${statCards([{label:"최다 킬",value:bestKill?num(bestKill.kills):"-",extra:playerRecordExtra(bestKill)},{label:"최다 데스",value:bestDeath?num(bestDeath.deaths):"-",extra:playerRecordExtra(bestDeath)},{label:"최다 어시스트",value:bestAssist?num(bestAssist.assists):"-",extra:playerRecordExtra(bestAssist)},{label:"최대 킬관여율",value:bestKp?pct(kp(bestKp)||0):"-",extra:playerRecordExtra(bestKp)},{label:"최대 연승",value:`${st.maxWin}연승`,cls:"win"},{label:"최대 연패",value:`${st.maxLose}연패`,cls:"loss"}])}</div><div class="section"><div class="section-title">최근 전적 10판</div>${recentBlocks(data)}</div><div class="section"><div class="section-title">라인 비율</div>${laneRatio(data)}</div><div class="section"><div class="section-title">라인별 전적</div>${tableStatsRows(getPlayerLaneStats(playerName),"라인")}</div><div class="section"><div class="section-title">모스트 챔피언</div><div id="mostChampionArea"></div></div><div class="section"><div class="section-title">최근 전적 20판</div>${playerRecentMatchRows(playerName)}</div>`;
   showDetail(html);renderMostChampionArea(playerName);
+}
+
+
+function playerRecentMatchRows(playerName){
+  const data=rows
+    .filter(r=>r.lol_name===playerName)
+    .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))
+    .slice(0,20);
+
+  if(!data.length)return`<div>최근 전적이 없습니다.</div>`;
+
+  return`
+    <table class="detail-table">
+      <colgroup>
+        <col class="col-champ"><col class="col-lane"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-score"><col class="col-champ"><col class="col-lane"><col class="col-name">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>챔피언</th>
+          <th>라인</th>
+          <th>킬/데스/어시</th>
+          <th>KDA</th>
+          <th>킬관여율</th>
+          <th>점수</th>
+          <th>상대 챔프</th>
+          <th>상대 라인</th>
+          <th>상대 이름</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map(r=>{
+          const opponent=findOpponent(r);
+          const k=num(r.kills),d=num(r.deaths),a=num(r.assists);
+          const kdaValue=getKda(k,d,a);
+          const kpValue=kp(r);
+          const score=recentMatchScore(r);
+          return`
+            <tr>
+              <td style="text-align:left">
+                <div class="champ-cell" title="${r.champion_name||"-"}">
+                  <img class="champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'" />
+                  <span class="champ-name">${r.champion_name||"-"}</span>
+                </div>
+              </td>
+              <td>${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||"-"}</td>
+              <td>${k}/${d}/${a}</td>
+              <td>${kdaValue.toFixed(2)}</td>
+              <td>${kpValue===null?"-":pct(kpValue)}</td>
+              <td>${score.toFixed(1)}</td>
+              <td style="text-align:left">
+                ${opponent?`
+                  <div class="champ-cell" title="${opponent.champion_name||"-"}">
+                    <img class="champ-icon" src="${champImg(opponent.champion_name)}" onerror="this.style.display='none'" />
+                    <span class="champ-name">${opponent.champion_name||"-"}</span>
+                  </div>
+                `:"-"}
+              </td>
+              <td>${opponent?`${laneIcon(opponent.lane)} ${LANE_LABELS[opponent.lane]||opponent.lane||"-"}`:"-"}</td>
+              <td class="nickname">${opponent?.lol_name||"-"}</td>
+            </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+}
+
+function findOpponent(row){
+  const sameMatch=rows.filter(r=>r.match_id===row.match_id && r.lol_name!==row.lol_name);
+
+  let opponent=null;
+
+  if(row.team_id!==undefined && row.team_id!==null){
+    opponent=sameMatch.find(r=>r.lane===row.lane && r.team_id!==row.team_id);
+  }
+
+  if(!opponent){
+    opponent=sameMatch.find(r=>r.lane===row.lane);
+  }
+
+  return opponent||null;
+}
+
+function recentMatchScore(row){
+  const k=num(row.kills),d=num(row.deaths),a=num(row.assists);
+  const kdaValue=getKda(k,d,a);
+  const kpValue=kp(row)||0;
+  const resultBonus=row.win?12:0;
+  return k*3+a*2-d*2+kdaValue*4+kpValue*.25+resultBonus;
 }
 
 function getMasterStats(championName,lane=masterLane){
