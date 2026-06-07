@@ -255,6 +255,159 @@ recentTableRows=function(data,mode){if(!data.length)return`<div class="recent-em
 toggleCollapsible=function(id){const s=document.getElementById(id);if(!s)return;s.classList.toggle("open");const open=s.classList.contains("open"),b=s.querySelector(".collapse-toggle");if(b)b.innerHTML=`${open?"접기":"펼치기"} <span class="collapse-arrow">⌄</span>`;if(open)setTimeout(()=>s.scrollIntoView({behavior:"smooth",block:"start"}),80)};
 closeRecordPanel=function(){const p=document.getElementById("recordDetailPanel");if(p){p.classList.remove("show");setTimeout(()=>{if(!p.classList.contains("show"))p.innerHTML=""},390)}};
 window.goBack=goBack;window.toggleCollapsible=toggleCollapsible;window.closeRecordPanel=closeRecordPanel;
+
+/* ===== 최종 수정 오버라이드: 상세페이지 전환 / 전적 점프 / 최고기록 패널 / 장인랭킹 표시 ===== */
+let __detailScrollHandler=null;
+function __detailEl(){return document.getElementById("detailPage")}
+function __setDetailOverlay(on){
+  const detail=__detailEl();
+  if(!detail)return;
+  if(on){
+    document.body.style.overflow="hidden";
+    detail.style.position="fixed";
+    detail.style.left="0";
+    detail.style.right="0";
+    detail.style.top="0";
+    detail.style.bottom="0";
+    detail.style.width="100%";
+    detail.style.margin="0";
+    detail.style.padding="28px 2.5%";
+    detail.style.overflowY="auto";
+    detail.style.zIndex="5000";
+    detail.style.background="radial-gradient(circle at left,rgba(15,23,42,.55),transparent 28%),radial-gradient(circle at right,rgba(15,23,42,.55),transparent 28%),linear-gradient(90deg,#111827,#1e293b 18%,#1e293b 82%,#111827)";
+    detail.style.boxShadow="-28px 0 80px rgba(0,0,0,.28)";
+  }else{
+    document.body.style.overflow="";
+    detail.removeAttribute("style");
+  }
+}
+
+showDetail=function(html){
+  mainReturnY=window.scrollY;
+  const detail=__detailEl();
+  document.getElementById("detailContent").innerHTML=html;
+  document.querySelector(".top-tabs").style.display="none";
+  document.getElementById("summary").style.display="none";
+  __setDetailOverlay(true);
+  detail.style.display="block";
+  detail.scrollTop=0;
+  detail.classList.remove("slide-in-right");
+  void detail.offsetWidth;
+  detail.classList.add("slide-in-right");
+  setTimeout(initFloatingTitle,80);
+};
+
+goBack=function(){
+  const detail=__detailEl();
+  if(__detailScrollHandler){detail?.removeEventListener("scroll",__detailScrollHandler);__detailScrollHandler=null}
+  window.removeEventListener("scroll",floatingTitleScrollHandler);
+  detail?.classList.remove("slide-in-right");
+  document.getElementById("floatingTitleBar").classList.remove("show");
+  __setDetailOverlay(false);
+  detail.style.display="none";
+  document.querySelector(".top-tabs").style.display="flex";
+  document.getElementById("summary").style.display="block";
+  window.scrollTo({top:mainReturnY||0,behavior:"auto"});
+};
+
+initFloatingTitle=function(){
+  const detail=__detailEl(),hero=document.querySelector(".detail-hero"),bar=document.getElementById("floatingTitleBar"),text=document.getElementById("floatingTitleText");
+  if(!detail||!hero||!bar||!text)return;
+  text.textContent=currentDetailName;
+  if(__detailScrollHandler)detail.removeEventListener("scroll",__detailScrollHandler);
+  __detailScrollHandler=()=>{const rect=hero.getBoundingClientRect();if(rect.bottom<58)bar.classList.add("show");else bar.classList.remove("show")};
+  detail.addEventListener("scroll",__detailScrollHandler);
+  __detailScrollHandler();
+};
+
+let __recentJumpState=null;
+function __scrollBox(){return __detailEl()||document.scrollingElement||document.documentElement}
+function __scrollTop(){const d=__detailEl();return d&&d.style.display!=="none"?d.scrollTop:window.scrollY}
+function __scrollToY(y,behavior="smooth"){const d=__detailEl();if(d&&d.style.display!=="none")d.scrollTo({top:y,behavior});else window.scrollTo({top:y,behavior})}
+function __restoreRecentState(){
+  if(!__recentJumpState)return;
+  const st=__recentJumpState;
+  recentLane=st.lane;
+  recentChampionSearch=st.search;
+  jumpReturnY=0;
+  recentJumpMode="";
+  recentJumpName="";
+  const secId=st.mode==="player"?"recentMatchSection":"championRecentMatchSection";
+  const sec=document.getElementById(secId);
+  if(sec){
+    if(st.wasOpen)sec.classList.add("open");else sec.classList.remove("open");
+    const btn=sec.querySelector(".collapse-toggle");
+    if(btn){const o=sec.classList.contains("open");btn.innerHTML=`${o?"접기":"펼치기"} <span class="collapse-arrow">⌄</span>`}
+    const c=sec.querySelector(".collapsible-content");
+    if(c)c.innerHTML=st.mode==="player"?recentControls(st.name):championRecentControls(st.name);
+    if(st.mode==="player")renderRecentMatchArea(st.name);else renderChampionRecentMatchArea(st.name);
+  }
+  const d=__detailEl();
+  d?.removeEventListener("scroll",recentJumpScrollHandler);
+  window.removeEventListener("scroll",recentJumpScrollHandler);
+  __recentJumpState=null;
+}
+resetRecentJump=function(){__restoreRecentState()};
+recentJumpScrollHandler=function(){
+  if(!__recentJumpState)return;
+  const secId=__recentJumpState.mode==="player"?"recentMatchSection":"championRecentMatchSection";
+  const sec=document.getElementById(secId);
+  if(!sec)return;
+  const rect=sec.getBoundingClientRect();
+  if(rect.bottom<64)__restoreRecentState();
+};
+returnToJumpSource=function(){
+  if(!__recentJumpState)return;
+  const y=jumpReturnY||0;
+  __scrollToY(y,"smooth");
+  setTimeout(__restoreRecentState,430);
+};
+openRecentByFilter=function(mode,name,lane,search){
+  const secId=mode==="player"?"recentMatchSection":"championRecentMatchSection";
+  const sec=document.getElementById(secId);
+  if(!sec)return;
+  __recentJumpState={mode,name,lane:recentLane,search:recentChampionSearch,wasOpen:sec.classList.contains("open")};
+  jumpReturnY=__scrollTop();
+  recentJumpMode=mode;
+  recentJumpName=name;
+  recentLane=lane||"ALL";
+  recentChampionSearch=search||"";
+  if(!sec.classList.contains("open"))toggleCollapsible(secId);
+  const c=sec.querySelector(".collapsible-content");
+  if(c)c.innerHTML=mode==="player"?recentControls(name):championRecentControls(name);
+  if(mode==="player")renderRecentMatchArea(name);else renderChampionRecentMatchArea(name);
+  const btn=document.getElementById("jumpReturnBtn");
+  if(btn)btn.classList.add("show");
+  const d=__detailEl();
+  d?.removeEventListener("scroll",recentJumpScrollHandler);
+  window.removeEventListener("scroll",recentJumpScrollHandler);
+  d?.addEventListener("scroll",recentJumpScrollHandler);
+  window.addEventListener("scroll",recentJumpScrollHandler);
+  setTimeout(()=>sec.scrollIntoView({behavior:"smooth",block:"start"}),50);
+};
+
+closeRecordPanel=function(){const p=document.getElementById("recordDetailPanel");if(p){p.classList.remove("show");setTimeout(()=>{if(!p.classList.contains("show"))p.innerHTML=""},390)}};
+showBestRecord=function(kind,label,rowId){
+  const r=rows.find(x=>String(x.id)===String(rowId));
+  const p=document.getElementById("recordDetailPanel");
+  if(!r||!p)return;
+  p.innerHTML=`<div class="record-detail-head"><span>${label} 전적</span><button class="record-close-btn" type="button" onclick="closeRecordPanel()">닫기</button></div>${recentTableRows([r],kind)}`;
+  p.classList.add("show");
+  setTimeout(()=>{
+    const rect=p.getBoundingClientRect();
+    const overflow=rect.bottom-window.innerHeight+8;
+    if(overflow>0){const d=__detailEl();if(d&&d.style.display!=="none")d.scrollBy({top:overflow,behavior:"smooth"});else window.scrollBy({top:overflow,behavior:"smooth"})}
+  },80);
+};
+
+renderMasterRankingArea=function(championName){
+  const area=document.getElementById("masterRankingArea");
+  if(!area)return;
+  const list=getMasterStats(championName,masterLane);
+  area.innerHTML=`<div class="master-filter-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">${["ALL",...LANE_ORDER].map(l=>`<button class="master-filter ${masterLane===l?"active":""}" onclick="setMasterLane('${l}','${safe(championName)}')">${l==="ALL"?"":laneIcon(l)} ${LANE_LABELS[l]}</button>`).join("")}</div><table class="detail-table"><colgroup><col class="col-rank"><col class="col-name"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-score"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortMaster('name','${safe(championName)}')">플레이어</button></th><th><button class="sort-btn" onclick="sortMaster('games','${safe(championName)}')">판수</button></th><th><button class="sort-btn" onclick="sortMaster('winRate','${safe(championName)}')">승률</button></th><th><button class="sort-btn" onclick="sortMaster('avgKills','${safe(championName)}')">평균 킬</button></th><th><button class="sort-btn" onclick="sortMaster('avgDeaths','${safe(championName)}')">평균 데스</button></th><th><button class="sort-btn" onclick="sortMaster('avgAssists','${safe(championName)}')">평균 어시</button></th><th><button class="sort-btn" onclick="sortMaster('kda','${safe(championName)}')">KDA</button></th><th><button class="sort-btn" onclick="sortMaster('kp','${safe(championName)}')">킬관여율</button></th><th><button class="sort-btn" onclick="sortMaster('score','${safe(championName)}')">점수</button></th></tr></thead><tbody>${list.map((p,i)=>`<tr class="clickable-row" onclick="jumpFromMaster('${safe(championName)}','${safe(p.name)}','${safe(p.lane)}')"><td>${rankText(i+1)}</td><td class="nickname" title="${htmlSafe(p.name)}"><div class="player-name-cell"><span class="champ-lane-icon">${laneIcon(p.lane)}</span><span>${htmlSafe(p.name)}</span></div></td><td>${p.games}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${p.avgKills.toFixed(1)}</td><td>${p.avgDeaths.toFixed(1)}</td><td>${p.avgAssists.toFixed(1)}</td><td>${p.kda.toFixed(2)}</td><td>${pct(p.kp)}</td><td>${p.score.toFixed(1)}</td></tr>`).join("")}</tbody></table>`;
+};
+
+window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCollapsible=toggleCollapsible;window.returnToJumpSource=returnToJumpSource;window.openRecentByFilter=openRecentByFilter;window.resetRecentJump=resetRecentJump;window.showBestRecord=showBestRecord;window.closeRecordPanel=closeRecordPanel;window.renderMasterRankingArea=renderMasterRankingArea;
 loadData();setInterval(loadData,30000);
 </script>
 </body>
