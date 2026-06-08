@@ -6945,17 +6945,7 @@ var honeyPortrait = function(name,lane='',big=false){
   function insertRecentPreview(mode,name){
     const detail=document.getElementById('detailContent');
     if(!detail)return;
-    detail.querySelectorAll('.recent-preview-section-v33').forEach(x=>x.remove());
-    const html=recentPreviewHtml(mode,name);
-    if(mode==='player'){
-      const target=document.getElementById('mostChampionSection');
-      if(target)target.insertAdjacentHTML('afterend',html);
-      else detail.insertAdjacentHTML('beforeend',html);
-    }else{
-      const target=document.querySelector('#masterRankingArea')?.closest('.section');
-      if(target)target.insertAdjacentHTML('afterend',html);
-      else detail.insertAdjacentHTML('beforeend',html);
-    }
+    detail.querySelectorAll('.recent-preview-section-v33,#recentMatchSection,#championRecentMatchSection').forEach(x=>x.remove());
   }
 
   function fixMostButton(name){
@@ -7066,7 +7056,13 @@ var honeyPortrait = function(name,lane='',big=false){
       const detail=document.getElementById('detailContent');
       if(detail)detail.innerHTML=prev.html;
       currentDetailName=prev.title||currentDetailName;
-      setTimeout(()=>{initFloatingTitle();const n=document.getElementById('mostChampionSection')?.dataset.smartName||currentDetailName;fixMostButton(n);},0);
+      setTimeout(()=>{
+        initFloatingTitle();
+        const n=document.getElementById('mostChampionSection')?.dataset.smartName||currentDetailName;
+        fixMostButton(n);
+        insertRecentPreview('player',n);
+        window.scrollTo({top:prev.scroll||0,behavior:'auto'});
+      },0);
       return;
     }
     prevGoBack();
@@ -7096,6 +7092,52 @@ var honeyPortrait = function(name,lane='',big=false){
   window.allPlayedChooseV33=allPlayedChooseV33;
   window.allPlayedSetLaneV33=allPlayedSetLaneV33;
   window.allPlayedSortV33=allPlayedSortV33;
+})();
+
+
+/* ===== v39 final cleanup: 최근전적 완전 삭제 + 전체보기 복귀 위치 복원 ===== */
+(function(){
+  function removeRecentEverywhere(){
+    document.querySelectorAll('#recentMatchSection,#championRecentMatchSection,.recent-preview-section-v33').forEach(x=>x.remove());
+  }
+
+  const oldOpenPlayer=window.openPlayerDetail;
+  window.openPlayerDetail=function(playerName){
+    oldOpenPlayer(playerName);
+    setTimeout(()=>{removeRecentEverywhere(); if(typeof fixMostButton==='function')fixMostButton(playerName);},0);
+    setTimeout(()=>{removeRecentEverywhere(); if(typeof fixMostButton==='function')fixMostButton(playerName);},180);
+  };
+  openPlayerDetail=window.openPlayerDetail;
+
+  const oldOpenChampion=window.openChampionDetail;
+  window.openChampionDetail=function(championName){
+    oldOpenChampion(championName);
+    setTimeout(removeRecentEverywhere,0);
+    setTimeout(removeRecentEverywhere,180);
+  };
+  openChampionDetail=window.openChampionDetail;
+
+  const oldAllOpen=window.openAllPlayedChampionsPageV33||window.openAllPlayedChampionsPage;
+  if(typeof oldAllOpen==='function'){
+    window.openAllPlayedChampionsPageV33=function(playerName){
+      window.__bandleReturnScrollY=window.scrollY||document.documentElement.scrollTop||0;
+      oldAllOpen(playerName);
+    };
+    window.openAllPlayedChampionsPage=window.openAllPlayedChampionsPageV33;
+  }
+
+  const oldGoBack=window.goBack;
+  window.goBack=function(){
+    const beforeStack=typeof stackV33!=='undefined' ? stackV33.length : 0;
+    oldGoBack();
+    setTimeout(()=>{
+      removeRecentEverywhere();
+      if(beforeStack>0 && window.__bandleReturnScrollY!==undefined){
+        window.scrollTo({top:window.__bandleReturnScrollY||0,behavior:'auto'});
+      }
+    },0);
+  };
+  goBack=window.goBack;
 })();
 
 </script>
