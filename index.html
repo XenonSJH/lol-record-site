@@ -5938,6 +5938,199 @@ loadData();setInterval(loadData,30000);
   const obs=new MutationObserver(()=>decorateParticipantsV24());
   obs.observe(document.body,{childList:true,subtree:true});
 
+
+  /* ===== V25 내전 기록 검색/레이아웃 정리 패치 ===== */
+  (function(){
+    const style=document.createElement('style');
+    style.textContent=`
+      #internalRecordMainV23{width:100%;}
+      .internal-record-list-v23{display:flex;flex-direction:column;gap:14px;}
+      .internal-match-card-v24{
+        background:linear-gradient(135deg,rgba(15,23,42,.96),rgba(30,41,59,.86))!important;
+        border:1px solid rgba(96,165,250,.28)!important;
+        border-radius:22px!important;
+        padding:14px!important;
+        box-shadow:0 12px 28px rgba(0,0,0,.18)!important;
+      }
+      .internal-match-head-v24{
+        padding:0 2px 10px!important;
+        margin:0!important;
+        border-bottom:1px solid rgba(148,163,184,.16)!important;
+      }
+      .internal-match-id-v24{font-size:15px!important;color:#bfdbfe!important;}
+      .internal-match-date-v24{font-size:12px!important;color:#94a3b8!important;}
+      .internal-match-line-v24{
+        grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr)!important;
+        gap:10px!important;
+        margin-top:8px!important;
+        padding:10px 12px!important;
+        min-height:68px!important;
+        background:rgba(30,41,59,.72)!important;
+        border:1px solid rgba(148,163,184,.18)!important;
+        border-radius:16px!important;
+      }
+      .internal-match-line-v24:hover{background:rgba(51,65,85,.7)!important;border-color:rgba(96,165,250,.34)!important;}
+      .internal-match-center-v24{opacity:1!important;}
+      .internal-match-center-v24 .lane-icon{width:26px!important;height:26px!important;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));}
+      .participant-card-v20{
+        min-width:0!important;
+        display:grid!important;
+        grid-template-columns:50px minmax(0,1fr) auto!important;
+        grid-template-rows:auto auto!important;
+        align-items:center!important;
+        column-gap:10px!important;
+        text-align:left!important;
+      }
+      .participant-card-v20.enemy{
+        grid-template-columns:auto minmax(0,1fr) 50px!important;
+        text-align:right!important;
+      }
+      .participant-card-v20 .honey-portrait,
+      .participant-card-v20 .participant-icon-v20{grid-column:1!important;grid-row:1 / span 2!important;justify-self:start!important;width:50px!important;height:50px!important;}
+      .participant-card-v20.enemy .honey-portrait,
+      .participant-card-v20.enemy .participant-icon-v20{grid-column:3!important;justify-self:end!important;}
+      .participant-card-v20 .honey-portrait .champ-icon{width:46px!important;height:46px!important;border-radius:10px!important;}
+      .participant-card-v20 .participant-main-v20{grid-column:2!important;grid-row:1!important;min-width:0!important;display:flex!important;flex-direction:column!important;gap:2px!important;align-items:flex-start!important;}
+      .participant-card-v20.enemy .participant-main-v20{grid-column:2!important;align-items:flex-end!important;text-align:right!important;}
+      .participant-name-v20{font-size:14px!important;line-height:1.15!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:#f8fafc!important;}
+      .participant-champ-v20{font-size:12px!important;line-height:1.15!important;color:#cbd5e1!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
+      .participant-stat-v20{
+        grid-column:2 / 4!important;
+        grid-row:2!important;
+        margin-top:4px!important;
+        font-size:12px!important;
+        color:#e5e7eb!important;
+        text-align:left!important;
+        overflow:hidden!important;
+        text-overflow:ellipsis!important;
+        white-space:nowrap!important;
+      }
+      .participant-card-v20.enemy .participant-stat-v20{grid-column:1 / 3!important;text-align:right!important;}
+      .participant-empty-v20{opacity:.45!important;}
+      .participant-empty-v20 .participant-icon-v20{border-radius:10px!important;background:rgba(51,65,85,.8)!important;}
+      .suggest-box .suggest-sub-v25{font-size:11px;color:#94a3b8;margin-left:6px;font-weight:900;}
+      @media(max-width:760px){
+        .internal-match-card-v24{padding:10px!important;border-radius:18px!important;}
+        .internal-match-head-v24{flex-direction:column!important;align-items:flex-start!important;gap:4px!important;}
+        .internal-match-line-v24{grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr)!important;gap:6px!important;padding:8px!important;min-height:64px!important;}
+        .participant-card-v20{grid-template-columns:36px minmax(0,1fr)!important;column-gap:6px!important;}
+        .participant-card-v20.enemy{grid-template-columns:minmax(0,1fr) 36px!important;}
+        .participant-card-v20 .honey-portrait,.participant-card-v20 .participant-icon-v20{width:36px!important;height:36px!important;}
+        .participant-card-v20 .honey-portrait .champ-icon{width:32px!important;height:32px!important;border-radius:8px!important;}
+        .participant-card-v20.enemy .honey-portrait,.participant-card-v20.enemy .participant-icon-v20{grid-column:2!important;}
+        .participant-card-v20.enemy .participant-main-v20{grid-column:1!important;}
+        .participant-card-v20 .participant-main-v20{grid-column:2!important;}
+        .participant-stat-v20{grid-column:1 / 3!important;font-size:10px!important;margin-top:3px!important;}
+        .participant-card-v20.enemy .participant-stat-v20{grid-column:1 / 3!important;}
+        .participant-name-v20{font-size:12px!important;}
+        .participant-champ-v20{font-size:10px!important;}
+        .internal-match-center-v24 .lane-icon{width:20px!important;height:20px!important;}
+      }
+    `;
+    document.head.appendChild(style);
+  })();
+
+  let committedInternalSearchV25='';
+  function internalSearchSuggestionsV25(){
+    if(!suggestBox||!searchInput)return;
+    const q=(searchInput.value||'').trim().toLowerCase();
+    if(currentTab!=='internalRecord'||!q){suggestBox.style.display='none';suggestBox.innerHTML='';return;}
+    const ids=matchGroupsV24().map(m=>String(m.id||'')).filter(id=>id.toLowerCase().includes(q)).slice(0,8);
+    if(!ids.length){suggestBox.style.display='none';suggestBox.innerHTML='';return;}
+    suggestBox.innerHTML=ids.map(id=>`<div class="suggest-item" onclick="internalRecordCommitSearchV25('${safe(id)}')">Game ID: ${htmlSafe(id)}<span class="suggest-sub-v25">내전 기록</span></div>`).join('');
+    suggestBox.style.display='block';
+  }
+  window.internalRecordCommitSearchV25=function(v){
+    committedInternalSearchV25=(v||'').trim();
+    if(searchInput)searchInput.value=committedInternalSearchV25;
+    if(suggestBox){suggestBox.style.display='none';suggestBox.innerHTML='';}
+    window.renderInternalRecordV23();
+  };
+  window.renderInternalRecordV23=function(){
+    const q=(committedInternalSearchV25||'').trim().toLowerCase();
+    const box=document.getElementById('internalRecordListV23');if(!box)return;
+    const list=matchGroupsV24().filter(m=>!q||String(m.id||'').toLowerCase().includes(q));
+    box.innerHTML=list.length?list.map(internalCardV24).join(''):`<div class="section">검색 결과가 없습니다.</div>`;
+    setTimeout(()=>decorateParticipantsV24(),0);
+  };
+  function showInternalRecordV25(){
+    ensureInternalV24();
+    currentTab='internalRecord';
+    activeSearch='';
+    committedInternalSearchV25='';
+    document.querySelectorAll('.top-tabs .tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('internalRecordTabV23')?.classList.add('active');
+    document.getElementById('playerTable')?.classList.add('hide');
+    document.getElementById('championTable')?.classList.add('hide');
+    const filters=document.getElementById('laneFilters'); if(filters)filters.style.display='none';
+    const page=document.getElementById('internalRecordMainV23'); if(page)page.style.display='block';
+    if(searchInput){searchInput.value='';setMainSearchPlaceholder();}
+    if(suggestBox){suggestBox.style.display='none';suggestBox.innerHTML='';}
+    window.renderInternalRecordV23();
+  }
+  window.showInternalRecordV24=showInternalRecordV25;
+  window.showInternalRecordV23=showInternalRecordV25;
+  const oldEnsureInternalV25=ensureInternalV24;
+  ensureInternalV24=function(){
+    oldEnsureInternalV25();
+    const tab=document.getElementById('internalRecordTabV23');
+    if(tab)tab.onclick=showInternalRecordV25;
+    const oldPage=document.getElementById('internalRecordPageV22'); if(oldPage)oldPage.remove();
+    const oldMH=document.getElementById('matchHistoryMainV20'); if(oldMH)oldMH.remove();
+    const page=document.getElementById('internalRecordMainV23');
+    if(page){
+      const oldSearch=page.querySelector('.internal-record-search-wrap-v22,.match-history-main-search-wrap-v20');
+      if(oldSearch)oldSearch.remove();
+      let list=page.querySelector('#internalRecordListV23');
+      if(!list){list=document.createElement('div');list.id='internalRecordListV23';list.className='internal-record-list-v23';page.appendChild(list);}
+    }
+  };
+  const oldPlayerClickV25=playerTab.onclick;
+  playerTab.onclick=()=>{
+    currentTab='player';committedInternalSearchV25='';activeSearch='';
+    searchInput.value='';setMainSearchPlaceholder();
+    playerTab.classList.add('active');championTab.classList.remove('active');document.getElementById('internalRecordTabV23')?.classList.remove('active');
+    document.getElementById('playerTable')?.classList.remove('hide');document.getElementById('championTable')?.classList.add('hide');
+    const page=document.getElementById('internalRecordMainV23'); if(page)page.style.display='none';
+    const filters=document.getElementById('laneFilters'); if(filters)filters.style.display='flex';
+    renderLaneFilters();renderMain();
+  };
+  championTab.onclick=()=>{
+    currentTab='champion';committedInternalSearchV25='';activeSearch='';
+    searchInput.value='';setMainSearchPlaceholder();
+    championTab.classList.add('active');playerTab.classList.remove('active');document.getElementById('internalRecordTabV23')?.classList.remove('active');
+    document.getElementById('championTable')?.classList.remove('hide');document.getElementById('playerTable')?.classList.add('hide');
+    const page=document.getElementById('internalRecordMainV23'); if(page)page.style.display='none';
+    const filters=document.getElementById('laneFilters'); if(filters)filters.style.display='flex';
+    renderLaneFilters();renderMain();
+  };
+  renderSuggestions=function(){
+    if(currentTab==='internalRecord'){internalSearchSuggestionsV25();return;}
+    const q=searchInput.value.trim().toLowerCase();
+    if(!q){suggestBox.style.display='none';suggestBox.innerHTML='';return}
+    let list=currentTab==='player'?players.map(p=>p.lol_name).filter(n=>(n||'').toLowerCase().includes(q)):[...new Set(rows.map(r=>r.champion_name).filter(Boolean))].filter(n=>n.toLowerCase().includes(q));
+    list=list.slice(0,8);
+    if(!list.length){suggestBox.style.display='none';return}
+    suggestBox.innerHTML=list.map(i=>`<div class="suggest-item" onclick="runSearch('${safe(i)}')">${htmlSafe(i)}</div>`).join('');
+    suggestBox.style.display='block';
+  };
+  searchInput?.addEventListener('input',function(e){
+    if(currentTab==='internalRecord'){
+      e.stopImmediatePropagation();
+      internalSearchSuggestionsV25();
+    }
+  },true);
+  searchInput?.addEventListener('keydown',function(e){
+    if(currentTab==='internalRecord'&&e.key==='Enter'){
+      e.preventDefault();e.stopImmediatePropagation();
+      window.internalRecordCommitSearchV25(searchInput.value);
+    }
+  },true);
+  searchBtn.onclick=()=>{
+    if(currentTab==='internalRecord')window.internalRecordCommitSearchV25(searchInput.value);
+    else runSearch(searchInput.value.trim());
+  };
+
   ensureInternalV24();
   setMainSearchPlaceholder();
   [0,120,400,900].forEach(ms=>setTimeout(()=>{try{ensureInternalV24();setMainSearchPlaceholder();decorateParticipantsV24();if(currentTab==='internalRecord')window.renderInternalRecordV23();}catch(e){}},ms));
