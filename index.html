@@ -121,6 +121,32 @@ body::-webkit-scrollbar-thumb:hover,
   opacity:1 !important;
 }
 
+
+/* v45: 모든 슬라이드/페이지 전환 효과 제거 */
+.main-card,
+.detail-page,
+.slide-out-left,
+.slide-in-right,
+.record-detail-panel,
+.collapsible-content{
+  transition:none !important;
+  animation:none !important;
+}
+.main-card.slide-out-left,
+.detail-page.slide-in-right,
+.slide-out-left,
+.slide-in-right{
+  transform:none !important;
+  opacity:1 !important;
+}
+@keyframes detailSlideIn{
+  from{opacity:1}
+  to{opacity:1}
+}
+html,body{
+  scroll-behavior:auto !important;
+}
+
 </style>
 </head>
 <body>
@@ -167,40 +193,27 @@ function getChampionRanking(){const lane=effectiveLane(),allList=getAllChampionC
 function renderPlayerRanking(){const tbody=document.getElementById("playerRanking"),list=getPlayerRanking();if(!list.length){tbody.innerHTML=`<tr><td colspan="9">플레이어 데이터가 없습니다.</td></tr>`;return}let html="",rankedCount=0,lastGroup=null;list.forEach((p,i)=>{const group=getParticipationGroup(p.participation);if(playerSort==="winRate"&&!activeSearch&&lastGroup!==null&&lastGroup!==group){const msg=group===1?"참여율 30% 미만인 플레이어는 순위가 표기되지 않습니다.":"참여율 10% 미만인 플레이어는 추방 대상입니다.";html+=`<tr class="group-divider"><td colspan="9" style="height:48px;padding:0!important;background:transparent!important;border-radius:0!important;border-bottom:2px solid rgba(147,197,253,.5);position:relative;overflow:visible;"><div style="position:absolute;left:50%;top:8px;transform:translateX(-50%);font-size:12px;color:#94a3b8;background:#111827;padding:2px 10px;border-radius:999px;border:1px solid rgba(147,197,253,.25);white-space:nowrap;">${msg}</div></td></tr>`}lastGroup=group;let rank;if(playerSort==="winRate"&&!activeSearch){if(p.participation>=30){rankedCount++;rank=rankText(rankedCount)}else rank="-"}else rank=rankText(i+1);html+=`<tr class="clickable-row ${p.participation<10?"low-participation":""}" onclick="openPlayerDetail('${safe(p.name)}')"><td>${rank}</td><td class="nickname" title="${htmlSafe(p.name)}"><div class="player-name-cell"><img class="player-avatar" src="${p.profile_image_url||"https://cdn.discordapp.com/embed/avatars/0.png"}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"><span>${htmlSafe(p.name)}</span></div></td><td style="color:#f97316;font-weight:1000;">${Number(p.carryScore||0).toFixed(1)}</td><td>${p.games}</td><td class="win">${p.wins}</td><td class="loss">${p.losses}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${pct(p.kp)}</td><td>${pct(p.participation)}</td></tr>`});tbody.innerHTML=html}
 function renderChampionRanking(){const tbody=document.getElementById("championRanking"),list=getChampionRanking();if(!list.length){tbody.innerHTML=`<tr><td colspan="10">챔피언 데이터가 없습니다.</td></tr>`;return}tbody.innerHTML=list.map((c,i)=>{const img=champImg(c.name),tierClass=TIER_CLASS[c.tier]||"tier-blue",isBanMerged=championSort==="banRate",tierList=c.tierList?.length?c.tierList:[c.tier],isMixed=isBanMerged&&tierList.length>1,portraitClass=isMixed?"":tierClass,portraitStyle=isMixed?comboPortraitStyle(tierList):"background:transparent;";return`<tr class="clickable-row" onclick="openChampionDetail('${safe(c.name)}')"><td>${rankText(i+1)}</td><td class="champ-td"><div class="champ-cell" title="${htmlSafe(c.name)}"><span class="combo-portrait-wrap" style="${portraitStyle}"><img class="champ-icon ${portraitClass}" src="${img}" onerror="this.style.display='none'"/></span>${isBanMerged?"":`<span class="champ-lane-icon">${laneIcon(c.displayLane)}</span>`}<span class="champ-name">${htmlSafe(c.name)}</span></div></td><td style="color:#f97316;font-weight:1000;">${Number(c.score||0).toFixed(1)}</td><td>${c.games}</td><td class="win">${c.wins}</td><td class="loss">${c.losses}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${pct(c.pickRate)}</td><td>${pct(c.banRate)}</td><td>${pct(c.kp)}</td></tr>`}).join("")}
 function renderMain(){currentTab==="player"?renderPlayerRanking():renderChampionRanking()}
-function goBack(){document.getElementById("detailPage").style.display="none";document.getElementById("mainPage").style.display="block";document.querySelector(".top-tabs").style.display="flex";document.getElementById("summary").style.display="block";document.getElementById("floatingTitleBar").classList.remove("show");window.removeEventListener("scroll",floatingTitleScrollHandler);setTimeout(()=>window.scrollTo(0,pageScrollMemory||0),0)}
-function showDetail(html,rememberScroll=true){if(rememberScroll)pageScrollMemory=window.scrollY||document.documentElement.scrollTop||0;document.getElementById("detailContent").innerHTML=html;document.getElementById("mainPage").style.display="none";document.querySelector(".top-tabs").style.display="none";document.getElementById("summary").style.display="none";document.getElementById("detailPage").style.display="block";window.scrollTo(0,0);setTimeout(initFloatingTitle,100)}
-let floatingTitleScrollHandler=()=>{};
-function initFloatingTitle(){const hero=document.querySelector(".detail-hero"),bar=document.getElementById("floatingTitleBar"),text=document.getElementById("floatingTitleText");if(!hero||!bar||!text)return;text.textContent=currentDetailName;floatingTitleScrollHandler=()=>{const rect=hero.getBoundingClientRect();if(rect.bottom<58)bar.classList.add("show");else bar.classList.remove("show")};window.removeEventListener("scroll",floatingTitleScrollHandler);window.addEventListener("scroll",floatingTitleScrollHandler);floatingTitleScrollHandler()}
-function statCards(items){return`<div class="stat-grid">${items.map(i=>`<div class="stat-card"><div class="stat-label">${i.label}</div><div class="stat-value ${i.cls||""}">${i.value}</div>${i.extra||""}</div>`).join("")}</div>`}
-function recentBlocks(data){const recent=[...data].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,10);if(!recent.length)return"최근 전적 없음";return`<div class="record-blocks">${recent.map(r=>`<div style="display:flex;flex-direction:column;align-items:center;"><div class="result-block ${r.win?"result-win":"result-loss"}" title="${htmlSafe(r.champion_name||"")} / ${LANE_LABELS[r.lane]||r.lane||""}">${r.win?"승":"패"}</div><div class="recent-lane-wrapper" style="margin-top:4px;">${laneIcon(r.lane)}</div></div>`).join("")}</div>`}
-function streaks(data){const s=[...data].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));let maxWin=0,maxLose=0,curWin=0,curLose=0;s.forEach(r=>{if(r.win){curWin++;curLose=0}else{curLose++;curWin=0}maxWin=Math.max(maxWin,curWin);maxLose=Math.max(maxLose,curLose)});return{maxWin,maxLose}}function bestRecord(data,field){if(!data.length)return null;return[...data].sort((a,b)=>{const av=field==="kp"?(kp(a)??-1):num(a[field]),bv=field==="kp"?(kp(b)??-1):num(b[field]);return bv-av})[0]}function playerRecordExtra(r){return r?`<div class="record-icons"><img class="small-champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'"/>${laneIcon(r.lane)}</div>`:""}function championRecordExtra(r){return r?`<div style="font-size:12px;color:#cbd5e1;margin-top:5px;font-weight:1000;">${htmlSafe(r.lol_name||"-")}</div><div class="record-icons">${laneIcon(r.lane)}</div>`:""}
-function mainLanes(data){const m={};data.forEach(r=>{if(r.lane)m[r.lane]=(m[r.lane]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([l])=>l)}function laneRatio(data){const total=data.length;if(!total)return`<div>라인 데이터가 없습니다.</div>`;const m={};data.forEach(r=>{if(r.lane)m[r.lane]=(m[r.lane]||0)+1});return LANE_ORDER.filter(l=>m[l]).map(l=>{const v=m[l],p=v/total*100;return`<div class="lane-ratio-row"><div class="ratio-head">${laneIcon(l)} ${LANE_LABELS[l]} ${pct(p)} · ${v}판</div><div class="ratio-bar-bg"><div class="ratio-bar" style="width:${p}%"></div></div></div>`}).join("")}
-function tableStatsRows(list,firstTitle="구분"){if(!list.length)return`<div>데이터가 없습니다.</div>`;return`<table class="detail-table"><colgroup><col class="col-lane"><col class="col-score"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"></colgroup><thead><tr><th>${firstTitle}</th><th>점수</th><th>판수</th><th>승</th><th>패</th><th>승률</th><th>평균 킬</th><th>평균 데스</th><th>평균 어시</th><th>KDA</th><th>킬관여율</th></tr></thead><tbody>${list.map(s=>`<tr><td>${s.label}</td><td style="color:#f97316;font-weight:1000;">${Number((s.carryScore??s.score)||0).toFixed(1)}</td><td>${s.games}</td><td class="win">${s.wins}</td><td class="loss">${s.losses}</td><td class="${rateClass(s.winRate)}">${pct(s.winRate)}</td><td>${s.avgKills.toFixed(1)}</td><td>${s.avgDeaths.toFixed(1)}</td><td>${s.avgAssists.toFixed(1)}</td><td>${s.kda.toFixed(2)}</td><td>${pct(s.kp)}</td></tr>`).join("")}</tbody></table>`}
-function getPlayerLaneStats(n){return LANE_ORDER.map(l=>({...calcPlayerStats(n,l),label:`${laneIcon(l)} ${LANE_LABELS[l]}`})).filter(s=>s.games>0)}function getChampionLaneStats(n){return LANE_ORDER.map(l=>({...calcChampionStats(n,l),label:`${laneIcon(l)} ${LANE_LABELS[l]}`})).filter(s=>s.games>0)}
-function getPlayerMostStats(name){const data=rows.filter(r=>r.lol_name===name),map={};data.forEach(r=>{if(!r.champion_name)return;const key=`${r.champion_name}__${r.lane||"UNKNOWN"}`;if(!map[key])map[key]=[];map[key].push(r)});let list=Object.entries(map).map(([key,arr])=>{const[champion,lane]=key.split("__"),games=arr.length,wins=arr.filter(r=>r.win).length,losses=games-wins,kills=arr.reduce((s,r)=>s+num(r.kills),0),deaths=arr.reduce((s,r)=>s+num(r.deaths),0),assists=arr.reduce((s,r)=>s+num(r.assists),0),kpList=arr.map(kp).filter(v=>v!==null),winRate=games?wins/games*100:0,avgKills=games?kills/games:0,avgDeaths=games?deaths/games:0,avgAssists=games?assists/games:0,kdaValue=getKda(kills,deaths,assists),kpAvg=average(kpList),score=games*8+winRate*.45+kdaValue*4+kpAvg*.15;return{champion,lane,games,wins,losses,winRate,avgKills,avgDeaths,avgAssists,kda:kdaValue,kp:kpAvg,score}});if(mostLane!=="ALL")list=list.filter(c=>c.lane===mostLane);list.sort((a,b)=>{let r=0;if(mostSort==="name")r=compareName(a.champion,b.champion);else if(mostSort==="games")r=a.games-b.games;else if(mostSort==="winRate")r=a.winRate-b.winRate;else if(mostSort==="avgKills")r=a.avgKills-b.avgKills;else if(mostSort==="avgDeaths")r=a.avgDeaths-b.avgDeaths;else if(mostSort==="avgAssists")r=a.avgAssists-b.avgAssists;else if(mostSort==="kda")r=a.kda-b.kda;else if(mostSort==="kp")r=a.kp-b.kp;else r=a.score-b.score;return mostAsc?r:-r});return list}
-function mostLaneFilters(playerName){return`<div class="master-filter-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">${["ALL",...LANE_ORDER].map(l=>`<button class="master-filter ${mostLane===l?"active":""}" onclick="setMostLane('${l}','${safe(playerName)}')">${l==="ALL"?"":laneIcon(l)} ${LANE_LABELS[l]}</button>`).join("")}</div>`}
-function renderMostChampionArea(playerName){const area=document.getElementById("mostChampionArea");if(!area)return;const list=getPlayerMostStats(playerName);if(!list.length){area.innerHTML=mostLaneFilters(playerName)+`<div>모스트 챔피언 데이터가 없습니다.</div>`;return}area.innerHTML=mostLaneFilters(playerName)+`<table class="detail-table"><colgroup><col class="col-rank"><col class="col-champ"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-score"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortMost('name','${safe(playerName)}')">챔피언</button></th><th><button class="sort-btn" onclick="sortMost('games','${safe(playerName)}')">판수</button></th><th><button class="sort-btn" onclick="sortMost('winRate','${safe(playerName)}')">승률</button></th><th><button class="sort-btn" onclick="sortMost('avgKills','${safe(playerName)}')">평균 킬</button></th><th><button class="sort-btn" onclick="sortMost('avgDeaths','${safe(playerName)}')">평균 데스</button></th><th><button class="sort-btn" onclick="sortMost('avgAssists','${safe(playerName)}')">평균 어시</button></th><th><button class="sort-btn" onclick="sortMost('kda','${safe(playerName)}')">KDA</button></th><th><button class="sort-btn" onclick="sortMost('kp','${safe(playerName)}')">킬관여율</button></th><th><button class="sort-btn" onclick="sortMost('score','${safe(playerName)}')">점수</button></th></tr></thead><tbody>${list.map((c,i)=>`<tr><td>${rankText(i+1)}</td><td style="text-align:left"><div class="champ-cell" title="${htmlSafe(c.champion)}"><img class="champ-icon" src="${champImg(c.champion)}" onerror="this.style.display='none'"/><span class="champ-lane-icon">${laneIcon(c.lane)}</span><span class="champ-name">${htmlSafe(c.champion)}</span></div></td><td>${c.games}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${c.avgKills.toFixed(1)}</td><td>${c.avgDeaths.toFixed(1)}</td><td>${c.avgAssists.toFixed(1)}</td><td>${c.kda.toFixed(2)}</td><td>${pct(c.kp)}</td><td>${c.score.toFixed(1)}</td></tr>`).join("")}</tbody></table>`}
-function toggleCollapsible(id){const s=document.getElementById(id);if(!s)return;s.classList.toggle("open");const b=s.querySelector(".collapse-toggle");if(b){const o=s.classList.contains("open");b.innerHTML=`${o?"접기":"펼치기"} <span class="collapse-arrow">⌄</span>`}}function collapsibleSection(id,title,content){return`<div id="${id}" class="section collapsible-section"><div class="collapsible-header" onclick="toggleCollapsible('${id}')"><div class="section-title">${title}</div><button class="collapse-toggle" type="button" onclick="event.stopPropagation();toggleCollapsible('${id}')">펼치기 <span class="collapse-arrow">⌄</span></button></div><div class="collapsible-content">${content}</div></div>`}
-function setRecentLane(lane,playerName){recentLane=lane;const sec=document.getElementById("recentMatchSection");if(sec){const c=sec.querySelector(".collapsible-content");if(c)c.innerHTML=recentControls(playerName)}renderRecentMatchArea(playerName)}function runRecentSearch(target,value){recentChampionSearch=(value||"").trim();const i=document.getElementById("recentSearchInput");if(i)i.value=recentChampionSearch;const b=document.getElementById("recentSuggestBox");if(b){b.style.display="none";b.innerHTML=""}if(document.getElementById("championRecentMatchArea"))renderChampionRecentMatchArea(target);else renderRecentMatchArea(target)}
-function renderRecentSuggestions(playerName){const input=document.getElementById("recentSearchInput"),box=document.getElementById("recentSuggestBox");if(!input||!box)return;const q=input.value.trim().toLowerCase();if(!q){box.style.display="none";box.innerHTML="";return}const list=[...new Set(rows.filter(r=>r.lol_name===playerName&&r.champion_name).map(r=>r.champion_name))].filter(n=>n.toLowerCase().includes(q)).slice(0,8);if(!list.length){box.style.display="none";box.innerHTML="";return}box.innerHTML=list.map(i=>`<div class="suggest-item" onclick="runRecentSearch('${safe(playerName)}','${safe(i)}')">${htmlSafe(i)}</div>`).join("");box.style.display="block"}
-function recentControls(playerName){return`<div class="recent-control-wrap"><div class="recent-search-wrap"><div class="recent-search-row"><input id="recentSearchInput" class="recent-search-box" type="text" placeholder="챔피언 이름 검색..." autocomplete="off" value="${htmlSafe(recentChampionSearch)}" oninput="renderRecentSuggestions('${safe(playerName)}')" onkeydown="if(event.key==='Enter')runRecentSearch('${safe(playerName)}',this.value)"/><button class="recent-search-btn" type="button" onclick="runRecentSearch('${safe(playerName)}',document.getElementById('recentSearchInput').value)">🔍</button></div><div id="recentSuggestBox" class="recent-suggest-box"></div></div><div class="recent-filter-row">${["ALL",...LANE_ORDER].map(l=>`<button class="recent-lane-filter ${recentLane===l?"active":""}" type="button" onclick="setRecentLane('${l}','${safe(playerName)}')">${l==="ALL"?"":laneIcon(l)}<span>${LANE_LABELS[l]}</span></button>`).join("")}</div></div><div id="recentMatchArea"></div>`}
-function championRecentControls(championName){return`<div class="recent-control-wrap"><div class="recent-search-wrap"><div class="recent-search-row"><input id="recentSearchInput" class="recent-search-box" type="text" placeholder="플레이어 이름 검색..." autocomplete="off" value="${htmlSafe(recentChampionSearch)}" onkeydown="if(event.key==='Enter')runRecentSearch('${safe(championName)}',this.value)"/><button class="recent-search-btn" type="button" onclick="runRecentSearch('${safe(championName)}',document.getElementById('recentSearchInput').value)">🔍</button></div></div><div class="recent-filter-row">${["ALL",...LANE_ORDER].map(l=>`<button class="recent-lane-filter ${recentLane===l?"active":""}" type="button" onclick="setChampionRecentLane('${l}','${safe(championName)}')">${l==="ALL"?"":laneIcon(l)}<span>${LANE_LABELS[l]}</span></button>`).join("")}</div></div><div id="championRecentMatchArea"></div>`}
-function setChampionRecentLane(lane,championName){recentLane=lane;const sec=document.getElementById("championRecentMatchSection");if(sec){const c=sec.querySelector(".collapsible-content");if(c)c.innerHTML=championRecentControls(championName)}renderChampionRecentMatchArea(championName)}function renderRecentMatchArea(playerName){const a=document.getElementById("recentMatchArea");if(a)a.innerHTML=playerRecentMatchRows(playerName)}function renderChampionRecentMatchArea(championName){const a=document.getElementById("championRecentMatchArea");if(a)a.innerHTML=championRecentMatchRows(championName)}
-function findOpponent(row){const same=rows.filter(r=>r.match_id===row.match_id&&r.lol_name!==row.lol_name);let o=same.find(r=>r.lane===row.lane&&r.win!==row.win);if(!o)o=same.find(r=>r.lane===row.lane);return o||null}function recentMatchScore(r){const k=num(r.kills),d=num(r.deaths),a=num(r.assists),kdaValue=getKda(k,d,a),kpValue=kp(r)||0;const raw=50+(kdaValue-2.5)*7.5+(kpValue-50)*.35+(r.win?5:-3);return Math.max(0,Math.min(100,raw))}
-function rebuiltScoreClass(v){v=Number(v)||0;if(v>=90)return"rebuilt-score-high";if(v>=80)return"rebuilt-score-good";if(v>=70)return"rebuilt-score-mid";if(v>=60)return"rebuilt-score-low";return"rebuilt-score-bad"}
-function rebuiltRecentChampionCell(row,star=false,showPlayer=false){
-  if(!row)return"-";
-  const champ=htmlSafe(row.champion_name||"-");
-  const player=htmlSafe(row.lol_name||"-");
-  return`
-    <div class="champ-cell" title="${champ}${showPlayer?` / ${player}`:""}">
-      <img class="champ-icon" src="${champImg(row.champion_name)}" onerror="this.style.display='none'"/>
-      <div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-        <span class="champ-name" style="width:100%;">${star?`<span class="my-star">★</span>`:""}${champ}</span>
-        ${showPlayer?`<span style="font-size:10px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${player}</span>`:""}
-      </div>
-    </div>
-  `;
+function goBack(){
+  const restoreY=pageScrollMemory||0;
+  document.getElementById("detailPage").style.display="none";
+  document.getElementById("mainPage").style.display="block";
+  document.querySelector(".top-tabs").style.display="flex";
+  document.getElementById("summary").style.display="block";
+  document.getElementById("floatingTitleBar").classList.remove("show");
+  window.removeEventListener("scroll",floatingTitleScrollHandler);
+  requestAnimationFrame(()=>window.scrollTo({top:restoreY,left:0,behavior:"auto"}));
+  setTimeout(()=>window.scrollTo({top:restoreY,left:0,behavior:"auto"}),0);
+  setTimeout(()=>window.scrollTo({top:restoreY,left:0,behavior:"auto"}),80);
+}
+function showDetail(html,rememberScroll=true){
+  if(rememberScroll)pageScrollMemory=window.scrollY||document.documentElement.scrollTop||document.body.scrollTop||0;
+  document.getElementById("detailContent").innerHTML=html;
+  document.getElementById("mainPage").style.display="none";
+  document.querySelector(".top-tabs").style.display="none";
+  document.getElementById("summary").style.display="none";
+  document.getElementById("detailPage").style.display="block";
+  window.scrollTo({top:0,left:0,behavior:"auto"});
+  setTimeout(initFloatingTitle,0);
 }
 function recentTableRows(data,mode){
   if(!data.length)return`<div class="recent-empty">조건에 맞는 전적이 없습니다.</div>`;
@@ -7379,6 +7392,57 @@ var honeyPortrait = function(name,lane='',big=false){
 
   setTimeout(wrapTablesForScroll,0);
   setTimeout(wrapTablesForScroll,400);
+})();
+
+
+/* ===== v45 final scroll restore / no slide override ===== */
+(function(){
+  window.__bandleMainScrollY = window.__bandleMainScrollY || 0;
+
+  const oldShowDetail = window.showDetail || (typeof showDetail==="function" ? showDetail : null);
+  if(typeof oldShowDetail==="function" && !oldShowDetail.__v45Wrapped){
+    const wrapped=function(html,rememberScroll=true){
+      if(rememberScroll){
+        window.__bandleMainScrollY=window.scrollY||document.documentElement.scrollTop||document.body.scrollTop||0;
+        try{pageScrollMemory=window.__bandleMainScrollY}catch(e){}
+      }
+      const res=oldShowDetail.call(this,html,rememberScroll);
+      document.querySelectorAll(".slide-out-left,.slide-in-right").forEach(el=>{
+        el.classList.remove("slide-out-left","slide-in-right");
+      });
+      return res;
+    };
+    wrapped.__v45Wrapped=true;
+    window.showDetail=wrapped;
+    try{showDetail=window.showDetail}catch(e){}
+  }
+
+  window.goBack=function(){
+    const restoreY=window.__bandleMainScrollY || pageScrollMemory || 0;
+    const detailPage=document.getElementById("detailPage");
+    const mainPage=document.getElementById("mainPage");
+    const tabs=document.querySelector(".top-tabs");
+    const summary=document.getElementById("summary");
+    const bar=document.getElementById("floatingTitleBar");
+
+    if(detailPage)detailPage.style.display="none";
+    if(mainPage)mainPage.style.display="block";
+    if(tabs)tabs.style.display="flex";
+    if(summary)summary.style.display="block";
+    if(bar)bar.classList.remove("show");
+
+    try{window.removeEventListener("scroll",floatingTitleScrollHandler)}catch(e){}
+
+    document.querySelectorAll(".slide-out-left,.slide-in-right").forEach(el=>{
+      el.classList.remove("slide-out-left","slide-in-right");
+    });
+
+    requestAnimationFrame(()=>window.scrollTo({top:restoreY,left:0,behavior:"auto"}));
+    setTimeout(()=>window.scrollTo({top:restoreY,left:0,behavior:"auto"}),0);
+    setTimeout(()=>window.scrollTo({top:restoreY,left:0,behavior:"auto"}),80);
+    setTimeout(()=>window.scrollTo({top:restoreY,left:0,behavior:"auto"}),180);
+  };
+  try{goBack=window.goBack}catch(e){}
 })();
 
 </script>
