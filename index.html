@@ -1432,9 +1432,8 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
     document.getElementById("safeSideTitle").textContent=cur.title;
     document.getElementById("safeSideBody").innerHTML=cur.html;
     const btn=document.getElementById("safeSideBtn");
-    const showPrev=sideStack.length>1 || !!cur.forcePrevClose;
-    btn.textContent=showPrev?"이전화면으로 이동하기":"나가기";
-    btn.classList.toggle("prev",showPrev);
+    btn.textContent=sideStack.length>1?"이전화면으로 이동하기":"나가기";
+    btn.classList.toggle("prev",sideStack.length>1);
     document.body.classList.add("side-page-open");
     requestAnimationFrame(()=>el.classList.add("show"));
   }
@@ -1680,8 +1679,8 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
           recentChampionSearch="";
           sideReturnTop=getTop();
           const name=currentDetailName;
-          if(isChampion)openSide({kind:"recent",mode:"champion",name,title:`전적 전체보기-${name}`,html:recentFull("champion",name),forcePrevClose:true});
-          else openSide({kind:"recent",mode:"player",name,title:`전적 전체보기-${name}`,html:recentFull("player",name),forcePrevClose:true});
+          if(isChampion)openSide({kind:"recent",mode:"champion",name,title:`전적 전체보기-${name}`,html:recentFull("champion",name)});
+          else openSide({kind:"recent",mode:"player",name,title:`전적 전체보기-${name}`,html:recentFull("player",name)});
         };
       });
     });
@@ -1736,21 +1735,16 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
   window.sortMost=sortMost;
 })();
 
-
-/* final requested behavior fixes */
-const finalFixStyle=document.createElement("style");
-finalFixStyle.textContent=`
+/* data-safe final CSS fixes: no Supabase/loadData changes */
+const dataSafeStyle=document.createElement("style");
+dataSafeStyle.textContent=`
   body.side-page-open{overflow:hidden!important;overscroll-behavior:none!important;}
   body.side-page-open #detailPage{overflow:hidden!important;max-height:100vh!important;}
-  .safe-side-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;}
-  .safe-side-title{flex:1!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
-  .safe-side-btn{margin-left:auto!important;}
   .record-detail-panel{border:none!important;border-top:0!important;box-shadow:0 18px 50px rgba(0,0,0,.42)!important;}
   .record-detail-panel::before,.record-detail-panel::after{display:none!important;content:none!important;border:0!important;}
-  .record-detail-panel table,.record-detail-panel thead,.record-detail-panel tbody,.record-detail-panel tr,.record-detail-panel th,.record-detail-panel td{border-top:0!important;box-shadow:none!important;}
-  .champ-tier-ring{background-clip:border-box!important;}
+  .record-detail-panel table,.record-detail-panel thead,.record-detail-panel tbody,.record-detail-panel tr,.record-detail-panel th,.record-detail-panel td{border-top:0!important;}
 `;
-document.head.appendChild(finalFixStyle);
+document.head.appendChild(dataSafeStyle);
 
 loadData();setInterval(loadData,30000);
 </script>
