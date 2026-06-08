@@ -22,7 +22,7 @@ h1{text-align:center;font-size:42px;margin:0 0 12px;font-weight:1000}.summary{te
 .section{background:rgba(15,23,42,.92);border:1px solid rgba(96,165,250,.26);border-radius:22px;padding:18px;margin-bottom:18px}.section-title{font-size:20px;font-weight:1000;color:#bfdbfe;margin-bottom:14px}.section-sub{font-size:13px;color:#94a3b8}.stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.stat-card{background:rgba(30,41,59,.95);border:1px solid rgba(148,163,184,.25);border-radius:15px;padding:14px 10px;text-align:center}.stat-label{color:#cbd5e1;font-size:13px;margin-bottom:6px}.stat-value{font-size:21px}
 .record-blocks{display:flex;gap:0;flex-wrap:wrap}.result-block{width:38px;height:38px;display:flex;align-items:center;justify-content:center;color:white;font-weight:1000;border-radius:10px;margin-right:4px}.result-win{background:#22c55e}.result-loss{background:#ef4444}.recent-lane-wrapper img{width:14px!important;height:14px!important;object-fit:contain}
 .lane-ratio-row{margin-bottom:12px}.ratio-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-weight:1000}.ratio-bar-bg{background:rgba(30,41,59,.95);height:15px;border-radius:999px;overflow:hidden}.ratio-bar{height:100%;background:#2563eb;border-radius:999px}.detail-table{width:100%;border-spacing:0 8px;table-layout:fixed}.detail-table th,.detail-table td{font-size:13px;font-weight:1000}.detail-table th{background:rgba(30,41,59,.95)}.detail-table td{background:rgba(51,65,85,.82)}.record-icons{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px}.small-champ-icon{width:28px;height:28px;border-radius:8px;object-fit:cover}
-.hide{display:none!important}.col-rank{width:4.5%}.col-tier{width:11%}.col-small{width:6.5%}.col-rate{width:9%}.col-name{width:22%}.col-champ{width:28%}.col-lane{width:8%}.col-score{width:7%}.col-auto{width:auto}
+.hide{display:none!important}.col-rank{width:4.5%}.col-tier{width:11%}.col-small{width:6.5%}.col-rate{width:9%}.col-name{width:22%}.col-champ{width:28%}.col-lane{width:8%}.col-score{width:8.5%}.col-auto{width:auto}
 .collapsible-header{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;user-select:none;margin-bottom:0}.collapse-toggle{border:1px solid rgba(96,165,250,.35);background:rgba(30,41,59,.92);color:#dbeafe;border-radius:999px;padding:8px 12px;font-weight:1000;cursor:pointer;white-space:nowrap}.collapsible-content{max-height:0;opacity:0;overflow:hidden;margin-top:0;transition:max-height .42s ease,opacity .28s ease,margin-top .42s ease}.collapsible-section.open .collapsible-content{max-height:5000px;opacity:1;margin-top:14px}.collapse-arrow{display:inline-block;transition:transform .28s ease;margin-left:6px}.collapsible-section.open .collapse-arrow{transform:rotate(180deg)}
 .recent-control-wrap{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;margin-bottom:12px}.recent-search-wrap{position:relative;flex:1;min-width:240px}.recent-search-row{display:flex;gap:8px}.recent-search-box{width:100%;padding:12px 14px;border-radius:13px;border:1px solid #334155;background:rgba(30,41,59,.95);color:white;font-size:14px;outline:none;font-weight:1000}.recent-search-btn{width:50px;border:none;border-radius:13px;background:#2563eb;color:white;font-size:18px;cursor:pointer;font-weight:1000;flex-shrink:0}.recent-suggest-box{position:absolute;top:50px;left:0;right:58px;background:rgba(15,23,42,.98);border:1px solid rgba(96,165,250,.35);border-radius:14px;overflow:hidden;z-index:60;display:none}.recent-filter-row{display:flex;gap:8px;flex-wrap:wrap}.recent-lane-filter{padding:9px 12px}
 .recent-result-block{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:9px;color:white;font-weight:1000;font-size:13px;margin:0 auto}.recent-table td{padding:7px 4px;font-size:10.5px}.recent-table th{font-size:10.5px;padding:8px 4px}.recent-table .champ-icon{width:32px;height:32px;border-radius:8px}.recent-empty{color:#cbd5e1;font-weight:1000;padding:10px 0}.opponent-name{font-size:13px!important;font-weight:1000!important;color:white!important}
@@ -41,20 +41,20 @@ h1{text-align:center;font-size:42px;margin:0 0 12px;font-weight:1000}.summary{te
 <div class="search-wrap"><div class="search-row"><input id="searchInput" class="search-box" type="text" placeholder="검색어 입력..." autocomplete="off"/><button id="searchBtn" class="search-btn">🔍</button></div><div id="suggestBox" class="suggest-box"></div></div>
 <div id="laneFilters" class="filter-row"></div>
 <table id="playerTable"><colgroup><col class="col-rank"><col class="col-name"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortPlayer('name')">닉네임</button></th><th><button class="sort-btn" onclick="sortPlayer('games')">판수</button></th><th><button class="sort-btn" onclick="sortPlayer('wins')">승</button></th><th><button class="sort-btn" onclick="sortPlayer('losses')">패</button></th><th><button class="sort-btn" onclick="sortPlayer('winRate')">승률</button></th><th><button class="sort-btn" onclick="sortPlayer('kp')">킬관여율</button></th><th><button class="sort-btn" onclick="sortPlayer('participation')">참여율</button></th></tr></thead><tbody id="playerRanking"></tbody></table>
-<table id="championTable" class="hide"><colgroup><col class="col-rank"><col class="col-tier"><col class="col-champ"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortChampion('tier')">티어</button></th><th><button class="sort-btn" onclick="sortChampion('name')">챔피언</button></th><th><button class="sort-btn" onclick="sortChampion('games')">판수</button></th><th><button class="sort-btn" onclick="sortChampion('wins')">승</button></th><th><button class="sort-btn" onclick="sortChampion('losses')">패</button></th><th><button class="sort-btn" onclick="sortChampion('winRate')">승률</button></th><th><button class="sort-btn" onclick="sortChampion('pickRate')">픽률</button></th><th><button class="sort-btn" onclick="sortChampion('banRate')">밴율</button></th><th><button class="sort-btn" onclick="sortChampion('kp')">킬관여율</button></th></tr></thead><tbody id="championRanking"></tbody></table>
+<table id="championTable" class="hide"><colgroup><col class="col-rank"><col class="col-champ"><col class="col-score"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortChampion('name')">챔피언</button></th><th><button class="sort-btn" onclick="sortChampion('score')">꿀챔점수</button></th><th><button class="sort-btn" onclick="sortChampion('games')">판수</button></th><th><button class="sort-btn" onclick="sortChampion('wins')">승</button></th><th><button class="sort-btn" onclick="sortChampion('losses')">패</button></th><th><button class="sort-btn" onclick="sortChampion('winRate')">승률</button></th><th><button class="sort-btn" onclick="sortChampion('pickRate')">픽률</button></th><th><button class="sort-btn" onclick="sortChampion('banRate')">밴율</button></th><th><button class="sort-btn" onclick="sortChampion('kp')">킬관여율</button></th></tr></thead><tbody id="championRanking"></tbody></table>
 </div>
 <div id="detailPage" class="detail-page"><button class="back-btn" onclick="goBack()">← 뒤로가기</button><div id="detailContent"></div></div>
 <script type="module">
 let createClient;try{({createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"))}catch(e){({createClient}=await import("https://esm.sh/@supabase/supabase-js@2"))}
 const SUPABASE_URL="https://ehligpqxjczgcggjpzwn.supabase.co",SUPABASE_KEY="sb_publishable_QHDiR1qAWGVaKSDZguc0qg_fE_eVCwZ",supabase=createClient(SUPABASE_URL,SUPABASE_KEY);
 const LANE_ORDER=["TOP","JUNGLE","MID","ADC","SUPPORT"],LANE_LABELS={ALL:"전체",TOP:"탑",JUNGLE:"정글",MID:"미드",ADC:"원딜",SUPPORT:"서폿"},LANE_ICON_URLS={TOP:"https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-top.svg",JUNGLE:"https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-jungle.svg",MID:"https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-middle.svg",ADC:"https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-bottom.svg",SUPPORT:"https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/svg/position-utility.svg"},TIER_CLASS={OP:"tier-red",S:"tier-orange",A:"tier-yellow",B:"tier-green",C:"tier-blue"};
-let players=[],rows=[],bans=[],matches=[],totalGames=0,currentTab="player",currentLane="ALL",activeSearch="",playerSort="winRate",playerAsc=false,championSort="tier",championAsc=true,mostSort="score",mostAsc=false,mostLane="ALL",masterSort="score",masterAsc=false,masterLane="ALL",recentLane="ALL",recentChampionSearch="",latestVersion="15.12.1",championNameToId={},currentDetailName="";
+let players=[],rows=[],bans=[],matches=[],totalGames=0,currentTab="player",currentLane="ALL",activeSearch="",playerSort="winRate",playerAsc=false,championSort="score",championAsc=false,mostSort="score",mostAsc=false,mostLane="ALL",masterSort="score",masterAsc=false,masterLane="ALL",recentLane="ALL",recentChampionSearch="",latestVersion="15.12.1",championNameToId={},currentDetailName="";
 const playerTab=document.getElementById("playerTab"),championTab=document.getElementById("championTab"),searchInput=document.getElementById("searchInput"),searchBtn=document.getElementById("searchBtn"),suggestBox=document.getElementById("suggestBox");
 playerTab.onclick=()=>{currentTab="player";activeSearch="";searchInput.value="";playerTab.classList.add("active");championTab.classList.remove("active");document.getElementById("playerTable").classList.remove("hide");document.getElementById("championTable").classList.add("hide");renderLaneFilters();renderMain()};
 championTab.onclick=()=>{currentTab="champion";activeSearch="";searchInput.value="";championTab.classList.add("active");playerTab.classList.remove("active");document.getElementById("championTable").classList.remove("hide");document.getElementById("playerTable").classList.add("hide");renderLaneFilters();renderMain()};
 searchInput.addEventListener("input",renderSuggestions);searchInput.addEventListener("keydown",e=>{if(e.key==="Enter")runSearch(searchInput.value.trim())});searchBtn.onclick=()=>runSearch(searchInput.value.trim());
 window.sortPlayer=function(type){if(playerSort===type)playerAsc=!playerAsc;else{playerSort=type;playerAsc=type==="name"}renderMain()};
-window.sortChampion=function(type){if(championSort===type)championAsc=!championAsc;else{championSort=type;championAsc=type==="name"||type==="tier"}renderMain()};
+window.sortChampion=function(type){if(championSort===type)championAsc=!championAsc;else{championSort=type;championAsc=type==="name"}renderMain()};
 window.sortMost=function(type,playerName){if(mostSort===type)mostAsc=!mostAsc;else{mostSort=type;mostAsc=type==="name"}renderMostChampionArea(playerName)};
 window.setMostLane=function(lane,playerName){mostLane=lane;renderMostChampionArea(playerName)};
 window.sortMaster=function(type,championName){if(masterSort===type)masterAsc=!masterAsc;else{masterSort=type;masterAsc=type==="name"}renderMasterRankingArea(championName)};
@@ -73,7 +73,7 @@ function getAllChampionComboList(){const map={};rows.forEach(r=>{if(!r.champion_
 function getPlayerRanking(){const lane=effectiveLane();let list=players.map(p=>({...calcPlayerStats(p.lol_name,lane),profile_image_url:p.profile_image_url||""}));if(lane!=="ALL")list=list.filter(p=>p.games>0);if(activeSearch){const q=activeSearch.toLowerCase();list=list.filter(p=>p.name.toLowerCase().includes(q))}list.sort((a,b)=>{if(playerSort==="winRate"&&!activeSearch){const ga=getParticipationGroup(a.participation),gb=getParticipationGroup(b.participation);if(ga!==gb)return ga-gb;return playerAsc?a.winRate-b.winRate:b.winRate-a.winRate}let r=0;if(playerSort==="name")r=compareName(a.name,b.name);else if(playerSort==="games")r=a.games-b.games;else if(playerSort==="wins")r=a.wins-b.wins;else if(playerSort==="losses")r=a.losses-b.losses;else if(playerSort==="participation")r=a.participation-b.participation;else if(playerSort==="kp")r=a.kp-b.kp;else r=a.winRate-b.winRate;return playerAsc?r:-r});return list}
 function getChampionRanking(){const lane=effectiveLane(),allList=getAllChampionComboList();let list=[];if(championSort==="banRate"){const champMap={};allList.filter(c=>lane==="ALL"||c.displayLane===lane).forEach(c=>{if(!champMap[c.name]){const stat=calcChampionStats(c.name,lane==="ALL"?"ALL":lane);champMap[c.name]={...stat,displayLane:lane==="ALL"?"BAN_MERGED":lane,tierList:[],scoreList:[]}}champMap[c.name].tierList.push(c.tier);champMap[c.name].scoreList.push(c.score)});list=Object.values(champMap).map(c=>{c.tierList=c.tierList.filter(Boolean);c.tier=bestTierFromList(c.tierList);c.score=Math.max(...c.scoreList,0);return c})}else{list=allList;if(lane!=="ALL")list=list.filter(c=>c.displayLane===lane)}if(activeSearch){const q=activeSearch.toLowerCase();list=list.filter(c=>c.name.toLowerCase().includes(q))}list.sort((a,b)=>{const o={OP:1,S:2,A:3,B:4,C:5};let r=0;if(championSort==="tier")r=o[a.tier]-o[b.tier]||b.score-a.score;else if(championSort==="name")r=compareName(a.name,b.name);else if(championSort==="games")r=a.games-b.games;else if(championSort==="wins")r=a.wins-b.wins;else if(championSort==="losses")r=a.losses-b.losses;else if(championSort==="pickRate")r=a.pickRate-b.pickRate;else if(championSort==="banRate")r=a.banRate-b.banRate||a.games-b.games;else if(championSort==="kp")r=a.kp-b.kp;else if(championSort==="winRate")r=a.winRate-b.winRate;else r=a.score-b.score;return championAsc?r:-r});return list}
 function renderPlayerRanking(){const tbody=document.getElementById("playerRanking"),list=getPlayerRanking();if(!list.length){tbody.innerHTML=`<tr><td colspan="8">플레이어 데이터가 없습니다.</td></tr>`;return}let html="",rankedCount=0,lastGroup=null;list.forEach((p,i)=>{const group=getParticipationGroup(p.participation);if(playerSort==="winRate"&&!activeSearch&&lastGroup!==null&&lastGroup!==group){const msg=group===1?"참여율 30% 미만인 플레이어는 순위가 표기되지 않습니다.":"참여율 10% 미만인 플레이어는 추방 대상입니다.";html+=`<tr class="group-divider"><td colspan="8" style="height:48px;padding:0!important;background:transparent!important;border-radius:0!important;border-bottom:2px solid rgba(147,197,253,.5);position:relative;overflow:visible;"><div style="position:absolute;left:50%;top:8px;transform:translateX(-50%);font-size:12px;color:#94a3b8;background:#111827;padding:2px 10px;border-radius:999px;border:1px solid rgba(147,197,253,.25);white-space:nowrap;">${msg}</div></td></tr>`}lastGroup=group;let rank;if(playerSort==="winRate"&&!activeSearch){if(p.participation>=30){rankedCount++;rank=rankText(rankedCount)}else rank="-"}else rank=rankText(i+1);html+=`<tr class="clickable-row ${p.participation<10?"low-participation":""}" onclick="openPlayerDetail('${safe(p.name)}')"><td>${rank}</td><td class="nickname" title="${htmlSafe(p.name)}"><div class="player-name-cell"><img class="player-avatar" src="${p.profile_image_url||"https://cdn.discordapp.com/embed/avatars/0.png"}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"><span>${htmlSafe(p.name)}</span></div></td><td>${p.games}</td><td class="win">${p.wins}</td><td class="loss">${p.losses}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${pct(p.kp)}</td><td>${pct(p.participation)}</td></tr>`});tbody.innerHTML=html}
-function renderChampionRanking(){const tbody=document.getElementById("championRanking"),list=getChampionRanking();if(!list.length){tbody.innerHTML=`<tr><td colspan="10">챔피언 데이터가 없습니다.</td></tr>`;return}tbody.innerHTML=list.map((c,i)=>{const img=champImg(c.name),tierClass=TIER_CLASS[c.tier]||"tier-blue",isBanMerged=championSort==="banRate",tierList=c.tierList?.length?c.tierList:[c.tier],isMixed=isBanMerged&&tierList.length>1,portraitClass=isMixed?"":tierClass,portraitStyle=isMixed?comboPortraitStyle(tierList):"background:transparent;";return`<tr class="clickable-row" onclick="openChampionDetail('${safe(c.name)}')"><td>${rankText(i+1)}</td><td>${isBanMerged?comboTierBadge(tierList):tierBadge(c.tier)}</td><td class="champ-td"><div class="champ-cell" title="${htmlSafe(c.name)}"><span class="combo-portrait-wrap" style="${portraitStyle}"><img class="champ-icon ${portraitClass}" src="${img}" onerror="this.style.display='none'"/></span>${isBanMerged?"":`<span class="champ-lane-icon">${laneIcon(c.displayLane)}</span>`}<span class="champ-name">${htmlSafe(c.name)}</span></div></td><td>${c.games}</td><td class="win">${c.wins}</td><td class="loss">${c.losses}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${pct(c.pickRate)}</td><td>${pct(c.banRate)}</td><td>${pct(c.kp)}</td></tr>`}).join("")}
+function renderChampionRanking(){const tbody=document.getElementById("championRanking"),list=getChampionRanking();if(!list.length){tbody.innerHTML=`<tr><td colspan="10">챔피언 데이터가 없습니다.</td></tr>`;return}tbody.innerHTML=list.map((c,i)=>{const img=champImg(c.name),tierClass=TIER_CLASS[c.tier]||"tier-blue",isBanMerged=championSort==="banRate",tierList=c.tierList?.length?c.tierList:[c.tier],isMixed=isBanMerged&&tierList.length>1,portraitClass=isMixed?"":tierClass,portraitStyle=isMixed?comboPortraitStyle(tierList):"background:transparent;";return`<tr class="clickable-row" onclick="openChampionDetail('${safe(c.name)}')"><td>${rankText(i+1)}</td><td class="champ-td"><div class="champ-cell" title="${htmlSafe(c.name)}"><span class="combo-portrait-wrap" style="${portraitStyle}"><img class="champ-icon ${portraitClass}" src="${img}" onerror="this.style.display='none'"/></span>${isBanMerged?"":`<span class="champ-lane-icon">${laneIcon(c.displayLane)}</span>`}<span class="champ-name">${htmlSafe(c.name)}</span></div></td><td style="color:#f97316;font-weight:1000;">${Number(c.score||0).toFixed(1)}</td><td>${c.games}</td><td class="win">${c.wins}</td><td class="loss">${c.losses}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${pct(c.pickRate)}</td><td>${pct(c.banRate)}</td><td>${pct(c.kp)}</td></tr>`}).join("")}
 function renderMain(){currentTab==="player"?renderPlayerRanking():renderChampionRanking()}
 function goBack(){document.getElementById("detailPage").style.display="none";document.getElementById("mainPage").style.display="block";document.querySelector(".top-tabs").style.display="flex";document.getElementById("summary").style.display="block";document.getElementById("floatingTitleBar").classList.remove("show");window.removeEventListener("scroll",floatingTitleScrollHandler)}
 function showDetail(html){document.getElementById("detailContent").innerHTML=html;document.getElementById("mainPage").style.display="none";document.querySelector(".top-tabs").style.display="none";document.getElementById("summary").style.display="none";document.getElementById("detailPage").style.display="block";window.scrollTo(0,0);setTimeout(initFloatingTitle,100)}
@@ -5658,6 +5658,164 @@ loadData();setInterval(loadData,30000);
   playerTab.onclick=function(){oldPlayerClick();removeRecentAndMatch();clearIconBorders();};
   championTab.onclick=function(){oldChampionClick();removeRecentAndMatch();clearIconBorders();};
   [0,100,300,800,1500].forEach(ms=>setTimeout(()=>{removeRecentAndMatch();clearIconBorders();},ms));
+})();
+
+/* ===== hard remove match-history tab from main tabs ===== */
+(function(){
+  function removeMatchHistoryTab(){
+    document.querySelectorAll('#matchTab,#matchHistoryMainV20,#matchHistoryPageV18').forEach(el=>el.remove());
+    document.querySelectorAll('.top-tabs .tab, .top-tabs button').forEach(tab=>{
+      const label=(tab.textContent||'').replace(/\s+/g,'');
+      if(label.includes('대전기록') || label.includes('대전')) tab.remove();
+    });
+  }
+  window.showMatchHistoryMainV20=function(){removeMatchHistoryTab();};
+  window.openMatchHistoryPageV18=function(){removeMatchHistoryTab();};
+  window.closeMatchHistoryPageV18=function(){removeMatchHistoryTab();};
+  const tabs=document.querySelector('.top-tabs');
+  if(tabs){
+    new MutationObserver(removeMatchHistoryTab).observe(tabs,{childList:true,subtree:true,characterData:true});
+  }
+  [0,50,150,300,600,1000,2000,4000].forEach(ms=>setTimeout(removeMatchHistoryTab,ms));
+})();
+
+/* ===== honey champion tier system patch ===== */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    .tier-red,.tier-orange,.tier-yellow,.tier-green,.tier-blue,.combo-portrait-wrap,.champ-tier-frame,.champ-detail-tier-frame{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;}
+    img.champ-icon,img.small-champ-icon,img.participant-icon-v20{border:0!important;box-shadow:none!important;outline:0!important;}
+    .honey-portrait{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:48px;height:48px;overflow:visible;vertical-align:middle;}
+    .honey-portrait.big{width:112px;height:112px;}
+    .honey-portrait .champ-icon{width:44px;height:44px;border-radius:10px;object-fit:cover;border:0!important;box-shadow:none!important;}
+    .honey-portrait.big .champ-icon{width:112px;height:112px;border-radius:24px;}
+    .honey-tier-tag,.honey-op-tag{position:absolute;z-index:4;height:19px;min-width:22px;padding:0 6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:1000;line-height:1;color:white;border:1px solid rgba(255,255,255,.75);box-shadow:0 3px 8px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.45);text-shadow:0 1px 2px rgba(0,0,0,.55);pointer-events:none;}
+    .honey-tier-tag{top:-7px;left:-7px;border-radius:8px 8px 8px 3px;background:linear-gradient(135deg,#ef4444,#991b1b);}
+    .honey-op-tag{top:-7px;right:-9px;border-radius:8px 8px 3px 8px;background:linear-gradient(135deg,#8b5cf6,#4f46e5 55%,#312e81);font-style:italic;letter-spacing:.2px;}
+    .honey-tier-1{background:linear-gradient(135deg,#ef4444,#991b1b)!important}.honey-tier-2{background:linear-gradient(135deg,#f97316,#9a3412)!important}.honey-tier-3{background:linear-gradient(135deg,#eab308,#854d0e)!important}.honey-tier-4{background:linear-gradient(135deg,#22c55e,#166534)!important}.honey-tier-5{background:linear-gradient(135deg,#3b82f6,#1e3a8a)!important}
+    .honey-tier-pill{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:56px;height:30px;padding:0 12px;border-radius:999px;color:white;font-weight:1000;border:1px solid rgba(255,255,255,.35);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 3px 10px rgba(0,0,0,.3);}
+    .honey-op-pill{margin-left:5px;padding:2px 7px;border-radius:999px;background:linear-gradient(135deg,#8b5cf6,#4f46e5);border:1px solid rgba(255,255,255,.45);font-size:12px;font-style:italic;}
+    .honey-score-text{font-size:11px;color:#cbd5e1;margin-top:2px;font-weight:1000;}
+    .champ-cell .honey-portrait{margin-right:0;}
+    @media(max-width:760px){.honey-portrait{width:34px;height:34px}.honey-portrait .champ-icon{width:30px;height:30px;border-radius:8px}.honey-portrait.big{width:76px;height:76px}.honey-portrait.big .champ-icon{width:76px;height:76px;border-radius:18px}.honey-tier-tag,.honey-op-tag{height:16px;min-width:19px;font-size:10px;padding:0 5px}.honey-op-tag{right:-7px}.honey-tier-tag{left:-6px}}
+  `;
+  document.head.appendChild(style);
+
+  function clamp(v,min,max){return Math.max(min,Math.min(max,Number(v)||0));}
+  function tierOrderValue(t){return Number(t)||5;}
+  championScore=function(c){
+    const kdaScore=clamp((Number(c.kda)||0),0,6)/6*25;
+    const winScore=clamp(Number(c.winRate)||0,0,100)*0.35;
+    const pickScore=clamp(Number(c.pickRate)||0,0,35)/35*25;
+    const banScore=clamp(Number(c.banRate)||0,0,30)/30*15;
+    return kdaScore+winScore+pickScore+banScore;
+  };
+  function applyHoneyTier(c){
+    c.score=championScore(c);
+    c.honeyScore=c.score;
+    c.isOP=c.score>=75 && c.winRate>=52 && c.games>=1;
+    c.tier=c.score>=65?1:c.score>=52?2:c.score>=40?3:c.score>=28?4:5;
+    return c;
+  }
+  assignChampionTiers=function(list){return list.filter(c=>c.games>=1).map(applyHoneyTier).sort((a,b)=>(tierOrderValue(a.tier)-tierOrderValue(b.tier))||Number(b.isOP)-Number(a.isOP)||b.score-a.score);};
+  const oldCalcChampionStats=calcChampionStats;
+  calcChampionStats=function(name,lane='ALL'){return applyHoneyTier(oldCalcChampionStats(name,lane));};
+  tierBadge=function(t,isOP=false,score=null){
+    const n=tierOrderValue(t);
+    return `<span style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;"><span class="honey-tier-pill honey-tier-${n}"><span>${n}티어</span>${isOP?`<span class="honey-op-pill">OP</span>`:''}</span>${score!==null?`<span class="honey-score-text">${Number(score).toFixed(1)}점</span>`:''}</span>`;
+  };
+  bestTierFromList=function(ts){return (ts||[]).map(Number).filter(Boolean).sort((a,b)=>a-b)[0]||5;};
+  comboTierBadge=function(ts){return tierBadge(bestTierFromList(ts));};
+  comboPortraitStyle=function(){return 'background:transparent;';};
+
+  function allComboList(){return getAllChampionComboList().map(applyHoneyTier);}
+  function popularTierForChampion(name,lane){
+    let list=allComboList().filter(c=>c.name===name || c.displayName===name);
+    if(lane&&lane!=='ALL'){
+      const exact=list.find(c=>c.displayLane===lane);
+      if(exact)return exact;
+    }
+    list.sort((a,b)=>(b.pickRate-a.pickRate)||(b.games-a.games)||(b.score-a.score));
+    return list[0]||applyHoneyTier(calcChampionStats(name,lane||'ALL'));
+  }
+  function honeyPortrait(name,lane='',big=false){
+    const h=popularTierForChampion(name,lane);
+    const n=tierOrderValue(h.tier);
+    return `<span class="honey-portrait ${big?'big':''}" data-champion="${htmlSafe(name||'')}" data-lane="${htmlSafe(lane||'')}"><img class="champ-icon ${big?'big':''}" src="${champImg(name)}" onerror="this.style.display='none'"/><span class="honey-tier-tag honey-tier-${n}">${n}</span>${h.isOP?`<span class="honey-op-tag">OP</span>`:''}</span>`;
+  }
+  window.honeyPortrait=honeyPortrait;
+
+  getChampionRanking=function(){
+    const lane=effectiveLane();
+    let list=[];
+    if(championSort==='banRate'){
+      const map={};
+      allComboList().filter(c=>lane==='ALL'||c.displayLane===lane).forEach(c=>{
+        if(!map[c.name]){
+          const stat=applyHoneyTier(calcChampionStats(c.name,lane==='ALL'?'ALL':lane));
+          map[c.name]={...stat,displayLane:lane==='ALL'?'BAN_MERGED':lane,comboList:[]};
+        }
+        map[c.name].comboList.push(c);
+      });
+      list=Object.values(map).map(c=>{const p=[...c.comboList].sort((a,b)=>(b.pickRate-a.pickRate)||(b.games-a.games)||(b.score-a.score))[0];if(p){c.tier=p.tier;c.isOP=p.isOP;c.honeyScore=p.honeyScore;c.score=p.score;c.badgeLane=p.displayLane;}return c;});
+    }else{
+      list=allComboList();
+      if(lane!=='ALL')list=list.filter(c=>c.displayLane===lane);
+    }
+    if(activeSearch){const q=activeSearch.toLowerCase();list=list.filter(c=>c.name.toLowerCase().includes(q));}
+    list.sort((a,b)=>{let r=0;if(championSort==='tier')r=tierOrderValue(a.tier)-tierOrderValue(b.tier)||Number(b.isOP)-Number(a.isOP)||b.score-a.score;else if(championSort==='name')r=compareName(a.name,b.name);else if(championSort==='games')r=a.games-b.games;else if(championSort==='wins')r=a.wins-b.wins;else if(championSort==='losses')r=a.losses-b.losses;else if(championSort==='pickRate')r=a.pickRate-b.pickRate;else if(championSort==='banRate')r=a.banRate-b.banRate||a.games-b.games;else if(championSort==='kp')r=a.kp-b.kp;else if(championSort==='winRate')r=a.winRate-b.winRate;else if(championSort==='score'||championSort==='honeyScore')r=a.score-b.score;else r=a.score-b.score;return championAsc?r:-r;});
+    return list;
+  };
+  renderChampionRanking=function(){
+    const tbody=document.getElementById('championRanking'),list=getChampionRanking();
+    if(!list.length){tbody.innerHTML=`<tr><td colspan="10">챔피언 데이터가 없습니다.</td></tr>`;return;}
+    tbody.innerHTML=list.map((c,i)=>{const lane=c.badgeLane||c.displayLane;return `<tr class="clickable-row" onclick="openChampionDetail('${safe(c.name)}')"><td>${rankText(i+1)}</td><td class="champ-td"><div class="champ-cell" title="${htmlSafe(c.name)}">${honeyPortrait(c.name,lane,false)}${championSort==='banRate'?'':`<span class="champ-lane-icon">${laneIcon(c.displayLane)}</span>`}<span class="champ-name">${htmlSafe(c.name)}</span></div></td><td style="color:#f97316;font-weight:1000;">${Number(c.score||0).toFixed(1)}</td><td>${c.games}</td><td class="win">${c.wins}</td><td class="loss">${c.losses}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${pct(c.pickRate)}</td><td>${pct(c.banRate)}</td><td>${pct(c.kp)}</td></tr>`}).join('');
+  };
+
+  playerRecordExtra=function(r){return r?`<div class="record-icons">${honeyPortrait(r.champion_name,r.lane,false)}${laneIcon(r.lane)}</div>`:'';};
+  championRecordExtra=function(r){return r?`<div style="font-size:12px;color:#cbd5e1;margin-top:5px;font-weight:1000;">${htmlSafe(r.lol_name||'-')}</div><div class="record-icons">${honeyPortrait(r.champion_name,r.lane,false)}${laneIcon(r.lane)}</div>`:'';};
+
+  const oldRenderMost=renderMostChampionArea;
+  renderMostChampionArea=function(playerName){
+    oldRenderMost(playerName);
+    const area=document.getElementById('mostChampionArea');
+    if(!area)return;
+    area.querySelectorAll('.champ-cell').forEach(cell=>{
+      const img=cell.querySelector('img.champ-icon'); if(!img)return;
+      const name=(cell.getAttribute('title')||cell.querySelector('.champ-name')?.textContent||'').trim();
+      let lane=''; cell.querySelectorAll('.lane-icon').forEach(()=>{});
+      img.replaceWith(document.createRange().createContextualFragment(honeyPortrait(name,lane,false)));
+    });
+  };
+
+  openChampionDetail=function(championName){
+    currentDetailName=championName;recentLane='ALL';recentChampionSearch='';masterLane='ALL';if(typeof jumpReturnY!=='undefined')jumpReturnY=0;
+    const s=calcChampionStats(championName,'ALL'),laneTierList=allComboList().filter(c=>c.name===championName).sort((a,b)=>LANE_ORDER.indexOf(a.displayLane)-LANE_ORDER.indexOf(b.displayLane)),data=s.rows,bestKill=bestRecord(data,'kills'),bestDeath=bestRecord(data,'deaths'),bestAssist=bestRecord(data,'assists'),bestKp=bestRecord(data,'kp'),laneTierBadges=laneTierList.length?laneTierList.map(c=>`<span class="lane-pill">${laneIcon(c.displayLane)} ${tierBadge(c.tier,c.isOP,c.score)}</span>`).join(''):`<span class="lane-pill">라인별 티어 없음</span>`;
+    const html=`<div class="detail-hero">${honeyPortrait(championName,'',true)}<div><div class="hero-title">${htmlSafe(championName)}</div><div class="hero-sub">${laneTierBadges}</div></div></div><div class="section"><div class="section-title">전체 통계</div>${statCards([{label:'판수',value:s.games},{label:'꿀챔 점수',value:s.score.toFixed(1)},{label:'승',value:s.wins,cls:'win'},{label:'패',value:s.losses,cls:'loss'},{label:'승률',value:pct(s.winRate),cls:rateClass(s.winRate)},{label:'픽률',value:pct(s.pickRate)},{label:'밴율',value:pct(s.banRate)},{label:'평균 킬',value:s.avgKills.toFixed(1)},{label:'평균 데스',value:s.avgDeaths.toFixed(1)},{label:'평균 어시',value:s.avgAssists.toFixed(1)},{label:'KDA',value:s.kda.toFixed(2)},{label:'평균 킬관여율',value:pct(s.kp)}])}</div><div class="section"><div class="section-title">최고 기록</div>${statCards([{label:'최다 킬',value:bestKill?`${num(bestKill.kills)}회`:'-',extra:championRecordExtra(bestKill),onclick:bestKill?`showBestRecord('champion','최다 킬','${bestKill.id}')`:''},{label:'최다 데스',value:bestDeath?`${num(bestDeath.deaths)}회`:'-',extra:championRecordExtra(bestDeath),onclick:bestDeath?`showBestRecord('champion','최다 데스','${bestDeath.id}')`:''},{label:'최다 어시스트',value:bestAssist?`${num(bestAssist.assists)}회`:'-',extra:championRecordExtra(bestAssist),onclick:bestAssist?`showBestRecord('champion','최다 어시스트','${bestAssist.id}')`:''},{label:'최대 킬관여율',value:bestKp?pct(kp(bestKp)||0):'-',extra:championRecordExtra(bestKp),onclick:bestKp?`showBestRecord('champion','최대 킬관여율','${bestKp.id}')`:''}])}<div id="recordDetailPanel" class="record-detail-panel"></div></div><div class="section"><div class="section-title">최근 기록 10판</div>${recentBlocks(data)}</div><div class="section"><div class="section-title">라인 비율</div>${laneRatio(data)}</div><div class="section"><div class="section-title">라인별 통계</div>${tableStatsRows(getChampionLaneStats(championName),'라인','champion',championName)}</div><div class="section"><div class="section-title">같이 조합되면 좋은 챔피언 TOP 5 <span class="section-sub">(3판 이상 함께 플레이한 기록만 반영)</span></div>${synergyTable(getBestChampionSynergy(championName),'champion')}</div><div class="section"><div class="section-title">${htmlSafe(championName)} 장인 랭킹</div><div id="masterRankingArea"></div></div>${typeof championRecentControls==='function'?collapsibleSection('championRecentMatchSection','최근전적',championRecentControls(championName)):''}`;
+    showDetail(html);renderMasterRankingArea(championName);if(typeof renderChampionRecentMatchArea==='function')renderChampionRecentMatchArea(championName);decorateHoneyPortraits();
+  };
+  window.openChampionDetail=openChampionDetail;
+
+  function decorateHoneyPortraits(root=document){
+    root.querySelectorAll('img.champ-icon:not([data-honey-done])').forEach(img=>{
+      if(img.closest('.honey-portrait')){img.dataset.honeyDone='1';return;}
+      let cell=img.closest('.champ-cell,.opponent-champ-cell-v20,.record-icons,.participant-card-v20,.detail-hero');
+      let title=cell?.getAttribute('title')||cell?.querySelector('.champ-name')?.textContent||img.alt||'';
+      let name=String(title).split('/')[0].trim();
+      if(!name)return;
+      img.dataset.honeyDone='1';
+      const frag=document.createRange().createContextualFragment(honeyPortrait(name,'',img.classList.contains('big')));
+      img.replaceWith(frag);
+    });
+  }
+  const oldRenderMainHoney=renderMain;
+  renderMain=function(){oldRenderMainHoney();decorateHoneyPortraits();};
+  window.renderMain=renderMain;
+  const oldShowDetailHoney=showDetail;
+  showDetail=function(html){oldShowDetailHoney(html);decorateHoneyPortraits();};
+  window.showDetail=showDetail;
+  new MutationObserver(()=>decorateHoneyPortraits()).observe(document.body,{childList:true,subtree:true});
+  [0,100,300,800,1500].forEach(ms=>setTimeout(()=>{try{renderMain();decorateHoneyPortraits();}catch(e){}},ms));
 })();
 
 </script>
