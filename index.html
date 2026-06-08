@@ -6188,7 +6188,7 @@ loadData();setInterval(loadData,30000);
     return list;
   }
   function mostTableV26(playerName,list){
-    return `<table class="detail-table"><colgroup><col class="col-rank"><col class="col-champ"><col class="col-score"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sideMostSort('name')">챔피언</button></th><th><button class="sort-btn" onclick="sideMostSort('score')">캐리점수</button></th><th><button class="sort-btn" onclick="sideMostSort('games')">판수</button></th><th><button class="sort-btn" onclick="sideMostSort('winRate')">승률</button></th><th><button class="sort-btn" onclick="sideMostSort('avgKills')">평균 킬</button></th><th><button class="sort-btn" onclick="sideMostSort('avgDeaths')">평균 데스</button></th><th><button class="sort-btn" onclick="sideMostSort('avgAssists')">평균 어시</button></th><th><button class="sort-btn" onclick="sideMostSort('kda')">KDA</button></th><th><button class="sort-btn" onclick="sideMostSort('kp')">킬관여율</button></th></tr></thead><tbody>${list.map((c,i)=>`<tr class="clickable-row" onclick="openRecordSidePage('player','${safe(playerName)}','${safe(c.lane)}','${safe(c.champion)}')"><td>${rankText(i+1)}</td><td style="text-align:left"><div class="champ-cell" title="${htmlSafe(c.champion)}">${honeyPortrait(c.champion,c.lane,false)}<span class="champ-lane-icon">${laneIcon(c.lane)}</span><span class="champ-name">${htmlSafe(c.champion)}</span></div></td><td style="color:#f97316;font-weight:1000;">${Number(c.carryScore||c.score||0).toFixed(1)}</td><td>${c.games}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${c.avgKills.toFixed(1)}</td><td>${c.avgDeaths.toFixed(1)}</td><td>${c.avgAssists.toFixed(1)}</td><td>${c.kda.toFixed(2)}</td><td>${pct(c.kp)}</td></tr>`).join('')}</tbody></table>`;
+    return `<table class="detail-table"><colgroup><col class="col-rank"><col class="col-champ"><col class="col-score"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sideMostSort('name')">챔피언</button></th><th><button class="sort-btn" onclick="sideMostSort('score')">캐리점수</button></th><th><button class="sort-btn" onclick="sideMostSort('games')">판수</button></th><th>승</th><th>패</th><th><button class="sort-btn" onclick="sideMostSort('winRate')">승률</button></th><th><button class="sort-btn" onclick="sideMostSort('avgKills')">평균 킬</button></th><th><button class="sort-btn" onclick="sideMostSort('avgDeaths')">평균 데스</button></th><th><button class="sort-btn" onclick="sideMostSort('avgAssists')">평균 어시</button></th><th><button class="sort-btn" onclick="sideMostSort('kda')">평균 KDA</button></th><th><button class="sort-btn" onclick="sideMostSort('kp')">평균 킬관여율</button></th></tr></thead><tbody>${list.map((c,i)=>`<tr class="clickable-row" onclick="openRecordSidePage('player','${safe(playerName)}','${safe(c.lane)}','${safe(c.champion)}')"><td>${rankText(i+1)}</td><td style="text-align:left"><div class="champ-cell" title="${htmlSafe(c.champion)}">${honeyPortrait(c.champion,c.lane,false)}<span class="champ-lane-icon">${laneIcon(c.lane)}</span><span class="champ-name">${htmlSafe(c.champion)}</span></div></td><td style="color:#f97316;font-weight:1000;">${Number(c.carryScore||c.score||0).toFixed(1)}</td><td>${c.games}</td><td class="win">${c.wins}</td><td class="loss">${c.losses}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${c.avgKills.toFixed(1)}</td><td>${c.avgDeaths.toFixed(1)}</td><td>${c.avgAssists.toFixed(1)}</td><td>${c.kda.toFixed(2)}</td><td>${pct(c.kp)}</td></tr>`).join('')}</tbody></table>`;
   }
   function mostFullHtmlV26(playerName,lane='ALL',search=''){
     const list=mostListV26(playerName,lane,search);
@@ -6219,7 +6219,7 @@ loadData();setInterval(loadData,30000);
     const area=document.getElementById('mostChampionArea');if(!area)return;
     let list=getPlayerMostStats(playerName).slice(0,3);
     if(!list.length){area.innerHTML=`<div>모스트 챔피언 데이터가 없습니다.</div>`;return;}
-    area.innerHTML=`<table class="detail-table"><colgroup><col class="col-rank"><col class="col-champ"><col class="col-score"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"></colgroup><thead><tr><th>순위</th><th>챔피언</th><th>캐리점수</th><th>판수</th><th>승률</th><th>KDA</th><th>킬관여율</th></tr></thead><tbody>${list.map((c,i)=>`<tr class="clickable-row" onclick="openRecordSidePage('player','${safe(playerName)}','${safe(c.lane)}','${safe(c.champion)}')"><td>${rankText(i+1)}</td><td style="text-align:left"><div class="champ-cell" title="${htmlSafe(c.champion)}">${honeyPortrait(c.champion,c.lane,false)}<span class="champ-lane-icon">${laneIcon(c.lane)}</span><span class="champ-name">${htmlSafe(c.champion)}</span></div></td><td style="color:#f97316;font-weight:1000;">${Number(c.carryScore||c.score||0).toFixed(1)}</td><td>${c.games}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${c.kda.toFixed(2)}</td><td>${pct(c.kp)}</td></tr>`).join('')}</tbody></table>`;
+    area.innerHTML=`<table class="detail-table"><colgroup><col class="col-rank"><col class="col-champ"><col class="col-score"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"></colgroup><thead><tr><th>순위</th><th>챔피언</th><th>캐리점수</th><th>판수</th><th>승</th><th>패</th><th>승률</th><th>평균 킬</th><th>평균 데스</th><th>평균 어시</th><th>평균 KDA</th><th>평균 킬관여율</th></tr></thead><tbody>${list.map((c,i)=>`<tr class="clickable-row" onclick="openRecordSidePage('player','${safe(playerName)}','${safe(c.lane)}','${safe(c.champion)}')"><td>${rankText(i+1)}</td><td style="text-align:left"><div class="champ-cell" title="${htmlSafe(c.champion)}">${honeyPortrait(c.champion,c.lane,false)}<span class="champ-lane-icon">${laneIcon(c.lane)}</span><span class="champ-name">${htmlSafe(c.champion)}</span></div></td><td style="color:#f97316;font-weight:1000;">${Number(c.carryScore||c.score||0).toFixed(1)}</td><td>${c.games}</td><td class="win">${c.wins}</td><td class="loss">${c.losses}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${c.avgKills.toFixed(1)}</td><td>${c.avgDeaths.toFixed(1)}</td><td>${c.avgAssists.toFixed(1)}</td><td>${c.kda.toFixed(2)}</td><td>${pct(c.kp)}</td></tr>`).join('')}</tbody></table>`;
     const sec=document.getElementById('mostChampionSection');if(sec){sec.dataset.smartName=playerName;const btn=sec.querySelector('.collapse-toggle');if(btn)btn.textContent='플레이한 챔피언 전체보기';}
   };
 
@@ -6244,6 +6244,161 @@ loadData();setInterval(loadData,30000);
   };
 
   [0,200,600].forEach(ms=>setTimeout(()=>{try{if(currentDetailName&&document.getElementById('mostChampionArea'))renderMostChampionArea(currentDetailName);}catch(e){}},ms));
+})();
+
+
+/* ===== V27: 지표 컬럼 정리 / 라인별·장인랭킹 점수 컬럼 추가 ===== */
+(function(){
+  function clampV27(v,min,max){v=Number(v)||0;return Math.max(min,Math.min(max,v));}
+  function carryRowV27(r){
+    if(typeof window.carryScoreV26==='function')return window.carryScoreV26(r);
+    const k=num(r.kills),d=num(r.deaths),a=num(r.assists),kdaVal=getKda(k,d,a),kpVal=kp(r);
+    return clampV27(clampV27(kdaVal*18,0,100)*.28+(kpVal===null?45:clampV27(kpVal,0,100))*.27+clampV27(k*9,0,100)*.18+clampV27(a*6,0,100)*.12+clampV27(100-d*12,0,100)*.15+(r.win?10:-4),0,100);
+  }
+  function avgCarryV27(arr){return arr&&arr.length?average(arr.map(carryRowV27)):0;}
+  function metricHtmlV27(v,kind){
+    const color=kind==='champion'?'#f97316':'#38bdf8';
+    return `<td style="color:${color};font-weight:1000;">${Number(v||0).toFixed(1)}</td>`;
+  }
+
+  const oldPlayerLaneStatsV27=getPlayerLaneStats;
+  getPlayerLaneStats=function(name){
+    return oldPlayerLaneStatsV27(name).map(s=>({...s,carryScore:avgCarryV27(rows.filter(r=>r.lol_name===name&&r.lane===s.lane))}));
+  };
+  const oldChampionLaneStatsV27=getChampionLaneStats;
+  getChampionLaneStats=function(name){
+    return oldChampionLaneStatsV27(name).map(s=>{const cs=calcChampionStats(name,s.lane);return {...s,honeyScore:Number(cs.score||cs.honeyScore||0)};});
+  };
+
+  tableStatsRows=function(list,firstTitle='구분',mode='',owner=''){
+    if(!list.length)return`<div>데이터가 없습니다.</div>`;
+    const isChampion=mode==='champion';
+    const metricTitle=isChampion?'꿀챔 점수':'캐리점수';
+    return`<table class="detail-table"><colgroup><col class="col-lane"><col class="col-score"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"><col class="col-auto"></colgroup><thead><tr><th>${firstTitle}</th><th>${metricTitle}</th><th>판수</th><th>승</th><th>패</th><th>승률</th><th>평균 킬</th><th>평균 데스</th><th>평균 어시</th><th>평균 KDA</th><th>평균 킬관여율</th></tr></thead><tbody>${list.map(s=>`<tr class="${mode?'clickable-row':''}" ${mode?`onclick="openRecordSidePage('${mode}','${safe(owner)}','${safe(s.lane)}','')"`:''}><td>${s.label}</td>${metricHtmlV27(isChampion?(s.honeyScore||s.score):(s.carryScore||s.score),isChampion?'champion':'player')}<td>${s.games}</td><td class="win">${s.wins}</td><td class="loss">${s.losses}</td><td class="${rateClass(s.winRate)}">${pct(s.winRate)}</td><td>${s.avgKills.toFixed(1)}</td><td>${s.avgDeaths.toFixed(1)}</td><td>${s.avgAssists.toFixed(1)}</td><td>${s.kda.toFixed(2)}</td><td>${pct(s.kp)}</td></tr>`).join('')}</tbody></table>`;
+  };
+
+  const baseGetMasterV27=getMasterStats;
+  getMasterStats=function(championName,lane=masterLane){
+    const list=baseGetMasterV27(championName,lane).map(p=>{
+      const arr=rows.filter(r=>r.champion_name===championName&&r.lol_name===p.name&&(lane==='ALL'?r.lane===p.lane:r.lane===lane));
+      const carry=avgCarryV27(arr);
+      return {...p,carryScore:carry,score:carry};
+    });
+    list.sort((a,b)=>{let r=0;if(masterSort==='name')r=compareName(a.name,b.name);else if(masterSort==='games')r=a.games-b.games;else if(masterSort==='winRate')r=a.winRate-b.winRate;else if(masterSort==='avgKills')r=a.avgKills-b.avgKills;else if(masterSort==='avgDeaths')r=a.avgDeaths-b.avgDeaths;else if(masterSort==='avgAssists')r=a.avgAssists-b.avgAssists;else if(masterSort==='kda')r=a.kda-b.kda;else if(masterSort==='kp')r=a.kp-b.kp;else r=a.carryScore-b.carryScore;return masterAsc?r:-r;});
+    return list;
+  };
+
+  renderMasterRankingArea=function(championName){
+    const area=document.getElementById('masterRankingArea');if(!area)return;
+    const list=getMasterStats(championName,masterLane);
+    area.innerHTML=`<div class="master-filter-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">${['ALL',...LANE_ORDER].map(l=>`<button class="master-filter ${masterLane===l?'active':''}" onclick="setMasterLane('${l}','${safe(championName)}')">${l==='ALL'?'':laneIcon(l)} ${LANE_LABELS[l]}</button>`).join('')}</div><table class="detail-table"><colgroup><col class="col-rank"><col class="col-name"><col class="col-score"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortMaster('name','${safe(championName)}')">플레이어</button></th><th><button class="sort-btn" onclick="sortMaster('score','${safe(championName)}')">캐리점수</button></th><th><button class="sort-btn" onclick="sortMaster('games','${safe(championName)}')">판수</button></th><th>승</th><th>패</th><th><button class="sort-btn" onclick="sortMaster('winRate','${safe(championName)}')">승률</button></th><th><button class="sort-btn" onclick="sortMaster('avgKills','${safe(championName)}')">평균 킬</button></th><th><button class="sort-btn" onclick="sortMaster('avgDeaths','${safe(championName)}')">평균 데스</button></th><th><button class="sort-btn" onclick="sortMaster('avgAssists','${safe(championName)}')">평균 어시</button></th><th><button class="sort-btn" onclick="sortMaster('kda','${safe(championName)}')">평균 KDA</button></th><th><button class="sort-btn" onclick="sortMaster('kp','${safe(championName)}')">평균 킬관여율</button></th></tr></thead><tbody>${list.map((p,i)=>`<tr class="clickable-row" onclick="openRecordSidePage('champion','${safe(championName)}','${safe(p.lane)}','${safe(p.name)}')"><td>${rankText(i+1)}</td><td class="nickname" title="${htmlSafe(p.name)}"><div class="player-name-cell"><span class="champ-lane-icon">${laneIcon(p.lane)}</span><span>${htmlSafe(p.name)}</span></div></td><td style="color:#38bdf8;font-weight:1000;">${Number(p.carryScore||p.score||0).toFixed(1)}</td><td>${p.games}</td><td class="win">${p.wins}</td><td class="loss">${p.losses}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${p.avgKills.toFixed(1)}</td><td>${p.avgDeaths.toFixed(1)}</td><td>${p.avgAssists.toFixed(1)}</td><td>${p.kda.toFixed(2)}</td><td>${pct(p.kp)}</td></tr>`).join('')}</tbody></table>`;
+  };
+
+  const oldRecentRowsV27=recentTableRows;
+  recentTableRows=function(data,mode){
+    return oldRecentRowsV27(data,mode).replaceAll('점수</th>','캐리점수</th>').replaceAll('상대 점수</th>','상대 캐리점수</th>');
+  };
+
+  [0,250,700].forEach(ms=>setTimeout(()=>{try{if(currentDetailName){if(document.getElementById('mostChampionArea'))renderMostChampionArea(currentDetailName);if(document.getElementById('masterRankingArea'))renderMasterRankingArea(currentDetailName);}}catch(e){}},ms));
+})();
+
+
+/* ===== V28: 내전 기록 밴픽 + 승리/패배 표시 패치 ===== */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    .internal-match-result-head-v28{display:grid;grid-template-columns:minmax(0,1fr) 44px minmax(0,1fr);gap:10px;align-items:center;margin:10px 0 2px;}
+    .team-result-pill-v28{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:999px;padding:7px 12px;font-weight:1000;font-size:13px;border:1px solid rgba(255,255,255,.16);}
+    .team-result-pill-v28.win{background:rgba(34,197,94,.16);color:#86efac;border-color:rgba(34,197,94,.42);}
+    .team-result-pill-v28.loss{background:rgba(239,68,68,.15);color:#fecaca;border-color:rgba(239,68,68,.38);}
+    .team-result-mid-v28{text-align:center;color:#94a3b8;font-size:12px;font-weight:1000;}
+    .internal-match-bans-v28{margin-top:12px;border-top:1px solid rgba(148,163,184,.16);padding-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .ban-team-v28{background:rgba(15,23,42,.46);border:1px solid rgba(148,163,184,.16);border-radius:14px;padding:10px;min-width:0;}
+    .ban-title-v28{font-size:12px;color:#bfdbfe;font-weight:1000;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+    .ban-list-v28{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .ban-chip-v28{display:inline-flex;align-items:center;gap:6px;min-width:0;background:rgba(30,41,59,.82);border:1px solid rgba(148,163,184,.18);border-radius:999px;padding:5px 8px 5px 5px;color:#e5e7eb;font-size:12px;font-weight:1000;}
+    .ban-chip-v28 .honey-portrait{width:34px!important;height:34px!important;}
+    .ban-chip-v28 .honey-portrait .champ-icon{width:30px!important;height:30px!important;border-radius:8px!important;}
+    .ban-chip-name-v28{max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .ban-empty-v28{color:#64748b;font-size:12px;font-weight:1000;}
+    .participant-card-v20.win-side-v28{border-left:3px solid rgba(34,197,94,.65);padding-left:8px;}
+    .participant-card-v20.enemy.loss-side-v28{border-right:3px solid rgba(239,68,68,.65);padding-right:8px;}
+    @media(max-width:760px){
+      .internal-match-result-head-v28{grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr);gap:6px;}
+      .team-result-pill-v28{font-size:11px;padding:6px 8px;}
+      .team-result-mid-v28{font-size:10px;}
+      .internal-match-bans-v28{grid-template-columns:1fr;gap:8px;}
+      .ban-chip-v28{font-size:10px;max-width:100%;}
+      .ban-chip-v28 .honey-portrait{width:30px!important;height:30px!important;}
+      .ban-chip-v28 .honey-portrait .champ-icon{width:26px!important;height:26px!important;}
+      .ban-chip-name-v28{max-width:72px;}
+    }
+  `;
+  document.head.appendChild(style);
+
+  function laneRankV28(l){return LANE_ORDER.indexOf(l)===-1?99:LANE_ORDER.indexOf(l);}
+  function matchGroupsV28(){
+    const map=new Map();
+    rows.forEach(r=>{if(!map.has(r.match_id))map.set(r.match_id,[]);map.get(r.match_id).push(r);});
+    return [...map.entries()].map(([id,arr])=>({
+      id,arr,
+      created:arr.map(x=>new Date(x.created_at||0).getTime()).filter(Boolean).sort((a,b)=>b-a)[0]||0
+    })).sort((a,b)=>b.created-a.created);
+  }
+  function statTextV28(row){
+    if(!row)return '-';
+    const k=num(row.kills),d=num(row.deaths),a=num(row.assists),kdaValue=getKda(k,d,a),kpv=kp(row),score=recentMatchScore(row);
+    return `${k}/${d}/${a} · KDA ${kdaValue.toFixed(2)} · ${kpv===null?'-':pct(kpv)} · 캐리 ${score.toFixed(1)}점`;
+  }
+  function honeyIconV28(row){
+    if(!row||!row.champion_name)return `<div class="participant-icon-v20"></div>`;
+    if(typeof window.honeyPortrait==='function')return window.honeyPortrait(row.champion_name,row.lane,false);
+    return `<img class="participant-icon-v20 champ-icon" src="${champImg(row.champion_name)}" onerror="this.style.display='none'"/>`;
+  }
+  function participantCardV28(row,enemy=false,resultClass=''){
+    if(!row)return `<div class="participant-card-v20 ${enemy?'enemy':''} participant-empty-v20"><div class="participant-icon-v20"></div><div class="participant-main-v20"><span class="participant-name-v20">-</span><span class="participant-champ-v20">-</span></div><div class="participant-stat-v20">-</div></div>`;
+    return `<div class="participant-card-v20 ${enemy?'enemy':''} ${resultClass}">${honeyIconV28(row)}<div class="participant-main-v20"><span class="participant-name-v20" title="${htmlSafe(row.lol_name||'-')}">${htmlSafe(row.lol_name||'-')}</span><span class="participant-champ-v20" title="${htmlSafe(row.champion_name||'-')}">${htmlSafe(row.champion_name||'-')}</span></div><div class="participant-stat-v20">${statTextV28(row)}</div></div>`;
+  }
+  function internalLineV28(winRow,lossRow,lane){
+    return `<div class="internal-match-line-v24"><div>${participantCardV28(winRow,false,'win-side-v28')}</div><div class="internal-match-center-v24">${laneIcon(lane)||''}</div><div>${participantCardV28(lossRow,true,'loss-side-v28')}</div></div>`;
+  }
+  function teamLabelV28(teamId,idx){
+    const s=String(teamId??'').toLowerCase();
+    if(s==='100'||s==='blue'||s==='blueteam')return '블루팀 밴';
+    if(s==='200'||s==='red'||s==='redteam')return '레드팀 밴';
+    if(teamId!==undefined&&teamId!==null&&teamId!=='')return `팀 ${htmlSafe(teamId)} 밴`;
+    return idx===0?'밴 목록':'추가 밴';
+  }
+  function banChipV28(b){
+    const name=b?.champion_name||'-';
+    const icon=typeof window.honeyPortrait==='function'?window.honeyPortrait(name,'',false):`<img class="champ-icon" src="${champImg(name)}" onerror="this.style.display='none'"/>`;
+    return `<span class="ban-chip-v28" title="${htmlSafe(name)}">${icon}<span class="ban-chip-name-v28">${htmlSafe(name)}</span></span>`;
+  }
+  function bansHtmlV28(matchId){
+    const arr=(bans||[]).filter(b=>String(b.match_id)===String(matchId)&&b.champion_name);
+    if(!arr.length)return `<div class="internal-match-bans-v28"><div class="ban-team-v28" style="grid-column:1/-1"><div class="ban-title-v28">🚫 밴 챔피언</div><div class="ban-empty-v28">밴 기록 없음</div></div></div>`;
+    const groups=new Map();
+    arr.forEach((b,i)=>{const key=b.team_id??'NO_TEAM';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(b);});
+    let entries=[...groups.entries()].sort((a,b)=>String(a[0]).localeCompare(String(b[0])));
+    if(entries.length===1&&entries[0][0]==='NO_TEAM'){
+      return `<div class="internal-match-bans-v28"><div class="ban-team-v28" style="grid-column:1/-1"><div class="ban-title-v28">🚫 밴 챔피언</div><div class="ban-list-v28">${entries[0][1].map(banChipV28).join('')}</div></div></div>`;
+    }
+    return `<div class="internal-match-bans-v28">${entries.map(([teamId,list],idx)=>`<div class="ban-team-v28"><div class="ban-title-v28">🚫 ${teamLabelV28(teamId,idx)}</div><div class="ban-list-v28">${list.map(banChipV28).join('')}</div></div>`).join('')}</div>`;
+  }
+  function internalCardV28(match){
+    const winTeam=match.arr.filter(x=>x.win===true).sort((a,b)=>laneRankV28(a.lane)-laneRankV28(b.lane));
+    const lossTeam=match.arr.filter(x=>x.win!==true).sort((a,b)=>laneRankV28(a.lane)-laneRankV28(b.lane));
+    const date=match.created?new Date(match.created).toLocaleString('ko-KR'):'';
+    return `<div class="internal-match-card-v24"><div class="internal-match-head-v24"><div class="internal-match-id-v24">Game ID: ${htmlSafe(match.id)}</div><div class="internal-match-date-v24">${htmlSafe(date)}</div></div><div class="internal-match-result-head-v28"><div style="text-align:left"><span class="team-result-pill-v28 win">승리팀</span></div><div class="team-result-mid-v28">라인</div><div style="text-align:right"><span class="team-result-pill-v28 loss">패배팀</span></div></div>${LANE_ORDER.map(l=>internalLineV28(winTeam.find(x=>x.lane===l),lossTeam.find(x=>x.lane===l),l)).join('')}${bansHtmlV28(match.id)}</div>`;
+  }
+  window.renderInternalRecordV23=function(){
+    const q=currentTab==='internalRecord'?((searchInput?.value||'').trim().toLowerCase()):'';
+    const box=document.getElementById('internalRecordListV23');if(!box)return;
+    const list=matchGroupsV28().filter(m=>!q||String(m.id||'').toLowerCase().includes(q));
+    box.innerHTML=list.length?list.map(internalCardV28).join(''):`<div class="section">검색 결과가 없습니다.</div>`;
+  };
+  window.renderInternalRecordV28=window.renderInternalRecordV23;
+  [0,200,600].forEach(ms=>setTimeout(()=>{try{if(currentTab==='internalRecord')window.renderInternalRecordV23();}catch(e){}},ms));
 })();
 
 </script>
