@@ -3507,6 +3507,226 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
 })();
 
 
+
+/* ===== 2026-06-08 v15 패치: 전적바는 바로 표시 + 참가자 10명만 화살표로 접힘/펼침 + 파란 별 표시 ===== */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    /* 전적창 자체는 항상 열림: 접는 대상은 참가자 10명 박스만 */
+    #recentMatchSection .collapsible-content,
+    #championRecentMatchSection .collapsible-content{
+      display:block!important;
+      max-height:none!important;
+      opacity:1!important;
+      overflow:visible!important;
+      margin-top:10px!important;
+    }
+    .record-slide-toggle-wrap,
+    .record-slide-content{
+      display:block!important;
+      max-height:none!important;
+      opacity:1!important;
+      overflow:visible!important;
+      margin-top:0!important;
+    }
+    .record-slide-toggle-wrap{display:none!important;}
+
+    /* 원래 전적바는 회색 계열로 복구하고, 승패는 작은 텍스트/별로만 표시 */
+    .recent-table-v15{border-spacing:0 8px!important;table-layout:fixed;}
+    .recent-table-v15 th{font-size:12px!important;}
+    .recent-table-v15 td{
+      font-size:14px!important;
+      height:70px!important;
+      padding:11px 7px!important;
+      background:rgba(51,65,85,.86)!important;
+      border-top:1px solid rgba(96,165,250,.10)!important;
+      border-bottom:1px solid rgba(96,165,250,.10)!important;
+    }
+    .recent-table-v15 tr.recent-win-row td,
+    .recent-table-v15 tr.recent-loss-row td{
+      background:rgba(51,65,85,.86)!important;
+    }
+    .recent-table-v15 tbody tr:not(.participants-toggle-row-v15):not(.match-participants-row-v15):hover td{
+      background:rgba(71,85,105,.96)!important;
+    }
+    .recent-table-v15 td:first-child{border-left:1px solid rgba(96,165,250,.12)!important;}
+    .recent-table-v15 td:last-child{border-right:1px solid rgba(96,165,250,.12)!important;}
+    .recent-table-v15 .recent-number{font-size:15.5px!important;font-weight:1000!important;color:#f8fafc!important;}
+    .recent-table-v15 .recent-kp{font-size:15px!important;font-weight:1000!important;}
+    .recent-table-v15 .champ-cell .champ-icon{width:46px!important;height:46px!important;border-radius:10px!important;}
+    .recent-table-v15 .champ-name{font-size:13.5px!important;}
+    .recent-table-v15 .recent-player-name{font-size:12px;color:#dbeafe;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .recent-blue-star-v15{color:#60a5fa;font-weight:1000;margin-right:3px;text-shadow:0 0 10px rgba(96,165,250,.45);}
+    .recent-result-text-v15{font-size:11px;font-weight:1000;margin-left:5px;white-space:nowrap;}
+    .recent-result-text-v15.win{color:#86efac!important;}
+    .recent-result-text-v15.loss{color:#fca5a5!important;}
+
+    /* 참가자 펼침 화살표 */
+    .participants-toggle-row-v15 td{
+      height:auto!important;
+      padding:0!important;
+      background:transparent!important;
+      border:none!important;
+      border-radius:0!important;
+    }
+    .participants-toggle-wrap-v15{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin:-4px 0 2px;
+      height:24px;
+    }
+    .participants-toggle-v15{
+      width:38px;
+      height:22px;
+      border:none;
+      border-radius:999px;
+      background:rgba(30,41,59,.92);
+      color:#bfdbfe;
+      font-size:15px;
+      font-weight:1000;
+      cursor:pointer;
+      font-family:inherit;
+      line-height:1;
+      box-shadow:0 0 0 1px rgba(96,165,250,.22);
+      transition:transform .24s ease,filter .18s ease,background .18s ease;
+    }
+    .participants-toggle-v15:hover{filter:brightness(1.18);}
+    .participants-toggle-v15.open{background:#2563eb;color:white;transform:rotate(180deg);}
+
+    .match-participants-row-v15 td{
+      padding:0 7px!important;
+      height:auto!important;
+      background:transparent!important;
+      border:none!important;
+    }
+    .participants-slide-v15{
+      max-height:0;
+      opacity:0;
+      overflow:hidden;
+      transition:max-height .44s ease,opacity .24s ease,margin .34s ease;
+      margin:0;
+    }
+    .participants-slide-v15.open{
+      max-height:1200px;
+      opacity:1;
+      margin:4px 0 14px;
+    }
+
+    .match-participants-box-v15{
+      padding:13px;
+      border-radius:16px;
+      background:#0f172a;
+      border:1px solid rgba(96,165,250,.28);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .match-participants-title-v15{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;color:#bfdbfe;font-size:13px;font-weight:1000;}
+    .match-participants-sub-v15{color:#94a3b8;font-size:11px;font-weight:1000;white-space:nowrap;}
+    .match-participants-list-v15{display:flex;flex-direction:column;gap:6px;}
+    .match-participants-line-v15{display:grid;grid-template-columns:74px minmax(0,1fr) 38px minmax(0,1fr);align-items:center;gap:8px;padding:8px 10px;border-radius:13px;border:1px solid rgba(148,163,184,.12);background:rgba(30,41,59,.72);color:#e5e7eb;font-weight:1000;min-width:0;}
+    .match-participants-line-v15.active-match-lane{border:1px solid rgba(96,165,250,.92);background:rgba(37,99,235,.20);box-shadow:0 0 0 1px rgba(96,165,250,.16),0 0 16px rgba(59,130,246,.16);}
+    .match-participants-lane-v15{display:flex;align-items:center;gap:5px;color:#93c5fd;font-size:12px;min-width:0;}
+    .participant-card-v15{display:grid;grid-template-columns:42px minmax(0,1fr);grid-template-rows:auto auto;column-gap:8px;row-gap:2px;align-items:center;min-width:0;text-align:left;}
+    .match-participants-player-v15.enemy .participant-card-v15{grid-template-columns:minmax(0,1fr) 42px;text-align:right;}
+    .participant-icon-v15{grid-row:1 / span 2;width:42px!important;height:42px!important;border-radius:10px!important;object-fit:cover;border:1px solid rgba(148,163,184,.3);background:#020617;}
+    .match-participants-player-v15.enemy .participant-icon-v15{grid-column:2;}
+    .participant-main-v15{display:flex;gap:6px;align-items:center;min-width:0;overflow:hidden;white-space:nowrap;}
+    .match-participants-player-v15.enemy .participant-main-v15{justify-content:flex-end;}
+    .participant-name-v15{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#f8fafc;font-size:12.5px;font-weight:1000;}
+    .participant-champ-v15{color:#94a3b8;font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex-shrink:1;min-width:0;}
+    .participant-stat-v15{color:#cbd5e1;font-size:11.5px;font-weight:1000;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+    .participant-me-v15 .participant-name-v15::before{content:"★ ";color:#60a5fa;text-shadow:0 0 10px rgba(96,165,250,.45);}
+    .participant-opponent-v15 .participant-name-v15{color:#ffffff;}
+    .match-participants-vs-v15{text-align:center;color:#64748b;font-size:10px;font-weight:1000;}
+
+    @media(max-width:760px){
+      .recent-table-v15 th{font-size:8.5px!important;padding:7px 3px!important;}
+      .recent-table-v15 td{font-size:10.2px!important;height:62px!important;padding:8px 3px!important;}
+      .recent-table-v15 .recent-number{font-size:11px!important;}
+      .recent-table-v15 .recent-kp{font-size:10.5px!important;}
+      .recent-table-v15 .champ-cell .champ-icon{width:30px!important;height:30px!important;}
+      .recent-table-v15 .champ-name{font-size:10px!important;}
+      .recent-table-v15 .recent-player-name{font-size:9px!important;}
+      .recent-result-text-v15{display:none;}
+      .match-participants-row-v15 td{padding:0 3px!important;}
+      .match-participants-box-v15{padding:9px;border-radius:14px;}
+      .match-participants-line-v15{grid-template-columns:50px minmax(0,1fr) 22px minmax(0,1fr);gap:5px;padding:7px 6px;}
+      .match-participants-title-v15{font-size:12px;}
+      .match-participants-sub-v15{display:none;}
+      .match-participants-lane-v15{font-size:10px;}
+      .participant-card-v15{grid-template-columns:30px minmax(0,1fr);column-gap:5px;}
+      .match-participants-player-v15.enemy .participant-card-v15{grid-template-columns:minmax(0,1fr) 30px;}
+      .participant-icon-v15{width:30px!important;height:30px!important;border-radius:8px!important;}
+      .participant-name-v15{font-size:9.8px;}
+      .participant-champ-v15{display:none;}
+      .participant-stat-v15{font-size:9px;}
+      .match-participants-vs-v15{font-size:8px;}
+    }
+  `;
+  document.head.appendChild(style);
+
+  function laneRankV15(lane){const idx=LANE_ORDER.indexOf(lane);return idx<0?999:idx;}
+  function participantForV15(matchRows,lane){return matchRows.find(x=>x.lane===lane)||null;}
+  function statTextV15(row){
+    if(!row)return '-';
+    const k=num(row.kills),d=num(row.deaths),a=num(row.assists),kdaValue=getKda(k,d,a),kpValue=kp(row),score=recentMatchScore(row);
+    return `${k}/${d}/${a} · KDA ${kdaValue.toFixed(2)} · ${kpValue===null?'-':pct(kpValue)} · ${score.toFixed(1)}점`;
+  }
+  function playerCardV15(row,cls){
+    if(!row)return `<div class="participant-card-v15"><div class="participant-icon-v15" style="opacity:.25"></div><div class="participant-main-v15"><span class="participant-name-v15" style="color:#64748b">-</span></div><div class="participant-stat-v15">-</div></div>`;
+    return `<div class="participant-card-v15 ${cls||''}"><img class="participant-icon-v15 champ-icon" src="${champImg(row.champion_name)}" onerror="this.style.display='none'"/><div class="participant-main-v15"><span class="participant-name-v15" title="${htmlSafe(row.lol_name||'-')}">${htmlSafe(row.lol_name||'-')}</span><span class="participant-champ-v15" title="${htmlSafe(row.champion_name||'-')}">${htmlSafe(row.champion_name||'-')}</span></div><div class="participant-stat-v15">${statTextV15(row)}</div></div>`;
+  }
+  function renderMatchParticipantsV15(row){
+    const matchRows=rows.filter(x=>x.match_id===row.match_id);
+    if(matchRows.length<2)return '';
+    const myTeam=matchRows.filter(x=>x.win===row.win).sort((a,b)=>laneRankV15(a.lane)-laneRankV15(b.lane));
+    const enemyTeam=matchRows.filter(x=>x.win!==row.win).sort((a,b)=>laneRankV15(a.lane)-laneRankV15(b.lane));
+    const laneSet=LANE_ORDER.filter(l=>myTeam.some(x=>x.lane===l)||enemyTeam.some(x=>x.lane===l));
+    const lanes=laneSet.length?laneSet:LANE_ORDER;
+    return `<div class="match-participants-box-v15"><div class="match-participants-title-v15"><span>전체 참가자</span><span class="match-participants-sub-v15">아이콘 · K/D/A · KDA · 킬관여율 · 점수</span></div><div class="match-participants-list-v15">${lanes.map(lane=>{const mine=participantForV15(myTeam,lane),enemy=participantForV15(enemyTeam,lane),active=lane===row.lane;return `<div class="match-participants-line-v15 ${active?'active-match-lane':''}"><div class="match-participants-lane-v15">${laneIcon(lane)} <span>${LANE_LABELS[lane]||lane}</span></div><div class="match-participants-player-v15">${playerCardV15(mine,mine&&mine.lol_name===row.lol_name?'participant-me-v15':'')}</div><div class="match-participants-vs-v15">VS</div><div class="match-participants-player-v15 enemy">${playerCardV15(enemy,active?'participant-opponent-v15':'')}</div></div>`;}).join('')}</div></div>`;
+  }
+
+  window.toggleParticipantsV15=function(btn){
+    const row=btn.closest('tr');
+    const next=row?row.nextElementSibling:null;
+    const slide=next?next.querySelector('.participants-slide-v15'):null;
+    if(!slide)return;
+    const open=!slide.classList.contains('open');
+    slide.classList.toggle('open',open);
+    btn.classList.toggle('open',open);
+    btn.textContent='⌄';
+  };
+
+  recentTableRows=function(data,mode){
+    if(!data.length)return`<div class="recent-empty">조건에 맞는 전적이 없습니다.</div>`;
+    return`<table class="detail-table recent-table recent-table-v15"><colgroup><col style="width:19%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:7%"><col style="width:19%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:7%"></colgroup><thead><tr><th>챔피언 / 플레이어</th><th>라인</th><th>K/D/A</th><th>KDA</th><th>킬관여율</th><th>점수</th><th>상대 챔프</th><th>상대 라인</th><th>상대 K/D/A</th><th>상대 KDA</th><th>상대 킬관여율</th><th>상대 점수</th></tr></thead><tbody>${data.map(r=>{const o=findOpponent(r);const k=num(r.kills),d=num(r.deaths),a=num(r.assists),kdaValue=getKda(k,d,a),kpValue=kp(r),score=recentMatchScore(r);const ok=o?num(o.kills):0,od=o?num(o.deaths):0,oa=o?num(o.assists):0,okda=o?getKda(ok,od,oa):0,okp=o?kp(o):null,oscore=o?recentMatchScore(o):0;return`<tr class="${r.win?'recent-win-row':'recent-loss-row'}"><td style="text-align:left"><div class="champ-cell" title="${htmlSafe(r.champion_name||'-')} / ${htmlSafe(r.lol_name||'-')}"><img class="champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'"/><div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;"><span class="champ-name" style="width:100%;"><span class="recent-blue-star-v15">★</span>${htmlSafe(r.champion_name||'-')} <span class="recent-result-text-v15 ${r.win?'win':'loss'}">${r.win?'승':'패'}</span></span><span class="recent-player-name">${htmlSafe(r.lol_name||'-')}</span></div></div></td><td>${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||'-'}</td><td class="recent-number">${k}/${d}/${a}</td><td class="recent-number">${kdaValue.toFixed(2)}</td><td class="recent-kp">${kpValue===null?'-':pct(kpValue)}</td><td class="recent-number">${score.toFixed(1)}</td><td style="text-align:left">${o?`<div class="champ-cell" title="${htmlSafe(o.champion_name||'-')} / ${htmlSafe(o.lol_name||'-')}"><img class="champ-icon" src="${champImg(o.champion_name)}" onerror="this.style.display='none'"/><div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;"><span class="champ-name" style="width:100%;">${htmlSafe(o.champion_name||'-')}</span><span class="recent-player-name">${htmlSafe(o.lol_name||'-')}</span></div></div>`:'-'}</td><td>${o?`${laneIcon(o.lane)} ${LANE_LABELS[o.lane]||o.lane||'-'}`:'-'}</td><td class="recent-number">${o?`${ok}/${od}/${oa}`:'-'}</td><td class="recent-number">${o?okda.toFixed(2):'-'}</td><td class="recent-kp">${o?(okp===null?'-':pct(okp)):'-'}</td><td class="recent-number">${o?oscore.toFixed(1):'-'}</td></tr><tr class="participants-toggle-row-v15"><td colspan="12"><div class="participants-toggle-wrap-v15"><button class="participants-toggle-v15" type="button" onclick="toggleParticipantsV15(this)">⌄</button></div></td></tr><tr class="match-participants-row-v15"><td colspan="12"><div class="participants-slide-v15">${renderMatchParticipantsV15(r)}</div></td></tr>`;}).join('')}</tbody></table>`;
+  };
+
+  function dataForRecentV15(mode,name){
+    let d=mode==='champion'?rows.filter(r=>r.champion_name===name):rows.filter(r=>r.lol_name===name);
+    if(recentLane!=="ALL")d=d.filter(r=>r.lane===recentLane);
+    if(recentChampionSearch){const q=recentChampionSearch.toLowerCase();d=mode==='champion'?d.filter(r=>(r.lol_name||'').toLowerCase().includes(q)):d.filter(r=>(r.champion_name||'').toLowerCase().includes(q));}
+    return d.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  }
+  function renderPlainRecordAreaV15(areaId,html){const area=document.getElementById(areaId);if(area)area.innerHTML=html;}
+  renderRecentMatchArea=function(playerName){renderPlainRecordAreaV15('recentMatchArea',recentTableRows(dataForRecentV15('player',playerName),'player'));};
+  renderChampionRecentMatchArea=function(championName){renderPlainRecordAreaV15('championRecentMatchArea',recentTableRows(dataForRecentV15('champion',championName),'champion'));};
+  setRecentLane=function(lane,playerName){recentLane=lane;const sec=document.getElementById('recentMatchSection');if(sec){sec.classList.add('open');const c=sec.querySelector('.collapsible-content');if(c)c.innerHTML=recentControls(playerName);}renderRecentMatchArea(playerName);};
+  setChampionRecentLane=function(lane,championName){recentLane=lane;const sec=document.getElementById('championRecentMatchSection');if(sec){sec.classList.add('open');const c=sec.querySelector('.collapsible-content');if(c)c.innerHTML=championRecentControls(championName);}renderChampionRecentMatchArea(championName);};
+  runRecentSearch=function(target,value){recentChampionSearch=(value||'').trim();const i=document.getElementById('recentSearchInput');if(i)i.value=recentChampionSearch;const b=document.getElementById('recentSuggestBox');if(b){b.style.display='none';b.innerHTML='';}if(document.getElementById('championRecentMatchArea'))renderChampionRecentMatchArea(target);else renderRecentMatchArea(target);};
+  openRecentByFilter=function(mode,name,lane,search){recentLane=lane||'ALL';recentChampionSearch=search||'';const secId=mode==='player'?'recentMatchSection':'championRecentMatchSection';const sec=document.getElementById(secId);if(sec){sec.classList.add('open');const c=sec.querySelector('.collapsible-content');if(c)c.innerHTML=mode==='player'?recentControls(name):championRecentControls(name);if(mode==='player')renderRecentMatchArea(name);else renderChampionRecentMatchArea(name);const d=document.getElementById('detailPage');const top=Math.max(0,sec.offsetTop-100);if(d&&d.style.display!=='none')d.scrollTo({top,behavior:'smooth'});else window.scrollTo({top,behavior:'smooth'});}};
+
+  window.recentTableRows=recentTableRows;
+  window.renderRecentMatchArea=renderRecentMatchArea;
+  window.renderChampionRecentMatchArea=renderChampionRecentMatchArea;
+  window.setRecentLane=setRecentLane;
+  window.setChampionRecentLane=setChampionRecentLane;
+  window.runRecentSearch=runRecentSearch;
+  window.openRecentByFilter=openRecentByFilter;
+  window.toggleParticipantsV15=toggleParticipantsV15;
+})();
+
+
 loadData();setInterval(loadData,30000);
 </script>
 </body>
