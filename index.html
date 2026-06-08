@@ -256,12 +256,12 @@ const SUPABASE_URL = "https://ehligpqxjczgcggjpzwn.supabase.co";
 
 const SUPABASE_KEY = "sb_publishable_QHDiR1qAWGVaKSDZguc0qg_fE_eVCwZ";
 
-let supabase = null;
+let db = null;
 
 if(
 SUPABASE_URL !== "여기에_URL"
 ){
-    supabase =
+    db =
     window.supabase.createClient(
         SUPABASE_URL,
         SUPABASE_KEY
@@ -284,13 +284,13 @@ btn.classList.add('active');
 
 async function loadPlayers(){
 
-if(!supabase){
+if(!db){
 return;
 }
 
 const {data,error}
 =
-await supabase
+await db
 .from('bc_players')
 .select('*')
 .order('carry_score',
