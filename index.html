@@ -2128,6 +2128,8 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
 
 /* ===== 2026-06-08 v10 요청 반영: 전체페이지형 사이드, 필터/검색, 중첩 슬라이드, 흰배경/선 제거, 초상화 테두리 복구 ===== */
 (function(){
+  const SIDE_STACK=[];
+
   let sideRecordLane='ALL', sideRecordSearch='', sideRecordMode='', sideRecordName='';
   let sideMostLane='ALL', sideMostSearch='', sideMostPlayer='';
 
@@ -2411,6 +2413,21 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
   window.openChampionDetail=openChampionDetail;
   window.showDetail=showDetail;
   window.goBack=goBack;
+})();
+
+
+/* ===== v11 클릭 복구 패치: v10 내부 스택 누락 보정 + 표 클릭 강제 활성 ===== */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    .detail-table tr.clickable-row,
+    .bandle-side-body tr.clickable-row{cursor:pointer!important;pointer-events:auto!important;}
+    .detail-table tr.clickable-row td,
+    .bandle-side-body tr.clickable-row td{pointer-events:auto!important;}
+    .bandle-side-page.show{pointer-events:auto!important;}
+    .bandle-side-page:not(.show){pointer-events:none!important;}
+  `;
+  document.head.appendChild(style);
 })();
 
 loadData();setInterval(loadData,30000);
