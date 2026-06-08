@@ -102,7 +102,7 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
         <button onclick="showPage('players',this); renderPlayersView();">👤 플레이어</button>
         <button onclick="showPage('champions',this); loadChampions();">⚔️ 챔피언</button>
         <button onclick="showPage('matches',this); loadMatches();">📜 내전기록</button>
-        <button>🎯 전적등록</button>
+        <button onclick="showPage('recordDisabled',this)">🎯 전적등록</button>
         <button>⚙️ 설정</button>
     </div>
 </div>
@@ -141,18 +141,34 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
 <div id="champions" class="page">
     <h2 style="margin-bottom:20px;">⚔️ 챔피언 통계</h2>
     <div class="toolbar">
-        <input class="search-input" id="championSearch" placeholder="🔍 챔피언 검색" oninput="renderChampionsView()">
-        <button class="sort-btn active" data-champion-sort="games" onclick="setChampionSort('games',this)">판수</button>
-        <button class="sort-btn" data-champion-sort="winrate" onclick="setChampionSort('winrate',this)">승률</button>
-        <button class="sort-btn" data-champion-sort="score" onclick="setChampionSort('score',this)">점수</button>
-        <button class="sort-btn" data-champion-sort="kp" onclick="setChampionSort('kp',this)">KP</button>
-    </div>
+      <input class="search-input" id="championSearch" placeholder="🔍 챔피언 검색" oninput="renderChampionsView()">
+
+      <button class="sort-btn active" data-champion-sort="honey" onclick="setChampionSort('honey',this)">🍯 꿀챔</button>
+
+      <button class="sort-btn" data-champion-sort="games" onclick="setChampionSort('games',this)">판수</button>
+
+      <button class="sort-btn" data-champion-sort="winrate" onclick="setChampionSort('winrate',this)">승률</button>
+
+      <button class="sort-btn" data-champion-sort="score" onclick="setChampionSort('score',this)">점수</button>
+
+      <button class="sort-btn active" data-champion-sort="honey" onclick="setChampionSort('honey',this)">🍯 꿀챔</button>
+  </div>
     <div id="championsContainer" class="player-grid"><div class="loading">챔피언 데이터 불러오는 중...</div></div>
 </div>
 
 <div id="matches" class="page">
     <h2 style="margin-bottom:20px;">📜 내전 기록</h2>
     <div id="matchesContainer" class="player-grid"><div class="loading">내전 기록 불러오는 중...</div></div>
+</div>
+<div id="recordDisabled" class="page">
+    <h2 style="margin-bottom:20px;">🎯 전적등록</h2>
+
+    <div class="card">
+        <h2>🚧 준비 중</h2>
+        <br>
+        <p class="stat">사이트 전적등록 기능은 앱 버전에서 지원 예정입니다.</p>
+        <p class="stat">현재는 기존 전적등록기 또는 LCU 자동등록을 사용해주세요.</p>
+    </div>
 </div>
 
 <div id="matchDetail" class="page">
@@ -181,7 +197,7 @@ let matchesCache = [];
 let championRecordsCache = [];
 let championStatsCache = [];
 let playerSortKey = "lp";
-let championSortKey = "games";
+let championSortKey = "honey";
 
 if(SUPABASE_URL && SUPABASE_KEY){
     db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -267,7 +283,10 @@ async function loadChampions(){
     const container = document.getElementById("championsContainer");
     container.innerHTML = `<div class="loading">챔피언 데이터 불러오는 중...</div>`;
 
-    const {data,error} = await db.from('bc_records').select('*');
+    const {data,error} = await db
+        .from('bc_champions')
+        .select('*')
+        .order('honey_score',{ascending:false});
 
     if(error){
         console.error(error);
@@ -275,8 +294,17 @@ async function loadChampions(){
         return;
     }
 
-    championRecordsCache = data || [];
-    championStatsCache = buildChampionStats(championRecordsCache);
+    championStatsCache = (data || []).map(champ => ({
+        champion_name: champ.champion_name,
+        games: champ.games || 0,
+        wins: champ.wins || 0,
+        total_score: Number(champ.total_score || 0),
+        total_kp: Number(champ.total_kp || 0),
+        bans: champ.bans || 0,
+        ban_rate: Number(champ.ban_rate || 0),
+        honey_score: Number(champ.honey_score || 0)
+    }));
+
     renderChampionsView();
 }
 
@@ -295,10 +323,11 @@ function renderChampionsView(){
     });
 
     data.sort((a,b)=>{
-        if(championSortKey === "winrate") return getChampionWinrate(b) - getChampionWinrate(a);
-        if(championSortKey === "score") return getChampionAvgScore(b) - getChampionAvgScore(a);
-        if(championSortKey === "kp") return getChampionAvgKP(b) - getChampionAvgKP(a);
-        return b.games - a.games;
+      if(championSortKey === "winrate") return getChampionWinrate(b) - getChampionWinrate(a);
+      if(championSortKey === "score") return getChampionAvgScore(b) - getChampionAvgScore(a);
+      if(championSortKey === "kp") return getChampionAvgKP(b) - getChampionAvgKP(a);
+      if(championSortKey === "honey") return Number(b.honey_score || 0) - Number(a.honey_score || 0);
+      return b.games - a.games;
     });
 
     renderChampions(data);
@@ -460,23 +489,43 @@ function renderChampions(champions){
 
     container.innerHTML = champions.map(champ=>{
         const winrate = getChampionWinrate(champ).toFixed(1);
-        const avgK = (champ.kills / champ.games).toFixed(1);
-        const avgD = (champ.deaths / champ.games).toFixed(1);
-        const avgA = (champ.assists / champ.games).toFixed(1);
         const avgKP = getChampionAvgKP(champ).toFixed(1);
         const avgScore = getChampionAvgScore(champ).toFixed(1);
+        const honeyScore = Number(champ.honey_score || 0).toFixed(1);
+        const banRate = Number(champ.ban_rate || 0).toFixed(1);
 
         return `
             <div class="player-card" onclick="openChampionDetail('${escapeJs(champ.champion_name)}')">
                 <div class="champion-card-title">${escapeHtml(champ.champion_name)}</div>
+                <div class="tier-badge tier-gold">🍯 꿀챔 ${honeyScore}</div>
+
+                <div class="tier-badge tier-gold">🍯 꿀챔 ${honeyScore}</div>
+
                 <div class="stat">⚔️ ${champ.games}판</div>
                 <div class="stat">🏆 ${champ.wins}승 ${champ.games - champ.wins}패</div>
                 <div class="stat">📈 승률 ${winrate}%</div>
+                <div class="stat">🚫 밴율 ${banRate}%</div>
+
                 <div class="champion-stats">
-                    <div class="champion-stat-box"><div class="champion-stat-label">평균 KDA</div><div class="champion-stat-value">${avgK}/${avgD}/${avgA}</div></div>
-                    <div class="champion-stat-box"><div class="champion-stat-label">평균 KP</div><div class="champion-stat-value">${avgKP}%</div></div>
-                    <div class="champion-stat-box"><div class="champion-stat-label">평균 점수</div><div class="champion-stat-value">${avgScore}</div></div>
-                    <div class="champion-stat-box"><div class="champion-stat-label">픽 비중</div><div class="champion-stat-value">${champ.games}회</div></div>
+                    <div class="champion-stat-box">
+                        <div class="champion-stat-label">평균 점수</div>
+                        <div class="champion-stat-value">${avgScore}</div>
+                    </div>
+
+                    <div class="champion-stat-box">
+                        <div class="champion-stat-label">평균 KP</div>
+                        <div class="champion-stat-value">${avgKP}%</div>
+                    </div>
+
+                    <div class="champion-stat-box">
+                        <div class="champion-stat-label">밴 횟수</div>
+                        <div class="champion-stat-value">${champ.bans || 0}회</div>
+                    </div>
+
+                    <div class="champion-stat-box">
+                        <div class="champion-stat-label">픽 비중</div>
+                        <div class="champion-stat-value">${champ.games}회</div>
+                    </div>
                 </div>
             </div>
         `;
@@ -552,8 +601,13 @@ function openChampionDetail(championName){
 }
 
 function getChampionWinrate(champ){return champ.games ? champ.wins / champ.games * 100 : 0}
-function getChampionAvgKP(champ){return champ.games ? champ.kp / champ.games : 0}
-function getChampionAvgScore(champ){return champ.games ? champ.score / champ.games : 0}
+function getChampionAvgKP(champ){
+    return champ.games ? Number(champ.total_kp || 0) / champ.games : 0;
+}
+
+function getChampionAvgScore(champ){
+    return champ.games ? Number(champ.total_score || 0) / champ.games : 0;
+}
 
 function getWinrateRaw(player){return player.total_games ? (player.wins / player.total_games) * 100 : 0}
 function getWinrate(player){return getWinrateRaw(player).toFixed(1)}
