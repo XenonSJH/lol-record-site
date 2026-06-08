@@ -3008,6 +3008,136 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
   window.recentTableRows=recentTableRows;
 })();
 
+
+/* ===== 2026-06-08 v11 패치: 전체 참가자에 K/D/A · KDA · 킬관여율 · 점수 표시 ===== */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    .match-participants-line{
+      grid-template-columns:74px minmax(0,1fr) 38px minmax(0,1fr)!important;
+      align-items:stretch!important;
+      padding:9px 10px!important;
+    }
+    .match-participants-player{
+      display:flex!important;
+      flex-direction:column!important;
+      align-items:flex-start!important;
+      justify-content:center!important;
+      gap:4px!important;
+      min-width:0!important;
+      overflow:hidden!important;
+    }
+    .match-participants-player.enemy{
+      align-items:flex-end!important;
+      text-align:right!important;
+    }
+    .match-participants-mainline{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      min-width:0;
+      max-width:100%;
+    }
+    .match-participants-player.enemy .match-participants-mainline{
+      flex-direction:row-reverse;
+    }
+    .match-participants-statline{
+      display:flex;
+      align-items:center;
+      gap:5px;
+      flex-wrap:wrap;
+      max-width:100%;
+      color:#cbd5e1;
+      font-size:10.5px;
+      line-height:1.25;
+      font-weight:1000;
+    }
+    .match-participants-player.enemy .match-participants-statline{
+      justify-content:flex-end;
+    }
+    .match-participants-stat{
+      display:inline-flex;
+      align-items:center;
+      gap:3px;
+      padding:2px 5px;
+      border-radius:999px;
+      background:rgba(15,23,42,.72);
+      border:1px solid rgba(148,163,184,.16);
+      white-space:nowrap;
+    }
+    .match-participants-stat b{
+      color:#93c5fd;
+      font-weight:1000;
+    }
+    .match-participants-line.active-match-lane .match-participants-stat{
+      background:rgba(15,23,42,.86);
+      border-color:rgba(96,165,250,.28);
+    }
+    @media(max-width:760px){
+      .match-participants-line{
+        grid-template-columns:48px minmax(0,1fr) 20px minmax(0,1fr)!important;
+        padding:7px 6px!important;
+        gap:4px!important;
+      }
+      .match-participants-statline{
+        gap:3px;
+        font-size:8.5px;
+      }
+      .match-participants-stat{
+        padding:1px 3px;
+      }
+      .match-participants-name{font-size:10px;}
+      .match-participants-champ{display:none!important;}
+    }
+  `;
+  document.head.appendChild(style);
+
+  function laneRank(lane){const idx=LANE_ORDER.indexOf(lane);return idx<0?999:idx;}
+  function participantFor(matchRows,lane){return matchRows.find(x=>x.lane===lane)||null;}
+  function statText(row){
+    if(!row)return `<span class="match-participants-stat"><b>K/D/A</b> -</span><span class="match-participants-stat"><b>KDA</b> -</span><span class="match-participants-stat"><b>킬관</b> -</span><span class="match-participants-stat"><b>점수</b> -</span>`;
+    const k=num(row.kills),d=num(row.deaths),a=num(row.assists),kdaValue=getKda(k,d,a),kpValue=kp(row),score=recentMatchScore(row);
+    return `<span class="match-participants-stat"><b>K/D/A</b> ${k}/${d}/${a}</span><span class="match-participants-stat"><b>KDA</b> ${kdaValue.toFixed(2)}</span><span class="match-participants-stat"><b>킬관</b> ${kpValue===null?'-':pct(kpValue)}</span><span class="match-participants-stat"><b>점수</b> ${score.toFixed(1)}</span>`;
+  }
+  function playerCard(row,cls){
+    if(!row)return `<div class="match-participants-mainline"><span class="match-participants-name" style="color:#64748b">-</span></div><div class="match-participants-statline">${statText(null)}</div>`;
+    return `<div class="match-participants-mainline"><span class="match-participants-name ${cls||''}" title="${htmlSafe(row.lol_name||'-')}">${htmlSafe(row.lol_name||'-')}</span><span class="match-participants-champ" title="${htmlSafe(row.champion_name||'-')}">${htmlSafe(row.champion_name||'-')}</span></div><div class="match-participants-statline">${statText(row)}</div>`;
+  }
+  function renderMatchParticipantsV11(row){
+    const matchRows=rows.filter(x=>String(x.match_id)===String(row.match_id));
+    if(matchRows.length<2)return '';
+    const myTeam=matchRows.filter(x=>x.win===row.win).sort((a,b)=>laneRank(a.lane)-laneRank(b.lane));
+    const enemyTeam=matchRows.filter(x=>x.win!==row.win).sort((a,b)=>laneRank(a.lane)-laneRank(b.lane));
+    const laneSet=LANE_ORDER.filter(l=>myTeam.some(x=>x.lane===l)||enemyTeam.some(x=>x.lane===l));
+    const lanes=laneSet.length?laneSet:LANE_ORDER;
+    return `<div class="match-participants-box">
+      <div class="match-participants-title">
+        <span>전체 참가자</span>
+        <span class="match-participants-sub">K/D/A · KDA · 킬관여율 · 점수 포함</span>
+      </div>
+      <div class="match-participants-list">
+        ${lanes.map(lane=>{
+          const mine=participantFor(myTeam,lane);
+          const enemy=participantFor(enemyTeam,lane);
+          const active=lane===row.lane;
+          return `<div class="match-participants-line ${active?'active-match-lane':''}">
+            <div class="match-participants-lane">${laneIcon(lane)} <span>${LANE_LABELS[lane]||lane}</span></div>
+            <div class="match-participants-player">${playerCard(mine,mine&&mine.lol_name===row.lol_name?'match-participants-me':'')}</div>
+            <div class="match-participants-vs">VS</div>
+            <div class="match-participants-player enemy">${playerCard(enemy,active?'match-participants-opponent':'')}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  recentTableRows=function(data,mode){
+    if(!data.length)return`<div class="recent-empty">조건에 맞는 전적이 없습니다.</div>`;
+    return`<table class="detail-table recent-table"><colgroup><col style="width:5%"><col style="width:18%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:7%"><col style="width:18%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:7%"></colgroup><thead><tr><th>승패</th><th>챔피언 / 플레이어</th><th>라인</th><th>K/D/A</th><th>KDA</th><th>킬관여율</th><th>점수</th><th>상대 챔프</th><th>상대 라인</th><th>상대 K/D/A</th><th>상대 KDA</th><th>상대 킬관여율</th><th>상대 점수</th></tr></thead><tbody>${data.map(r=>{const o=findOpponent(r),k=num(r.kills),d=num(r.deaths),a=num(r.assists),kdaValue=getKda(k,d,a),kpValue=kp(r),score=recentMatchScore(r),ok=o?num(o.kills):0,od=o?num(o.deaths):0,oa=o?num(o.assists):0,okda=o?getKda(ok,od,oa):0,okp=o?kp(o):null,oscore=o?recentMatchScore(o):0;return`<tr><td><div class="recent-result-block ${r.win?"result-win":"result-loss"}">${r.win?"승":"패"}</div></td><td style="text-align:left"><div class="champ-cell" title="${htmlSafe(r.champion_name||"-")} / ${htmlSafe(r.lol_name||"-")}"><img class="champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'"/><div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;"><span class="champ-name" style="width:100%;">${htmlSafe(r.champion_name||"-")}</span><span style="font-size:11px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${htmlSafe(r.lol_name||"-")}</span></div></div></td><td>${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||"-"}</td><td>${k}/${d}/${a}</td><td>${kdaValue.toFixed(2)}</td><td>${kpValue===null?"-":pct(kpValue)}</td><td>${score.toFixed(1)}</td><td style="text-align:left">${o?`<div class="champ-cell" title="${htmlSafe(o.champion_name||"-")} / ${htmlSafe(o.lol_name||"-")}"><img class="champ-icon" src="${champImg(o.champion_name)}" onerror="this.style.display='none'"/><div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;"><span class="champ-name" style="width:100%;">${htmlSafe(o.champion_name||"-")}</span><span style="font-size:11px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${htmlSafe(o.lol_name||"-")}</span></div></div>`:"-"}</td><td>${o?`${laneIcon(o.lane)} ${LANE_LABELS[o.lane]||o.lane||"-"}`:"-"}</td><td>${o?`${ok}/${od}/${oa}`:"-"}</td><td>${o?okda.toFixed(2):"-"}</td><td>${o?(okp===null?"-":pct(okp)):"-"}</td><td>${o?oscore.toFixed(1):"-"}</td></tr><tr class="match-participants-row"><td colspan="13">${renderMatchParticipantsV11(r)}</td></tr>`}).join("")}</tbody></table>`;
+  };
+  window.recentTableRows=recentTableRows;
+})();
+
 loadData();setInterval(loadData,30000);
 </script>
 </body>
