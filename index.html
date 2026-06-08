@@ -2388,6 +2388,16 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
     .record-detail-panel.show table td{border-bottom-color:transparent!important}
     .record-detail-panel.show table th{border-bottom:none!important}
     .combo-portrait-wrap.detail-tier-frame{width:auto!important;height:auto!important}
+    .detail-page.v11-active{
+      position:fixed!important;
+      inset:0!important;
+      z-index:22000!important;
+      width:100%!important;
+      margin:0!important;
+      padding:28px 2.5%!important;
+      overflow:auto!important;
+      background:radial-gradient(circle at left,rgba(15,23,42,.55),transparent 28%),radial-gradient(circle at right,rgba(15,23,42,.55),transparent 28%),linear-gradient(90deg,#111827,#1e293b 18%,#1e293b 82%,#111827)!important;
+    }
   `;
   document.head.appendChild(style);
 
@@ -2484,12 +2494,15 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
     void detail.offsetWidth;
     main.classList.add("v11-slide-out");
     detail.classList.add("v11-slide-in");
+    detail.classList.add("v11-active");
+    detail.scrollTo({top:0,behavior:"auto"});
     setTimeout(()=>{main.style.display="none";main.classList.remove("v11-slide-out");initFloatingTitle()},330);
   };
   goBack=function(){
     drawerExit();
     const main=document.getElementById("mainPage"),detail=document.getElementById("detailPage");
     detail.style.display="none";
+    detail.classList.remove("v11-active","v11-slide-in");
     main.style.display="block";
     main.style.opacity="1";
     main.style.transform="";
@@ -2535,7 +2548,68 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
     },80);
   };
 
-  window.showDetail=showDetail;window.goBack=goBack;window.renderMostChampionArea=renderMostChampionArea;window.tableStatsRows=tableStatsRows;window.renderMasterRankingArea=renderMasterRankingArea;window.runRecentSearch=runRecentSearch;window.setRecentLane=setRecentLane;window.setChampionRecentLane=setChampionRecentLane;window.openChampionDetail=openChampionDetail;
+  const v11PlayerDetail=openPlayerDetail;
+  openPlayerDetail=function(playerName){
+    drawerExit();
+    v11PlayerDetail(playerName);
+  };
+  const v11ChampionDetail=openChampionDetail;
+  openChampionDetail=function(championName){
+    drawerExit();
+    v11ChampionDetail(championName);
+  };
+  renderPlayerRanking=function(){
+    const tbody=document.getElementById("playerRanking"),list=getPlayerRanking();
+    if(!list.length){tbody.innerHTML=`<tr><td colspan="8">플레이어 데이터가 없습니다.</td></tr>`;return}
+    let html="",rankedCount=0,lastGroup=null;
+    list.forEach((p,i)=>{
+      const group=getParticipationGroup(p.participation);
+      if(playerSort==="winRate"&&!activeSearch&&lastGroup!==null&&lastGroup!==group){
+        const msg=group===1?"참여율 30% 미만인 플레이어는 순위가 표기되지 않습니다.":"참여율 10% 미만인 플레이어는 추방 대상입니다.";
+        html+=`<tr class="group-divider"><td colspan="8" style="height:48px;padding:0!important;background:transparent!important;border-radius:0!important;border-bottom:2px solid rgba(147,197,253,.5);position:relative;overflow:visible;"><div style="position:absolute;left:50%;top:8px;transform:translateX(-50%);font-size:12px;color:#94a3b8;background:#111827;padding:2px 10px;border-radius:999px;border:1px solid rgba(147,197,253,.25);white-space:nowrap;">${msg}</div></td></tr>`;
+      }
+      lastGroup=group;
+      let rank;
+      if(playerSort==="winRate"&&!activeSearch){if(p.participation>=30){rankedCount++;rank=rankText(rankedCount)}else rank="-"}else rank=rankText(i+1);
+      html+=`<tr class="clickable-row ${p.participation<10?"low-participation":""}" onclick="openPlayerDetail('${safe(p.name)}')"><td>${rank}</td><td class="nickname" title="${htmlSafe(p.name)}"><div class="player-name-cell"><img class="player-avatar" src="${p.profile_image_url||"https://cdn.discordapp.com/embed/avatars/0.png"}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'"><span>${htmlSafe(p.name)}</span></div></td><td>${p.games}</td><td class="win">${p.wins}</td><td class="loss">${p.losses}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${pct(p.kp)}</td><td>${pct(p.participation)}</td></tr>`;
+    });
+    tbody.innerHTML=html;
+  };
+  renderChampionRanking=function(){
+    const tbody=document.getElementById("championRanking"),list=getChampionRanking();
+    if(!list.length){tbody.innerHTML=`<tr><td colspan="10">챔피언 데이터가 없습니다.</td></tr>`;return}
+    tbody.innerHTML=list.map((c,i)=>{
+      const img=champImg(c.name),tierClass=TIER_CLASS[c.tier]||"tier-blue",isBanMerged=championSort==="banRate",tierList=c.tierList?.length?c.tierList:[c.tier],isMixed=isBanMerged&&tierList.length>1,portraitClass=isMixed?"":tierClass,portraitStyle=isMixed?comboPortraitStyle(tierList):"background:transparent;";
+      return`<tr class="clickable-row" onclick="openChampionDetail('${safe(c.name)}')"><td>${rankText(i+1)}</td><td>${isBanMerged?comboTierBadge(tierList):tierBadge(c.tier)}</td><td class="champ-td"><div class="champ-cell" title="${htmlSafe(c.name)}"><span class="combo-portrait-wrap" style="${portraitStyle}"><img class="champ-icon ${portraitClass}" src="${img}" onerror="this.style.display='none'"/></span>${isBanMerged?"":`<span class="champ-lane-icon">${laneIcon(c.displayLane)}</span>`}<span class="champ-name">${htmlSafe(c.name)}</span></div></td><td>${c.games}</td><td class="win">${c.wins}</td><td class="loss">${c.losses}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${pct(c.pickRate)}</td><td>${pct(c.banRate)}</td><td>${pct(c.kp)}</td></tr>`;
+    }).join("");
+  };
+  renderMain=function(){currentTab==="player"?renderPlayerRanking():renderChampionRanking()};
+  function bindMainDetailClick(){
+    const playerBody=document.getElementById("playerRanking");
+    const champBody=document.getElementById("championRanking");
+    if(playerBody&&!playerBody.dataset.v11Bound){
+      playerBody.dataset.v11Bound="1";
+      playerBody.addEventListener("click",e=>{
+        const tr=e.target.closest("tr.clickable-row");
+        if(!tr||!playerBody.contains(tr))return;
+        const name=tr.querySelector(".nickname")?.getAttribute("title")||tr.querySelector(".player-name-cell span")?.textContent?.trim();
+        if(name){e.preventDefault();e.stopPropagation();openPlayerDetail(name);}
+      },true);
+    }
+    if(champBody&&!champBody.dataset.v11Bound){
+      champBody.dataset.v11Bound="1";
+      champBody.addEventListener("click",e=>{
+        const tr=e.target.closest("tr.clickable-row");
+        if(!tr||!champBody.contains(tr))return;
+        const name=tr.querySelector(".champ-cell")?.getAttribute("title")||tr.querySelector(".champ-name")?.textContent?.trim();
+        if(name){e.preventDefault();e.stopPropagation();openChampionDetail(name);}
+      },true);
+    }
+  }
+  const v11OldRenderMain=renderMain;
+  renderMain=function(){v11OldRenderMain();setTimeout(bindMainDetailClick,0)};
+  setTimeout(bindMainDetailClick,0);
+  window.showDetail=showDetail;window.goBack=goBack;window.renderMostChampionArea=renderMostChampionArea;window.tableStatsRows=tableStatsRows;window.renderMasterRankingArea=renderMasterRankingArea;window.runRecentSearch=runRecentSearch;window.setRecentLane=setRecentLane;window.setChampionRecentLane=setChampionRecentLane;window.openChampionDetail=openChampionDetail;window.openPlayerDetail=openPlayerDetail;window.renderPlayerRanking=renderPlayerRanking;window.renderChampionRanking=renderChampionRanking;window.renderMain=renderMain;
 })();
 
 loadData();setInterval(loadData,30000);
