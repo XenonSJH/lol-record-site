@@ -2839,502 +2839,339 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
 })();
 
 
-/* ===== 2026-06-08 v10 패치: 전적창 전체 참가자 10명 표시 + 맞라인 행 테두리 강조 ===== */
+/* ===== 2026-06-08 v13 패치: 전적 기본 접힘 + 중앙 화살표 슬라이드 + 승패칸 제거/배경 틴트 + 참가자 아이콘 2줄 ===== */
 (function(){
   const style=document.createElement('style');
   style.textContent=`
-    .match-participants-row td{
-      padding:0 7px 14px!important;
-      background:rgba(51,65,85,.82)!important;
-      border-radius:0 0 14px 14px!important;
+    /* 최근전적/챔피언 전적은 기본으로 표를 바로 펼치지 않고, 가운데 화살표로 열고 닫음 */
+    #recentMatchSection .collapse-toggle,
+    #championRecentMatchSection .collapse-toggle{
+      display:none!important;
     }
-    .match-participants-box{
-      margin:4px 0 2px;
-      padding:12px;
+    #recentMatchSection .collapsible-content,
+    #championRecentMatchSection .collapsible-content{
+      max-height:none!important;
+      opacity:1!important;
+      margin-top:12px!important;
+      overflow:visible!important;
+    }
+
+    .record-slide-toggle-wrap{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin:2px 0 4px;
+    }
+    .record-slide-toggle{
+      width:42px;
+      height:28px;
+      border:none;
+      border-radius:999px;
+      background:rgba(30,41,59,.95);
+      color:#bfdbfe;
+      font-size:18px;
+      font-weight:1000;
+      cursor:pointer;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 0 1px rgba(96,165,250,.24);
+      transition:filter .18s ease,transform .22s ease,background .18s ease;
+      font-family:inherit;
+      line-height:1;
+    }
+    .record-slide-toggle:hover{filter:brightness(1.18);}
+    .record-slide-toggle.open{background:#2563eb;color:white;transform:rotate(180deg);}
+
+    .record-slide-content{
+      max-height:0;
+      opacity:0;
+      overflow:hidden;
+      margin-top:0;
+      transition:max-height .46s ease,opacity .24s ease,margin-top .36s ease;
+    }
+    .record-slide-content.open{
+      max-height:20000px;
+      opacity:1;
+      margin-top:12px;
+    }
+
+    /* 승패 칸 제거 후, 전적 줄 전체를 연초록/연빨강으로 표시 */
+    .recent-table-v13{
+      border-spacing:0 10px!important;
+      table-layout:fixed;
+    }
+    .recent-table-v13 th{
+      font-size:12px!important;
+    }
+    .recent-table-v13 td{
+      font-size:14px!important;
+      height:70px!important;
+      padding:11px 7px!important;
+    }
+    .recent-table-v13 .recent-win-row td{
+      background:rgba(34,197,94,.145)!important;
+      border-top:1px solid rgba(34,197,94,.24)!important;
+      border-bottom:1px solid rgba(34,197,94,.24)!important;
+    }
+    .recent-table-v13 .recent-loss-row td{
+      background:rgba(239,68,68,.13)!important;
+      border-top:1px solid rgba(239,68,68,.24)!important;
+      border-bottom:1px solid rgba(239,68,68,.24)!important;
+    }
+    .recent-table-v13 .recent-win-row td:first-child,
+    .recent-table-v13 .recent-loss-row td:first-child{
+      border-left:1px solid rgba(148,163,184,.13)!important;
+    }
+    .recent-table-v13 .recent-win-row td:last-child,
+    .recent-table-v13 .recent-loss-row td:last-child{
+      border-right:1px solid rgba(148,163,184,.13)!important;
+    }
+    .recent-table-v13 .recent-number{
+      font-size:15.5px!important;
+      font-weight:1000!important;
+      color:#f8fafc!important;
+    }
+    .recent-table-v13 .recent-kp{
+      font-size:15px!important;
+      font-weight:1000!important;
+    }
+    .recent-table-v13 .champ-cell .champ-icon{
+      width:46px!important;
+      height:46px!important;
+      border-radius:10px!important;
+    }
+    .recent-table-v13 .champ-name{
+      font-size:13.5px!important;
+    }
+    .recent-table-v13 .recent-player-name{
+      font-size:12px;
+      color:#dbeafe;
+      font-weight:1000;
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    /* 전체 참가자: 아이콘이 왼쪽에서 2줄 높이를 먹고, 오른쪽에 이름/챔프 + 수치 */
+    .match-participants-row-v13 td{
+      padding:0 7px 14px!important;
+      background:transparent!important;
+      border:none!important;
+    }
+    .match-participants-box-v13{
+      margin:2px 0 0;
+      padding:13px;
       border-radius:16px;
       background:#0f172a;
       border:1px solid rgba(96,165,250,.28);
       box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
     }
-    .match-participants-title{
+    .match-participants-title-v13{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      margin-bottom:9px;
+      margin-bottom:10px;
       color:#bfdbfe;
       font-size:13px;
       font-weight:1000;
     }
-    .match-participants-sub{
+    .match-participants-sub-v13{
       color:#94a3b8;
       font-size:11px;
       font-weight:1000;
       white-space:nowrap;
     }
-    .match-participants-list{
+    .match-participants-list-v13{
       display:flex;
       flex-direction:column;
-      gap:5px;
+      gap:6px;
     }
-    .match-participants-line{
+    .match-participants-line-v13{
       display:grid;
       grid-template-columns:74px minmax(0,1fr) 38px minmax(0,1fr);
       align-items:center;
       gap:8px;
       padding:8px 10px;
-      border-radius:12px;
+      border-radius:13px;
       border:1px solid rgba(148,163,184,.12);
       background:rgba(30,41,59,.72);
       color:#e5e7eb;
-      font-size:12px;
       font-weight:1000;
+      min-width:0;
     }
-    .match-participants-line.active-match-lane{
-      border:1px solid rgba(96,165,250,.9);
+    .match-participants-line-v13.active-match-lane{
+      border:1px solid rgba(96,165,250,.92);
       background:rgba(37,99,235,.20);
       box-shadow:0 0 0 1px rgba(96,165,250,.16),0 0 16px rgba(59,130,246,.16);
     }
-    .match-participants-lane{
+    .match-participants-lane-v13{
       display:flex;
       align-items:center;
       gap:5px;
       color:#93c5fd;
+      font-size:12px;
       min-width:0;
     }
-    .match-participants-player{
-      min-width:0;
-      display:flex;
+    .participant-card-v13{
+      display:grid;
+      grid-template-columns:42px minmax(0,1fr);
+      grid-template-rows:auto auto;
+      column-gap:8px;
+      row-gap:2px;
       align-items:center;
-      gap:6px;
-      justify-content:flex-start;
-      overflow:hidden;
+      min-width:0;
+      text-align:left;
     }
-    .match-participants-player.enemy{
-      justify-content:flex-end;
+    .match-participants-player-v13.enemy .participant-card-v13{
+      grid-template-columns:minmax(0,1fr) 42px;
       text-align:right;
     }
-    .match-participants-name{
+    .participant-icon-v13{
+      grid-row:1 / span 2;
+      width:42px!important;
+      height:42px!important;
+      border-radius:10px!important;
+      object-fit:cover;
+      border:1px solid rgba(148,163,184,.3);
+      background:#020617;
+    }
+    .match-participants-player-v13.enemy .participant-icon-v13{
+      grid-column:2;
+    }
+    .participant-main-v13{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      min-width:0;
+      overflow:hidden;
+      white-space:nowrap;
+    }
+    .match-participants-player-v13.enemy .participant-main-v13{
+      justify-content:flex-end;
+    }
+    .participant-name-v13{
       overflow:hidden;
       white-space:nowrap;
       text-overflow:ellipsis;
       color:#f8fafc;
+      font-size:12.5px;
+      font-weight:1000;
     }
-    .match-participants-champ{
+    .participant-champ-v13{
       color:#94a3b8;
-      font-size:10.5px;
+      font-size:11px;
       overflow:hidden;
       white-space:nowrap;
       text-overflow:ellipsis;
-      max-width:82px;
       flex-shrink:1;
+      min-width:0;
     }
-    .match-participants-vs{
+    .participant-stat-v13{
+      color:#cbd5e1;
+      font-size:11.5px;
+      font-weight:1000;
+      overflow:hidden;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+    }
+    .participant-me-v13 .participant-name-v13::before{
+      content:"★ ";
+      color:#60a5fa;
+    }
+    .participant-opponent-v13 .participant-name-v13{
+      color:#ffffff;
+    }
+    .match-participants-vs-v13{
       text-align:center;
       color:#64748b;
       font-size:10px;
       font-weight:1000;
     }
-    .match-participants-me,
-    .match-participants-opponent{
-      color:#ffffff!important;
-      font-weight:1000!important;
-    }
-    .match-participants-me::before{
-      content:"★ ";
-      color:#60a5fa;
-    }
+
     @media(max-width:760px){
-      .match-participants-row td{padding:0 3px 10px!important;}
-      .match-participants-box{padding:9px;border-radius:14px;}
-      .match-participants-line{
-        grid-template-columns:50px minmax(0,1fr) 24px minmax(0,1fr);
+      .recent-table-v13 th{font-size:8.5px!important;padding:7px 3px!important;}
+      .recent-table-v13 td{font-size:10.2px!important;height:62px!important;padding:8px 3px!important;}
+      .recent-table-v13 .recent-number{font-size:11px!important;}
+      .recent-table-v13 .recent-kp{font-size:10.5px!important;}
+      .recent-table-v13 .champ-cell .champ-icon{width:30px!important;height:30px!important;}
+      .recent-table-v13 .champ-name{font-size:10px!important;}
+      .recent-table-v13 .recent-player-name{font-size:9px!important;}
+
+      .match-participants-row-v13 td{padding:0 3px 10px!important;}
+      .match-participants-box-v13{padding:9px;border-radius:14px;}
+      .match-participants-line-v13{
+        grid-template-columns:50px minmax(0,1fr) 22px minmax(0,1fr);
         gap:5px;
         padding:7px 6px;
-        font-size:10px;
       }
-      .match-participants-title{font-size:12px;}
-      .match-participants-sub{display:none;}
-      .match-participants-champ{display:none;}
-      .match-participants-vs{font-size:9px;}
+      .match-participants-title-v13{font-size:12px;}
+      .match-participants-sub-v13{display:none;}
+      .match-participants-lane-v13{font-size:10px;}
+      .participant-card-v13{grid-template-columns:30px minmax(0,1fr);column-gap:5px;}
+      .match-participants-player-v13.enemy .participant-card-v13{grid-template-columns:minmax(0,1fr) 30px;}
+      .participant-icon-v13{width:30px!important;height:30px!important;border-radius:8px!important;}
+      .participant-name-v13{font-size:9.8px;}
+      .participant-champ-v13{display:none;}
+      .participant-stat-v13{font-size:9px;}
+      .match-participants-vs-v13{font-size:8px;}
     }
   `;
   document.head.appendChild(style);
 
-  function laneRank(lane){
+  function laneRankV13(lane){
     const idx=LANE_ORDER.indexOf(lane);
     return idx<0?999:idx;
   }
-  function participantFor(matchRows,lane){
+  function participantForV13(matchRows,lane){
     return matchRows.find(x=>x.lane===lane)||null;
   }
-  function playerText(row,cls){
-    if(!row)return `<span class="match-participants-name" style="color:#64748b">-</span>`;
-    return `<span class="match-participants-name ${cls||''}" title="${htmlSafe(row.lol_name||'-')}">${htmlSafe(row.lol_name||'-')}</span><span class="match-participants-champ" title="${htmlSafe(row.champion_name||'-')}">${htmlSafe(row.champion_name||'-')}</span>`;
+  function statTextV13(row){
+    if(!row)return '-';
+    const k=num(row.kills), d=num(row.deaths), a=num(row.assists);
+    const kdaValue=getKda(k,d,a);
+    const kpValue=kp(row);
+    const score=recentMatchScore(row);
+    return `${k}/${d}/${a} · KDA ${kdaValue.toFixed(2)} · ${kpValue===null?'-':pct(kpValue)} · ${score.toFixed(1)}점`;
   }
-  function renderMatchParticipants(row){
-    const matchRows=rows.filter(x=>String(x.match_id)===String(row.match_id));
-    if(matchRows.length<2)return '';
-    const myTeam=matchRows.filter(x=>x.win===row.win).sort((a,b)=>laneRank(a.lane)-laneRank(b.lane));
-    const enemyTeam=matchRows.filter(x=>x.win!==row.win).sort((a,b)=>laneRank(a.lane)-laneRank(b.lane));
-    const laneSet=LANE_ORDER.filter(l=>myTeam.some(x=>x.lane===l)||enemyTeam.some(x=>x.lane===l));
-    const lanes=laneSet.length?laneSet:LANE_ORDER;
-    return `<div class="match-participants-box">
-      <div class="match-participants-title">
-        <span>전체 참가자</span>
-        <span class="match-participants-sub">현재 라인만 테두리 강조</span>
-      </div>
-      <div class="match-participants-list">
-        ${lanes.map(lane=>{
-          const mine=participantFor(myTeam,lane);
-          const enemy=participantFor(enemyTeam,lane);
-          const active=lane===row.lane;
-          return `<div class="match-participants-line ${active?'active-match-lane':''}">
-            <div class="match-participants-lane">${laneIcon(lane)} <span>${LANE_LABELS[lane]||lane}</span></div>
-            <div class="match-participants-player">${playerText(mine,mine&&mine.lol_name===row.lol_name?'match-participants-me':'')}</div>
-            <div class="match-participants-vs">VS</div>
-            <div class="match-participants-player enemy">${playerText(enemy,active?'match-participants-opponent':'')}</div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
-  }
-
-  recentTableRows=function(data,mode){
-    if(!data.length)return`<div class="recent-empty">조건에 맞는 전적이 없습니다.</div>`;
-    return`<table class="detail-table recent-table"><colgroup><col style="width:5%"><col style="width:18%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:7%"><col style="width:18%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:7%"></colgroup><thead><tr><th>승패</th><th>챔피언 / 플레이어</th><th>라인</th><th>K/D/A</th><th>KDA</th><th>킬관여율</th><th>점수</th><th>상대 챔프</th><th>상대 라인</th><th>상대 K/D/A</th><th>상대 KDA</th><th>상대 킬관여율</th><th>상대 점수</th></tr></thead><tbody>${data.map(r=>{const o=findOpponent(r),k=num(r.kills),d=num(r.deaths),a=num(r.assists),kdaValue=getKda(k,d,a),kpValue=kp(r),score=recentMatchScore(r),ok=o?num(o.kills):0,od=o?num(o.deaths):0,oa=o?num(o.assists):0,okda=o?getKda(ok,od,oa):0,okp=o?kp(o):null,oscore=o?recentMatchScore(o):0;return`<tr><td><div class="recent-result-block ${r.win?"result-win":"result-loss"}">${r.win?"승":"패"}</div></td><td style="text-align:left"><div class="champ-cell" title="${htmlSafe(r.champion_name||"-")} / ${htmlSafe(r.lol_name||"-")}"><img class="champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'"/><div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;"><span class="champ-name" style="width:100%;">${htmlSafe(r.champion_name||"-")}</span><span style="font-size:11px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${htmlSafe(r.lol_name||"-")}</span></div></div></td><td>${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||"-"}</td><td>${k}/${d}/${a}</td><td>${kdaValue.toFixed(2)}</td><td>${kpValue===null?"-":pct(kpValue)}</td><td>${score.toFixed(1)}</td><td style="text-align:left">${o?`<div class="champ-cell" title="${htmlSafe(o.champion_name||"-")} / ${htmlSafe(o.lol_name||"-")}"><img class="champ-icon" src="${champImg(o.champion_name)}" onerror="this.style.display='none'"/><div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;"><span class="champ-name" style="width:100%;">${htmlSafe(o.champion_name||"-")}</span><span style="font-size:11px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${htmlSafe(o.lol_name||"-")}</span></div></div>`:"-"}</td><td>${o?`${laneIcon(o.lane)} ${LANE_LABELS[o.lane]||o.lane||"-"}`:"-"}</td><td>${o?`${ok}/${od}/${oa}`:"-"}</td><td>${o?okda.toFixed(2):"-"}</td><td>${o?(okp===null?"-":pct(okp)):"-"}</td><td>${o?oscore.toFixed(1):"-"}</td></tr><tr class="match-participants-row"><td colspan="13">${renderMatchParticipants(r)}</td></tr>`}).join("")}</tbody></table>`;
-  };
-
-  window.recentTableRows=recentTableRows;
-})();
-
-
-/* ===== 2026-06-08 v11 패치: 전체 참가자에 K/D/A · KDA · 킬관여율 · 점수 표시 ===== */
-(function(){
-  const style=document.createElement('style');
-  style.textContent=`
-    .match-participants-line{
-      grid-template-columns:74px minmax(0,1fr) 38px minmax(0,1fr)!important;
-      align-items:stretch!important;
-      padding:9px 10px!important;
-    }
-    .match-participants-player{
-      display:flex!important;
-      flex-direction:column!important;
-      align-items:flex-start!important;
-      justify-content:center!important;
-      gap:4px!important;
-      min-width:0!important;
-      overflow:hidden!important;
-    }
-    .match-participants-player.enemy{
-      align-items:flex-end!important;
-      text-align:right!important;
-    }
-    .match-participants-mainline{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      min-width:0;
-      max-width:100%;
-    }
-    .match-participants-player.enemy .match-participants-mainline{
-      flex-direction:row-reverse;
-    }
-    .match-participants-statline{
-      display:flex;
-      align-items:center;
-      gap:5px;
-      flex-wrap:wrap;
-      max-width:100%;
-      color:#cbd5e1;
-      font-size:10.5px;
-      line-height:1.25;
-      font-weight:1000;
-    }
-    .match-participants-player.enemy .match-participants-statline{
-      justify-content:flex-end;
-    }
-    .match-participants-stat{
-      display:inline-flex;
-      align-items:center;
-      gap:3px;
-      padding:2px 5px;
-      border-radius:999px;
-      background:rgba(15,23,42,.72);
-      border:1px solid rgba(148,163,184,.16);
-      white-space:nowrap;
-    }
-    .match-participants-stat b{
-      color:#93c5fd;
-      font-weight:1000;
-    }
-    .match-participants-line.active-match-lane .match-participants-stat{
-      background:rgba(15,23,42,.86);
-      border-color:rgba(96,165,250,.28);
-    }
-    @media(max-width:760px){
-      .match-participants-line{
-        grid-template-columns:48px minmax(0,1fr) 20px minmax(0,1fr)!important;
-        padding:7px 6px!important;
-        gap:4px!important;
-      }
-      .match-participants-statline{
-        gap:3px;
-        font-size:8.5px;
-      }
-      .match-participants-stat{
-        padding:1px 3px;
-      }
-      .match-participants-name{font-size:10px;}
-      .match-participants-champ{display:none!important;}
-    }
-  `;
-  document.head.appendChild(style);
-
-  function laneRank(lane){const idx=LANE_ORDER.indexOf(lane);return idx<0?999:idx;}
-  function participantFor(matchRows,lane){return matchRows.find(x=>x.lane===lane)||null;}
-  function statText(row){
-    if(!row)return `<span class="match-participants-stat"><b>K/D/A</b> -</span><span class="match-participants-stat"><b>KDA</b> -</span><span class="match-participants-stat"><b>킬관</b> -</span><span class="match-participants-stat"><b>점수</b> -</span>`;
-    const k=num(row.kills),d=num(row.deaths),a=num(row.assists),kdaValue=getKda(k,d,a),kpValue=kp(row),score=recentMatchScore(row);
-    return `<span class="match-participants-stat"><b>K/D/A</b> ${k}/${d}/${a}</span><span class="match-participants-stat"><b>KDA</b> ${kdaValue.toFixed(2)}</span><span class="match-participants-stat"><b>킬관</b> ${kpValue===null?'-':pct(kpValue)}</span><span class="match-participants-stat"><b>점수</b> ${score.toFixed(1)}</span>`;
-  }
-  function playerCard(row,cls){
-    if(!row)return `<div class="match-participants-mainline"><span class="match-participants-name" style="color:#64748b">-</span></div><div class="match-participants-statline">${statText(null)}</div>`;
-    return `<div class="match-participants-mainline"><span class="match-participants-name ${cls||''}" title="${htmlSafe(row.lol_name||'-')}">${htmlSafe(row.lol_name||'-')}</span><span class="match-participants-champ" title="${htmlSafe(row.champion_name||'-')}">${htmlSafe(row.champion_name||'-')}</span></div><div class="match-participants-statline">${statText(row)}</div>`;
-  }
-  function renderMatchParticipantsV11(row){
-    const matchRows=rows.filter(x=>String(x.match_id)===String(row.match_id));
-    if(matchRows.length<2)return '';
-    const myTeam=matchRows.filter(x=>x.win===row.win).sort((a,b)=>laneRank(a.lane)-laneRank(b.lane));
-    const enemyTeam=matchRows.filter(x=>x.win!==row.win).sort((a,b)=>laneRank(a.lane)-laneRank(b.lane));
-    const laneSet=LANE_ORDER.filter(l=>myTeam.some(x=>x.lane===l)||enemyTeam.some(x=>x.lane===l));
-    const lanes=laneSet.length?laneSet:LANE_ORDER;
-    return `<div class="match-participants-box">
-      <div class="match-participants-title">
-        <span>전체 참가자</span>
-        <span class="match-participants-sub">K/D/A · KDA · 킬관여율 · 점수 포함</span>
-      </div>
-      <div class="match-participants-list">
-        ${lanes.map(lane=>{
-          const mine=participantFor(myTeam,lane);
-          const enemy=participantFor(enemyTeam,lane);
-          const active=lane===row.lane;
-          return `<div class="match-participants-line ${active?'active-match-lane':''}">
-            <div class="match-participants-lane">${laneIcon(lane)} <span>${LANE_LABELS[lane]||lane}</span></div>
-            <div class="match-participants-player">${playerCard(mine,mine&&mine.lol_name===row.lol_name?'match-participants-me':'')}</div>
-            <div class="match-participants-vs">VS</div>
-            <div class="match-participants-player enemy">${playerCard(enemy,active?'match-participants-opponent':'')}</div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
-  }
-
-  recentTableRows=function(data,mode){
-    if(!data.length)return`<div class="recent-empty">조건에 맞는 전적이 없습니다.</div>`;
-    return`<table class="detail-table recent-table"><colgroup><col style="width:5%"><col style="width:18%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:7%"><col style="width:18%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:7%"></colgroup><thead><tr><th>승패</th><th>챔피언 / 플레이어</th><th>라인</th><th>K/D/A</th><th>KDA</th><th>킬관여율</th><th>점수</th><th>상대 챔프</th><th>상대 라인</th><th>상대 K/D/A</th><th>상대 KDA</th><th>상대 킬관여율</th><th>상대 점수</th></tr></thead><tbody>${data.map(r=>{const o=findOpponent(r),k=num(r.kills),d=num(r.deaths),a=num(r.assists),kdaValue=getKda(k,d,a),kpValue=kp(r),score=recentMatchScore(r),ok=o?num(o.kills):0,od=o?num(o.deaths):0,oa=o?num(o.assists):0,okda=o?getKda(ok,od,oa):0,okp=o?kp(o):null,oscore=o?recentMatchScore(o):0;return`<tr><td><div class="recent-result-block ${r.win?"result-win":"result-loss"}">${r.win?"승":"패"}</div></td><td style="text-align:left"><div class="champ-cell" title="${htmlSafe(r.champion_name||"-")} / ${htmlSafe(r.lol_name||"-")}"><img class="champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'"/><div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;"><span class="champ-name" style="width:100%;">${htmlSafe(r.champion_name||"-")}</span><span style="font-size:11px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${htmlSafe(r.lol_name||"-")}</span></div></div></td><td>${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||"-"}</td><td>${k}/${d}/${a}</td><td>${kdaValue.toFixed(2)}</td><td>${kpValue===null?"-":pct(kpValue)}</td><td>${score.toFixed(1)}</td><td style="text-align:left">${o?`<div class="champ-cell" title="${htmlSafe(o.champion_name||"-")} / ${htmlSafe(o.lol_name||"-")}"><img class="champ-icon" src="${champImg(o.champion_name)}" onerror="this.style.display='none'"/><div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;"><span class="champ-name" style="width:100%;">${htmlSafe(o.champion_name||"-")}</span><span style="font-size:11px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${htmlSafe(o.lol_name||"-")}</span></div></div>`:"-"}</td><td>${o?`${laneIcon(o.lane)} ${LANE_LABELS[o.lane]||o.lane||"-"}`:"-"}</td><td>${o?`${ok}/${od}/${oa}`:"-"}</td><td>${o?okda.toFixed(2):"-"}</td><td>${o?(okp===null?"-":pct(okp)):"-"}</td><td>${o?oscore.toFixed(1):"-"}</td></tr><tr class="match-participants-row"><td colspan="13">${renderMatchParticipantsV11(r)}</td></tr>`}).join("")}</tbody></table>`;
-  };
-  window.recentTableRows=recentTableRows;
-})();
-
-
-/* ===== 2026-06-08 v12 패치: 전체 참가자 챔피언 아이콘 2줄 배치 + 전적 숫자 확대 ===== */
-(function(){
-  const style=document.createElement('style');
-  style.textContent=`
-    /* 기존 전적표 숫자 줄 넉넉하게 확대 */
-    .recent-table td:nth-child(4),
-    .recent-table td:nth-child(5),
-    .recent-table td:nth-child(6),
-    .recent-table td:nth-child(7),
-    .recent-table td:nth-child(10),
-    .recent-table td:nth-child(11),
-    .recent-table td:nth-child(12),
-    .recent-table td:nth-child(13){
-      font-size:13px!important;
-      font-weight:1000!important;
-      letter-spacing:.1px;
-    }
-    .recent-table th{
-      font-size:11.5px!important;
-    }
-    .recent-table .champ-name{
-      font-size:13px!important;
-    }
-    .recent-table .champ-cell span[style*="font-size:11px"]{
-      font-size:12px!important;
-    }
-
-    /* 전체 참가자: 아이콘이 왼쪽에서 두 줄 높이를 먹고, 오른쪽에 이름/정보 2줄 */
-    .match-participants-line{
-      grid-template-columns:74px minmax(0,1fr) 38px minmax(0,1fr)!important;
-      align-items:center!important;
-      padding:10px 10px!important;
-      min-height:70px!important;
-    }
-    .match-participants-player{
-      display:flex!important;
-      flex-direction:row!important;
-      align-items:center!important;
-      justify-content:flex-start!important;
-      gap:9px!important;
-      min-width:0!important;
-      overflow:hidden!important;
-      text-align:left!important;
-    }
-    .match-participants-player.enemy{
-      flex-direction:row-reverse!important;
-      justify-content:flex-start!important;
-      text-align:right!important;
-    }
-    .match-participants-icon{
-      width:42px!important;
-      height:42px!important;
-      border-radius:10px!important;
-      object-fit:cover!important;
-      flex-shrink:0!important;
-      border:2px solid rgba(148,163,184,.38)!important;
-      background:#020617!important;
-    }
-    .active-match-lane .match-participants-icon{
-      border-color:rgba(96,165,250,.9)!important;
-      box-shadow:0 0 13px rgba(59,130,246,.32)!important;
-    }
-    .match-participants-info{
-      display:flex!important;
-      flex-direction:column!important;
-      justify-content:center!important;
-      gap:5px!important;
-      min-width:0!important;
-      flex:1!important;
-    }
-    .match-participants-player.enemy .match-participants-info{
-      align-items:flex-end!important;
-    }
-    .match-participants-mainline{
-      display:flex!important;
-      align-items:center!important;
-      gap:6px!important;
-      min-width:0!important;
-      max-width:100%!important;
-      line-height:1.15!important;
-    }
-    .match-participants-player.enemy .match-participants-mainline{
-      flex-direction:row-reverse!important;
-      justify-content:flex-start!important;
-    }
-    .match-participants-name{
-      font-size:13px!important;
-      color:#f8fafc!important;
-      overflow:hidden!important;
-      white-space:nowrap!important;
-      text-overflow:ellipsis!important;
-      max-width:100%!important;
-    }
-    .match-participants-champ{
-      color:#94a3b8!important;
-      font-size:11px!important;
-      overflow:hidden!important;
-      white-space:nowrap!important;
-      text-overflow:ellipsis!important;
-      max-width:96px!important;
-      flex-shrink:1!important;
-    }
-    .match-participants-statline{
-      display:flex!important;
-      align-items:center!important;
-      gap:6px!important;
-      flex-wrap:wrap!important;
-      max-width:100%!important;
-      color:#cbd5e1!important;
-      font-size:11.3px!important;
-      line-height:1.25!important;
-      font-weight:1000!important;
-    }
-    .match-participants-player.enemy .match-participants-statline{
-      justify-content:flex-end!important;
-    }
-    .match-participants-stat{
-      display:inline-flex!important;
-      align-items:center!important;
-      gap:3px!important;
-      padding:2px 6px!important;
-      border-radius:999px!important;
-      background:rgba(15,23,42,.72)!important;
-      border:1px solid rgba(148,163,184,.16)!important;
-      white-space:nowrap!important;
-    }
-    .match-participants-stat b{
-      color:#93c5fd!important;
-      font-weight:1000!important;
-    }
-    .match-participants-line.active-match-lane .match-participants-stat{
-      background:rgba(15,23,42,.88)!important;
-      border-color:rgba(96,165,250,.30)!important;
-    }
-    @media(max-width:760px){
-      .recent-table td:nth-child(4),
-      .recent-table td:nth-child(5),
-      .recent-table td:nth-child(6),
-      .recent-table td:nth-child(7),
-      .recent-table td:nth-child(10),
-      .recent-table td:nth-child(11),
-      .recent-table td:nth-child(12),
-      .recent-table td:nth-child(13){font-size:10px!important;}
-      .recent-table th{font-size:9px!important;}
-      .match-participants-line{
-        grid-template-columns:48px minmax(0,1fr) 20px minmax(0,1fr)!important;
-        padding:7px 6px!important;
-        gap:4px!important;
-        min-height:58px!important;
-      }
-      .match-participants-player{gap:5px!important;}
-      .match-participants-icon{width:32px!important;height:32px!important;border-radius:8px!important;}
-      .match-participants-name{font-size:10.5px!important;}
-      .match-participants-champ{font-size:9px!important;max-width:58px!important;display:inline-block!important;}
-      .match-participants-statline{gap:3px!important;font-size:8.4px!important;}
-      .match-participants-stat{padding:1px 3px!important;}
-    }
-  `;
-  document.head.appendChild(style);
-
-  function laneRank(lane){const idx=LANE_ORDER.indexOf(lane);return idx<0?999:idx;}
-  function participantFor(matchRows,lane){return matchRows.find(x=>x.lane===lane)||null;}
-  function statText(row){
-    if(!row)return `<span class="match-participants-stat"><b>K/D/A</b> -</span><span class="match-participants-stat"><b>KDA</b> -</span><span class="match-participants-stat"><b>킬관</b> -</span><span class="match-participants-stat"><b>점수</b> -</span>`;
-    const k=num(row.kills),d=num(row.deaths),a=num(row.assists),kdaValue=getKda(k,d,a),kpValue=kp(row),score=recentMatchScore(row);
-    return `<span class="match-participants-stat"><b>K/D/A</b> ${k}/${d}/${a}</span><span class="match-participants-stat"><b>KDA</b> ${kdaValue.toFixed(2)}</span><span class="match-participants-stat"><b>킬관</b> ${kpValue===null?'-':pct(kpValue)}</span><span class="match-participants-stat"><b>점수</b> ${score.toFixed(1)}</span>`;
-  }
-  function playerCard(row,cls){
+  function playerCardV13(row,cls){
     if(!row){
-      return `<img class="match-participants-icon" style="visibility:hidden" alt=""/><div class="match-participants-info"><div class="match-participants-mainline"><span class="match-participants-name" style="color:#64748b!important">-</span></div><div class="match-participants-statline">${statText(null)}</div></div>`;
+      return `<div class="participant-card-v13">
+        <div class="participant-icon-v13" style="opacity:.25"></div>
+        <div class="participant-main-v13"><span class="participant-name-v13" style="color:#64748b">-</span></div>
+        <div class="participant-stat-v13">-</div>
+      </div>`;
     }
-    const img=champImg(row.champion_name);
-    return `<img class="match-participants-icon" src="${img}" onerror="this.style.visibility='hidden'" alt=""/><div class="match-participants-info"><div class="match-participants-mainline"><span class="match-participants-name ${cls||''}" title="${htmlSafe(row.lol_name||'-')}">${htmlSafe(row.lol_name||'-')}</span><span class="match-participants-champ" title="${htmlSafe(row.champion_name||'-')}">${htmlSafe(row.champion_name||'-')}</span></div><div class="match-participants-statline">${statText(row)}</div></div>`;
+    return `<div class="participant-card-v13 ${cls||''}">
+      <img class="participant-icon-v13 champ-icon" src="${champImg(row.champion_name)}" onerror="this.style.display='none'"/>
+      <div class="participant-main-v13">
+        <span class="participant-name-v13" title="${htmlSafe(row.lol_name||'-')}">${htmlSafe(row.lol_name||'-')}</span>
+        <span class="participant-champ-v13" title="${htmlSafe(row.champion_name||'-')}">${htmlSafe(row.champion_name||'-')}</span>
+      </div>
+      <div class="participant-stat-v13">${statTextV13(row)}</div>
+    </div>`;
   }
-  function renderMatchParticipantsV12(row){
+  function renderMatchParticipantsV13(row){
     const matchRows=rows.filter(x=>String(x.match_id)===String(row.match_id));
     if(matchRows.length<2)return '';
-    const myTeam=matchRows.filter(x=>x.win===row.win).sort((a,b)=>laneRank(a.lane)-laneRank(b.lane));
-    const enemyTeam=matchRows.filter(x=>x.win!==row.win).sort((a,b)=>laneRank(a.lane)-laneRank(b.lane));
+    const myTeam=matchRows.filter(x=>x.win===row.win).sort((a,b)=>laneRankV13(a.lane)-laneRankV13(b.lane));
+    const enemyTeam=matchRows.filter(x=>x.win!==row.win).sort((a,b)=>laneRankV13(a.lane)-laneRankV13(b.lane));
     const laneSet=LANE_ORDER.filter(l=>myTeam.some(x=>x.lane===l)||enemyTeam.some(x=>x.lane===l));
     const lanes=laneSet.length?laneSet:LANE_ORDER;
-    return `<div class="match-participants-box">
-      <div class="match-participants-title">
+    return `<div class="match-participants-box-v13">
+      <div class="match-participants-title-v13">
         <span>전체 참가자</span>
-        <span class="match-participants-sub">챔피언 · K/D/A · KDA · 킬관여율 · 점수</span>
+        <span class="match-participants-sub-v13">아이콘 · K/D/A · KDA · 킬관여율 · 점수</span>
       </div>
-      <div class="match-participants-list">
+      <div class="match-participants-list-v13">
         ${lanes.map(lane=>{
-          const mine=participantFor(myTeam,lane);
-          const enemy=participantFor(enemyTeam,lane);
+          const mine=participantForV13(myTeam,lane);
+          const enemy=participantForV13(enemyTeam,lane);
           const active=lane===row.lane;
-          return `<div class="match-participants-line ${active?'active-match-lane':''}">
-            <div class="match-participants-lane">${laneIcon(lane)} <span>${LANE_LABELS[lane]||lane}</span></div>
-            <div class="match-participants-player">${playerCard(mine,mine&&mine.lol_name===row.lol_name?'match-participants-me':'')}</div>
-            <div class="match-participants-vs">VS</div>
-            <div class="match-participants-player enemy">${playerCard(enemy,active?'match-participants-opponent':'')}</div>
+          return `<div class="match-participants-line-v13 ${active?'active-match-lane':''}">
+            <div class="match-participants-lane-v13">${laneIcon(lane)} <span>${LANE_LABELS[lane]||lane}</span></div>
+            <div class="match-participants-player-v13">${playerCardV13(mine,mine&&mine.lol_name===row.lol_name?'participant-me-v13':'')}</div>
+            <div class="match-participants-vs-v13">VS</div>
+            <div class="match-participants-player-v13 enemy">${playerCardV13(enemy,active?'participant-opponent-v13':'')}</div>
           </div>`;
         }).join('')}
       </div>
@@ -3343,173 +3180,133 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
 
   recentTableRows=function(data,mode){
     if(!data.length)return`<div class="recent-empty">조건에 맞는 전적이 없습니다.</div>`;
-    return`<table class="detail-table recent-table"><colgroup><col style="width:5%"><col style="width:18%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:7%"><col style="width:18%"><col style="width:8%"><col style="width:7%"><col style="width:7%"><col style="width:8%"><col style="width:7%"></colgroup><thead><tr><th>승패</th><th>챔피언 / 플레이어</th><th>라인</th><th>K/D/A</th><th>KDA</th><th>킬관여율</th><th>점수</th><th>상대 챔프</th><th>상대 라인</th><th>상대 K/D/A</th><th>상대 KDA</th><th>상대 킬관여율</th><th>상대 점수</th></tr></thead><tbody>${data.map(r=>{const o=findOpponent(r),k=num(r.kills),d=num(r.deaths),a=num(r.assists),kdaValue=getKda(k,d,a),kpValue=kp(r),score=recentMatchScore(r),ok=o?num(o.kills):0,od=o?num(o.deaths):0,oa=o?num(o.assists):0,okda=o?getKda(ok,od,oa):0,okp=o?kp(o):null,oscore=o?recentMatchScore(o):0;return`<tr><td><div class="recent-result-block ${r.win?"result-win":"result-loss"}">${r.win?"승":"패"}</div></td><td style="text-align:left"><div class="champ-cell" title="${htmlSafe(r.champion_name||"-")} / ${htmlSafe(r.lol_name||"-")}"><img class="champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'"/><div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;"><span class="champ-name" style="width:100%;">${htmlSafe(r.champion_name||"-")}</span><span style="font-size:11px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${htmlSafe(r.lol_name||"-")}</span></div></div></td><td>${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||"-"}</td><td>${k}/${d}/${a}</td><td>${kdaValue.toFixed(2)}</td><td>${kpValue===null?"-":pct(kpValue)}</td><td>${score.toFixed(1)}</td><td style="text-align:left">${o?`<div class="champ-cell" title="${htmlSafe(o.champion_name||"-")} / ${htmlSafe(o.lol_name||"-")}"><img class="champ-icon" src="${champImg(o.champion_name)}" onerror="this.style.display='none'"/><div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;"><span class="champ-name" style="width:100%;">${htmlSafe(o.champion_name||"-")}</span><span style="font-size:11px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${htmlSafe(o.lol_name||"-")}</span></div></div>`:"-"}</td><td>${o?`${laneIcon(o.lane)} ${LANE_LABELS[o.lane]||o.lane||"-"}`:"-"}</td><td>${o?`${ok}/${od}/${oa}`:"-"}</td><td>${o?okda.toFixed(2):"-"}</td><td>${o?(okp===null?"-":pct(okp)):"-"}</td><td>${o?oscore.toFixed(1):"-"}</td></tr><tr class="match-participants-row"><td colspan="13">${renderMatchParticipantsV12(r)}</td></tr>`}).join("")}</tbody></table>`;
+    return`<table class="detail-table recent-table recent-table-v13">
+      <colgroup>
+        <col style="width:19%">
+        <col style="width:8%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:8%">
+        <col style="width:7%">
+        <col style="width:19%">
+        <col style="width:8%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:8%">
+        <col style="width:7%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>챔피언 / 플레이어</th>
+          <th>라인</th>
+          <th>K/D/A</th>
+          <th>KDA</th>
+          <th>킬관여율</th>
+          <th>점수</th>
+          <th>상대 챔프</th>
+          <th>상대 라인</th>
+          <th>상대 K/D/A</th>
+          <th>상대 KDA</th>
+          <th>상대 킬관여율</th>
+          <th>상대 점수</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map(r=>{
+          const o=findOpponent(r);
+          const k=num(r.kills),d=num(r.deaths),a=num(r.assists),kdaValue=getKda(k,d,a),kpValue=kp(r),score=recentMatchScore(r);
+          const ok=o?num(o.kills):0,od=o?num(o.deaths):0,oa=o?num(o.assists):0,okda=o?getKda(ok,od,oa):0,okp=o?kp(o):null,oscore=o?recentMatchScore(o):0;
+          return`
+            <tr class="${r.win?'recent-win-row':'recent-loss-row'}">
+              <td style="text-align:left">
+                <div class="champ-cell" title="${htmlSafe(r.champion_name||"-")} / ${htmlSafe(r.lol_name||"-")}">
+                  <img class="champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'"/>
+                  <div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+                    <span class="champ-name" style="width:100%;">${htmlSafe(r.champion_name||"-")}</span>
+                    <span class="recent-player-name">${htmlSafe(r.lol_name||"-")}</span>
+                  </div>
+                </div>
+              </td>
+              <td>${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||"-"}</td>
+              <td class="recent-number">${k}/${d}/${a}</td>
+              <td class="recent-number">${kdaValue.toFixed(2)}</td>
+              <td class="recent-kp">${kpValue===null?"-":pct(kpValue)}</td>
+              <td class="recent-number">${score.toFixed(1)}</td>
+              <td style="text-align:left">
+                ${o?`<div class="champ-cell" title="${htmlSafe(o.champion_name||"-")} / ${htmlSafe(o.lol_name||"-")}">
+                  <img class="champ-icon" src="${champImg(o.champion_name)}" onerror="this.style.display='none'"/>
+                  <div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+                    <span class="champ-name" style="width:100%;">${htmlSafe(o.champion_name||"-")}</span>
+                    <span class="recent-player-name">${htmlSafe(o.lol_name||"-")}</span>
+                  </div>
+                </div>`:"-"}
+              </td>
+              <td>${o?`${laneIcon(o.lane)} ${LANE_LABELS[o.lane]||o.lane||"-"}`:"-"}</td>
+              <td class="recent-number">${o?`${ok}/${od}/${oa}`:"-"}</td>
+              <td class="recent-number">${o?okda.toFixed(2):"-"}</td>
+              <td class="recent-kp">${o?(okp===null?"-":pct(okp)):"-"}</td>
+              <td class="recent-number">${o?oscore.toFixed(1):"-"}</td>
+            </tr>
+            <tr class="match-participants-row-v13"><td colspan="12">${renderMatchParticipantsV13(r)}</td></tr>
+          `;
+        }).join("")}
+      </tbody>
+    </table>`;
   };
-  window.recentTableRows=recentTableRows;
-})();
 
-
-/* ===== 2026-06-08 v13 패치: 전적 기본 접힘 + 가운데 화살표 슬라이드 + 승패칸 제거/행 배경 색상 ===== */
-(function(){
-  const recordOpen={recentMatchSection:false,championRecentMatchSection:false};
-
-  const style=document.createElement('style');
-  style.textContent=`
-    /* 전적 표: 승패 칸 제거 후 행 전체를 연한 승/패 색으로 표시 */
-    .recent-table .record-win-row td{
-      background:rgba(34,197,94,.115)!important;
-      border-top:1px solid rgba(34,197,94,.22)!important;
-      border-bottom:1px solid rgba(34,197,94,.18)!important;
-    }
-    .recent-table .record-loss-row td{
-      background:rgba(239,68,68,.105)!important;
-      border-top:1px solid rgba(239,68,68,.22)!important;
-      border-bottom:1px solid rgba(239,68,68,.18)!important;
-    }
-    .recent-table .record-win-row:hover td{background:rgba(34,197,94,.18)!important;}
-    .recent-table .record-loss-row:hover td{background:rgba(239,68,68,.165)!important;}
-    .recent-table .record-win-row td:first-child,
-    .recent-table .record-loss-row td:first-child{border-left:3px solid transparent!important;}
-    .recent-table .record-win-row td:first-child{border-left-color:rgba(34,197,94,.65)!important;}
-    .recent-table .record-loss-row td:first-child{border-left-color:rgba(239,68,68,.65)!important;}
-
-    /* 기존 전적창 숫자 가독성 확대 */
-    .recent-table th{font-size:12px!important;padding:10px 5px!important;}
-    .recent-table td{font-size:12.5px!important;padding:10px 6px!important;height:auto!important;}
-    .recent-table td:nth-child(3),.recent-table td:nth-child(4),.recent-table td:nth-child(5),.recent-table td:nth-child(6),
-    .recent-table td:nth-child(9),.recent-table td:nth-child(10),.recent-table td:nth-child(11),.recent-table td:nth-child(12){
-      font-size:13.5px!important;
-      letter-spacing:.1px;
-    }
-    .recent-table .champ-icon{width:44px!important;height:44px!important;border-radius:10px!important;}
-    .recent-table .champ-name{font-size:13px!important;}
-
-    /* 전체 전적 기본 접힘 + 가운데 화살표 */
-    .record-slide-toggle-wrap{
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      margin:8px 0 4px;
-      min-height:38px;
-    }
-    .record-slide-toggle{
-      width:42px;
-      height:32px;
-      border:none;
-      border-radius:999px;
-      background:rgba(37,99,235,.32);
-      color:#dbeafe;
-      font-size:22px;
-      font-weight:1000;
-      line-height:1;
-      cursor:pointer;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 14px rgba(59,130,246,.22);
-      transition:background .18s ease,transform .18s ease,filter .18s ease;
-      font-family:inherit;
-    }
-    .record-slide-toggle:hover{filter:brightness(1.18);background:rgba(37,99,235,.5);transform:translateY(-1px);}
-    .record-slide-toggle.open{background:rgba(37,99,235,.72);transform:rotate(180deg);}
-    .record-slide-body{
-      max-height:0;
-      opacity:0;
-      overflow:hidden;
-      transform:translateY(-8px);
-      transition:max-height .46s ease,opacity .25s ease,transform .46s ease,margin-top .46s ease;
-      margin-top:0;
-    }
-    .record-slide-body.open{
-      max-height:20000px;
-      opacity:1;
-      transform:translateY(0);
-      margin-top:10px;
-      overflow:visible;
-    }
-    .record-slide-empty-note{
-      text-align:center;
-      color:#94a3b8;
-      font-size:13px;
-      font-weight:1000;
-      margin-top:4px;
-    }
-    @media(max-width:760px){
-      .recent-table th{font-size:9.5px!important;padding:8px 3px!important;}
-      .recent-table td{font-size:9.5px!important;padding:8px 3px!important;}
-      .recent-table td:nth-child(3),.recent-table td:nth-child(4),.recent-table td:nth-child(5),.recent-table td:nth-child(6),
-      .recent-table td:nth-child(9),.recent-table td:nth-child(10),.recent-table td:nth-child(11),.recent-table td:nth-child(12){font-size:10.5px!important;}
-      .recent-table .champ-icon{width:32px!important;height:32px!important;border-radius:8px!important;}
-      .recent-table .champ-name{font-size:10px!important;}
-      .record-slide-toggle{width:38px;height:30px;font-size:20px;}
-    }
-  `;
-  document.head.appendChild(style);
-
-  function tableNoResult(){return`<div class="recent-empty">조건에 맞는 전적이 없습니다.</div>`;}
-
-  function recordTableOnly(data,mode){
-    if(!data.length)return tableNoResult();
-    return`<table class="detail-table recent-table"><colgroup><col style="width:20%"><col style="width:8%"><col style="width:8%"><col style="width:7%"><col style="width:8%"><col style="width:7%"><col style="width:20%"><col style="width:8%"><col style="width:8%"><col style="width:7%"><col style="width:8%"><col style="width:7%"></colgroup><thead><tr><th>챔피언 / 플레이어</th><th>라인</th><th>K/D/A</th><th>KDA</th><th>킬관여율</th><th>점수</th><th>상대 챔프</th><th>상대 라인</th><th>상대 K/D/A</th><th>상대 KDA</th><th>상대 킬관여율</th><th>상대 점수</th></tr></thead><tbody>${data.map(r=>{const o=findOpponent(r),k=num(r.kills),d=num(r.deaths),a=num(r.assists),kdaValue=getKda(k,d,a),kpValue=kp(r),score=recentMatchScore(r),ok=o?num(o.kills):0,od=o?num(o.deaths):0,oa=o?num(o.assists):0,okda=o?getKda(ok,od,oa):0,okp=o?kp(o):null,oscore=o?recentMatchScore(o):0;return`<tr class="${r.win?'record-win-row':'record-loss-row'}"><td style="text-align:left"><div class="champ-cell" title="${htmlSafe(r.champion_name||'-')} / ${htmlSafe(r.lol_name||'-')}"><img class="champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'"/><div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;"><span class="champ-name" style="width:100%;">${htmlSafe(r.champion_name||'-')}</span><span style="font-size:11px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${htmlSafe(r.lol_name||'-')}</span></div></div></td><td>${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||'-'}</td><td>${k}/${d}/${a}</td><td>${kdaValue.toFixed(2)}</td><td>${kpValue===null?'-':pct(kpValue)}</td><td>${score.toFixed(1)}</td><td style="text-align:left">${o?`<div class="champ-cell" title="${htmlSafe(o.champion_name||'-')} / ${htmlSafe(o.lol_name||'-')}"><img class="champ-icon" src="${champImg(o.champion_name)}" onerror="this.style.display='none'"/><div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;"><span class="champ-name" style="width:100%;">${htmlSafe(o.champion_name||'-')}</span><span style="font-size:11px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${htmlSafe(o.lol_name||'-')}</span></div></div>`:'-'}</td><td>${o?`${laneIcon(o.lane)} ${LANE_LABELS[o.lane]||o.lane||'-'}`:'-'}</td><td>${o?`${ok}/${od}/${oa}`:'-'}</td><td>${o?okda.toFixed(2):'-'}</td><td>${o?(okp===null?'-':pct(okp)):'-'}</td><td>${o?oscore.toFixed(1):'-'}</td></tr><tr class="match-participants-row"><td colspan="12">${renderMatchParticipantsV12(r)}</td></tr>`}).join('')}</tbody></table>`;
-  }
-
-  recentTableRows=function(data,mode){return recordTableOnly(data,mode)};
-
-  function renderRecordSlide(areaId,data,mode){
+  function renderSlideRecordAreaV13(areaId,html){
     const area=document.getElementById(areaId);
     if(!area)return;
-    const secId=areaId==='championRecentMatchArea'?'championRecentMatchSection':'recentMatchSection';
-    const open=!!recordOpen[secId];
-    if(!data.length){
-      area.innerHTML=`<div class="record-slide-empty-note">조건에 맞는 전적이 없습니다.</div>`;
-      return;
-    }
-    area.innerHTML=`<div class="record-slide-toggle-wrap"><button class="record-slide-toggle ${open?'open':''}" type="button" onclick="toggleRecordSlide('${secId}')">⌄</button></div><div class="record-slide-body ${open?'open':''}" id="${secId}SlideBody">${recordTableOnly(data,mode)}</div>`;
+    area.innerHTML=`<div class="record-slide-toggle-wrap"><button class="record-slide-toggle" type="button" onclick="toggleRecordSlideV13(this)">⌄</button></div><div class="record-slide-content">${html}</div>`;
   }
 
-  function recentDataForV13(mode,name,full){
+  window.toggleRecordSlideV13=function(btn){
+    const content=btn.closest('.record-slide-toggle-wrap')?.nextElementSibling;
+    if(!content)return;
+    const open=content.classList.toggle('open');
+    btn.classList.toggle('open',open);
+    btn.textContent='⌄';
+  };
+
+  function dataForRecentV13(mode,name){
     let d=mode==='champion'?rows.filter(r=>r.champion_name===name):rows.filter(r=>r.lol_name===name);
-    if(recentLane!=='ALL')d=d.filter(r=>r.lane===recentLane);
+    if(recentLane!=="ALL")d=d.filter(r=>r.lane===recentLane);
     if(recentChampionSearch){
       const q=recentChampionSearch.toLowerCase();
-      d=mode==='champion'?d.filter(r=>(r.lol_name||'').toLowerCase().includes(q)):d.filter(r=>(r.champion_name||'').toLowerCase().includes(q));
+      d=mode==='champion'
+        ? d.filter(r=>(r.lol_name||"").toLowerCase().includes(q))
+        : d.filter(r=>(r.champion_name||"").toLowerCase().includes(q));
     }
-    d=d.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
-    return full?d:d.slice(0,10);
+    return d.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   }
 
-  window.toggleRecordSlide=function(secId){
-    recordOpen[secId]=!recordOpen[secId];
-    const btn=document.querySelector(`#${secId} .record-slide-toggle`);
-    const body=document.getElementById(`${secId}SlideBody`);
-    if(btn)btn.classList.toggle('open',recordOpen[secId]);
-    if(body)body.classList.toggle('open',recordOpen[secId]);
-  };
-
-  const oldRenderRecent=renderRecentMatchArea;
   renderRecentMatchArea=function(playerName){
-    const sec=document.getElementById('recentMatchSection');
-    if(sec){sec.dataset.smartName=playerName||'';sec.dataset.smartMode='player';sec.classList.add('smart-scroll-section','open');}
-    const full=sec?.classList.contains('smart-full-view');
-    renderRecordSlide('recentMatchArea',recentDataForV13('player',playerName,full),'player');
+    const html=recentTableRows(dataForRecentV13('player',playerName),'player');
+    renderSlideRecordAreaV13('recentMatchArea',html);
   };
-
-  const oldRenderChampionRecent=renderChampionRecentMatchArea;
   renderChampionRecentMatchArea=function(championName){
-    const sec=document.getElementById('championRecentMatchSection');
-    if(sec){sec.dataset.smartName=championName||'';sec.dataset.smartMode='champion';sec.classList.add('smart-scroll-section','open');}
-    const full=sec?.classList.contains('smart-full-view');
-    renderRecordSlide('championRecentMatchArea',recentDataForV13('champion',championName,full),'champion');
+    const html=recentTableRows(dataForRecentV13('champion',championName),'champion');
+    renderSlideRecordAreaV13('championRecentMatchArea',html);
   };
 
-  // 필터/검색을 바꿔도 현재 접힘/펼침 상태 유지
   setRecentLane=function(lane,playerName){
     recentLane=lane;
     const sec=document.getElementById('recentMatchSection');
-    if(sec){const c=sec.querySelector('.collapsible-content');if(c)c.innerHTML=recentControls(playerName);}
+    if(sec){
+      sec.classList.add('open');
+      const c=sec.querySelector('.collapsible-content');
+      if(c)c.innerHTML=recentControls(playerName);
+    }
     renderRecentMatchArea(playerName);
   };
   setChampionRecentLane=function(lane,championName){
     recentLane=lane;
     const sec=document.getElementById('championRecentMatchSection');
-    if(sec){const c=sec.querySelector('.collapsible-content');if(c)c.innerHTML=championRecentControls(championName);}
+    if(sec){
+      sec.classList.add('open');
+      const c=sec.querySelector('.collapsible-content');
+      if(c)c.innerHTML=championRecentControls(championName);
+    }
     renderChampionRecentMatchArea(championName);
   };
   runRecentSearch=function(target,value){
@@ -3522,12 +3319,27 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
     else renderRecentMatchArea(target);
   };
 
-  // 상세페이지 새로 열 때는 기본 접힘으로 초기화
-  const prevShowDetail=showDetail;
-  showDetail=function(html){
-    recordOpen.recentMatchSection=false;
-    recordOpen.championRecentMatchSection=false;
-    prevShowDetail(html);
+  /* 라인별/모스트에서 점프했을 때는 사용자가 누른 것이므로 전적을 열린 상태로 보여줌 */
+  const oldOpenRecentByFilterV13=typeof openRecentByFilter==='function'?openRecentByFilter:null;
+  openRecentByFilter=function(mode,name,lane,search){
+    recentLane=lane||'ALL';
+    recentChampionSearch=search||'';
+    const secId=mode==='player'?'recentMatchSection':'championRecentMatchSection';
+    const sec=document.getElementById(secId);
+    if(sec){
+      sec.classList.add('open');
+      const c=sec.querySelector('.collapsible-content');
+      if(c)c.innerHTML=mode==='player'?recentControls(name):championRecentControls(name);
+      if(mode==='player')renderRecentMatchArea(name);else renderChampionRecentMatchArea(name);
+      const btn=sec.querySelector('.record-slide-toggle');
+      const cont=sec.querySelector('.record-slide-content');
+      if(btn&&cont){btn.classList.add('open');cont.classList.add('open');}
+      const d=document.getElementById('detailPage');
+      const top=Math.max(0,sec.offsetTop-100);
+      if(d&&d.style.display!=='none')d.scrollTo({top,behavior:'smooth'});else window.scrollTo({top,behavior:'smooth'});
+      return;
+    }
+    if(oldOpenRecentByFilterV13)oldOpenRecentByFilterV13(mode,name,lane,search);
   };
 
   window.recentTableRows=recentTableRows;
@@ -3536,8 +3348,164 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
   window.setRecentLane=setRecentLane;
   window.setChampionRecentLane=setChampionRecentLane;
   window.runRecentSearch=runRecentSearch;
-  window.showDetail=showDetail;
+  window.openRecentByFilter=openRecentByFilter;
 })();
+
+
+
+/* ===== v14 hotfix: 최근전적 창 열림 복구 + 중앙 화살표 확실히 표시 ===== */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    #recentMatchSection,
+    #championRecentMatchSection{display:block!important;}
+    #recentMatchSection .collapsible-content,
+    #championRecentMatchSection .collapsible-content{
+      display:block!important;
+      max-height:none!important;
+      opacity:1!important;
+      overflow:visible!important;
+      margin-top:10px!important;
+    }
+    #recentMatchSection .collapsible-header,
+    #championRecentMatchSection .collapsible-header{
+      cursor:default!important;
+      justify-content:center!important;
+      text-align:center!important;
+    }
+    #recentMatchSection .collapse-toggle,
+    #championRecentMatchSection .collapse-toggle{
+      display:none!important;
+    }
+    .record-slide-toggle-wrap{
+      display:flex!important;
+      justify-content:center!important;
+      align-items:center!important;
+      width:100%!important;
+      margin:0 auto 8px!important;
+      min-height:32px!important;
+    }
+    .record-slide-toggle{
+      display:inline-flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      width:46px!important;
+      height:30px!important;
+      border:none!important;
+      border-radius:999px!important;
+      background:rgba(37,99,235,.88)!important;
+      color:white!important;
+      font-size:18px!important;
+      font-weight:1000!important;
+      cursor:pointer!important;
+      font-family:inherit!important;
+      line-height:1!important;
+      box-shadow:0 0 0 1px rgba(147,197,253,.35),0 8px 18px rgba(0,0,0,.18)!important;
+      transition:transform .24s ease,filter .18s ease!important;
+    }
+    .record-slide-toggle:hover{filter:brightness(1.18)!important;}
+    .record-slide-toggle.open{transform:rotate(180deg)!important;}
+    .record-slide-content{
+      max-height:0!important;
+      opacity:0!important;
+      overflow:hidden!important;
+      margin-top:0!important;
+      transition:max-height .46s ease,opacity .24s ease,margin-top .36s ease!important;
+    }
+    .record-slide-content.open{
+      max-height:30000px!important;
+      opacity:1!important;
+      margin-top:12px!important;
+      overflow:visible!important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  const oldCollapsibleSectionV14=typeof collapsibleSection==='function'?collapsibleSection:null;
+  collapsibleSection=function(id,title,content){
+    if(id==='recentMatchSection'||id==='championRecentMatchSection'){
+      return `<div id="${id}" class="section collapsible-section open smart-scroll-section"><div class="collapsible-header"><div class="section-title">${title}</div></div><div class="collapsible-content">${content}</div></div>`;
+    }
+    return oldCollapsibleSectionV14?oldCollapsibleSectionV14(id,title,content):`<div id="${id}" class="section collapsible-section"><div class="collapsible-header" onclick="toggleCollapsible('${id}')"><div class="section-title">${title}</div><button class="collapse-toggle" type="button" onclick="event.stopPropagation();toggleCollapsible('${id}')">펼치기 <span class="collapse-arrow">⌄</span></button></div><div class="collapsible-content">${content}</div></div>`;
+  };
+
+  window.toggleRecordSlideV13=function(btn){
+    const content=btn.closest('.record-slide-toggle-wrap')?.nextElementSibling;
+    if(!content)return;
+    const open=!content.classList.contains('open');
+    content.classList.toggle('open',open);
+    btn.classList.toggle('open',open);
+    btn.textContent='⌄';
+  };
+
+  function renderSlideRecordAreaV14(areaId,html){
+    const area=document.getElementById(areaId);
+    if(!area)return;
+    area.innerHTML=`<div class="record-slide-toggle-wrap"><button class="record-slide-toggle" type="button" onclick="toggleRecordSlideV13(this)">⌄</button></div><div class="record-slide-content">${html}</div>`;
+  }
+  function dataForRecentV14(mode,name){
+    let d=mode==='champion'?rows.filter(r=>r.champion_name===name):rows.filter(r=>r.lol_name===name);
+    if(recentLane!=="ALL")d=d.filter(r=>r.lane===recentLane);
+    if(recentChampionSearch){
+      const q=recentChampionSearch.toLowerCase();
+      d=mode==='champion'?d.filter(r=>(r.lol_name||"").toLowerCase().includes(q)):d.filter(r=>(r.champion_name||"").toLowerCase().includes(q));
+    }
+    return d.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  }
+  renderRecentMatchArea=function(playerName){
+    renderSlideRecordAreaV14('recentMatchArea',recentTableRows(dataForRecentV14('player',playerName),'player'));
+  };
+  renderChampionRecentMatchArea=function(championName){
+    renderSlideRecordAreaV14('championRecentMatchArea',recentTableRows(dataForRecentV14('champion',championName),'champion'));
+  };
+  setRecentLane=function(lane,playerName){
+    recentLane=lane;
+    const sec=document.getElementById('recentMatchSection');
+    if(sec){sec.classList.add('open');const c=sec.querySelector('.collapsible-content');if(c)c.innerHTML=recentControls(playerName);}
+    renderRecentMatchArea(playerName);
+  };
+  setChampionRecentLane=function(lane,championName){
+    recentLane=lane;
+    const sec=document.getElementById('championRecentMatchSection');
+    if(sec){sec.classList.add('open');const c=sec.querySelector('.collapsible-content');if(c)c.innerHTML=championRecentControls(championName);}
+    renderChampionRecentMatchArea(championName);
+  };
+  runRecentSearch=function(target,value){
+    recentChampionSearch=(value||'').trim();
+    const i=document.getElementById('recentSearchInput');
+    if(i)i.value=recentChampionSearch;
+    const b=document.getElementById('recentSuggestBox');
+    if(b){b.style.display='none';b.innerHTML='';}
+    if(document.getElementById('championRecentMatchArea'))renderChampionRecentMatchArea(target);
+    else renderRecentMatchArea(target);
+  };
+  openRecentByFilter=function(mode,name,lane,search){
+    recentLane=lane||'ALL';
+    recentChampionSearch=search||'';
+    const secId=mode==='player'?'recentMatchSection':'championRecentMatchSection';
+    const sec=document.getElementById(secId);
+    if(sec){
+      sec.classList.add('open');
+      const c=sec.querySelector('.collapsible-content');
+      if(c)c.innerHTML=mode==='player'?recentControls(name):championRecentControls(name);
+      if(mode==='player')renderRecentMatchArea(name);else renderChampionRecentMatchArea(name);
+      const btn=sec.querySelector('.record-slide-toggle');
+      const cont=sec.querySelector('.record-slide-content');
+      if(btn&&cont){btn.classList.add('open');cont.classList.add('open');}
+      const d=document.getElementById('detailPage');
+      const top=Math.max(0,sec.offsetTop-100);
+      if(d&&d.style.display!=='none')d.scrollTo({top,behavior:'smooth'});else window.scrollTo({top,behavior:'smooth'});
+    }
+  };
+  window.collapsibleSection=collapsibleSection;
+  window.renderRecentMatchArea=renderRecentMatchArea;
+  window.renderChampionRecentMatchArea=renderChampionRecentMatchArea;
+  window.setRecentLane=setRecentLane;
+  window.setChampionRecentLane=setChampionRecentLane;
+  window.runRecentSearch=runRecentSearch;
+  window.openRecentByFilter=openRecentByFilter;
+})();
+
 
 loadData();setInterval(loadData,30000);
 </script>
