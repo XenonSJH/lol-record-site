@@ -6401,6 +6401,108 @@ loadData();setInterval(loadData,30000);
   [0,200,600].forEach(ms=>setTimeout(()=>{try{if(currentTab==='internalRecord')window.renderInternalRecordV23();}catch(e){}},ms));
 })();
 
+
+
+/* ===== V29: 내전 기록 블루팀/레드팀 기준 표시 + 밴 대칭 배치 ===== */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    .team-result-pill-v28.blue,.team-result-pill-v29.blue{background:rgba(59,130,246,.16)!important;color:#bfdbfe!important;border-color:rgba(96,165,250,.48)!important;}
+    .team-result-pill-v28.red,.team-result-pill-v29.red{background:rgba(239,68,68,.15)!important;color:#fecaca!important;border-color:rgba(248,113,113,.42)!important;}
+    .team-result-pill-v29 .team-result-text-v29{opacity:.82;font-size:11px;margin-left:4px;}
+    .participant-card-v20.blue-side-v29{border-left:3px solid rgba(96,165,250,.78)!important;padding-left:8px!important;}
+    .participant-card-v20.enemy.red-side-v29{border-right:3px solid rgba(248,113,113,.75)!important;padding-right:8px!important;}
+    .participant-card-v20.win-side-v28,.participant-card-v20.enemy.loss-side-v28{border-left:none!important;border-right:none!important;padding-left:0!important;padding-right:0!important;}
+    .ban-team-v28.blue-ban-v29{border-color:rgba(96,165,250,.28)!important;background:rgba(30,64,175,.15)!important;}
+    .ban-team-v28.red-ban-v29{border-color:rgba(248,113,113,.26)!important;background:rgba(127,29,29,.14)!important;text-align:right!important;}
+    .ban-team-v28.red-ban-v29 .ban-title-v28{justify-content:flex-end!important;color:#fecaca!important;}
+    .ban-team-v28.blue-ban-v29 .ban-title-v28{color:#bfdbfe!important;}
+    .ban-team-v28.red-ban-v29 .ban-list-v28{justify-content:flex-end!important;}
+    .internal-match-bans-v28{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:stretch!important;}
+    @media(max-width:760px){
+      .team-result-pill-v29 .team-result-text-v29{display:block;margin-left:0;margin-top:2px;font-size:9px;}
+      .internal-match-bans-v28{grid-template-columns:1fr!important;}
+    }
+  `;
+  document.head.appendChild(style);
+
+  function laneRankV29(l){return LANE_ORDER.indexOf(l)===-1?99:LANE_ORDER.indexOf(l);}
+  function rowOrderV29(r,i){
+    const id=num(r.id);
+    if(id) return id;
+    const t=new Date(r.created_at||0).getTime();
+    return t || i;
+  }
+  function orderedMatchRowsV29(arr){
+    return [...(arr||[])].map((r,i)=>({r,i})).sort((a,b)=>rowOrderV29(a.r,a.i)-rowOrderV29(b.r,b.i)).map(x=>x.r);
+  }
+  function matchGroupsV29(){
+    const map=new Map();
+    rows.forEach(r=>{if(!map.has(r.match_id))map.set(r.match_id,[]);map.get(r.match_id).push(r);});
+    return [...map.entries()].map(([id,arr])=>({
+      id,
+      arr:orderedMatchRowsV29(arr),
+      created:arr.map(x=>new Date(x.created_at||0).getTime()).filter(Boolean).sort((a,b)=>b-a)[0]||0
+    })).sort((a,b)=>b.created-a.created);
+  }
+  function statTextV29(row){
+    if(!row)return '-';
+    const k=num(row.kills),d=num(row.deaths),a=num(row.assists),kdaValue=getKda(k,d,a),kpv=kp(row),score=recentMatchScore(row);
+    return `${k}/${d}/${a} · KDA ${kdaValue.toFixed(2)} · ${kpv===null?'-':pct(kpv)} · 캐리 ${score.toFixed(1)}점`;
+  }
+  function honeyIconV29(row){
+    if(!row||!row.champion_name)return `<div class="participant-icon-v20"></div>`;
+    if(typeof window.honeyPortrait==='function')return window.honeyPortrait(row.champion_name,row.lane,false);
+    return `<img class="participant-icon-v20 champ-icon" src="${champImg(row.champion_name)}" onerror="this.style.display='none'"/>`;
+  }
+  function participantCardV29(row,enemy=false,sideClass=''){
+    if(!row)return `<div class="participant-card-v20 ${enemy?'enemy':''} participant-empty-v20"><div class="participant-icon-v20"></div><div class="participant-main-v20"><span class="participant-name-v20">-</span><span class="participant-champ-v20">-</span></div><div class="participant-stat-v20">-</div></div>`;
+    return `<div class="participant-card-v20 ${enemy?'enemy':''} ${sideClass}">${honeyIconV29(row)}<div class="participant-main-v20"><span class="participant-name-v20" title="${htmlSafe(row.lol_name||'-')}">${htmlSafe(row.lol_name||'-')}</span><span class="participant-champ-v20" title="${htmlSafe(row.champion_name||'-')}">${htmlSafe(row.champion_name||'-')}</span></div><div class="participant-stat-v20">${statTextV29(row)}</div></div>`;
+  }
+  function internalLineV29(blueRow,redRow,lane){
+    return `<div class="internal-match-line-v24"><div>${participantCardV29(blueRow,false,'blue-side-v29')}</div><div class="internal-match-center-v24">${laneIcon(lane)||''}</div><div>${participantCardV29(redRow,true,'red-side-v29')}</div></div>`;
+  }
+  function teamResultTextV29(team){
+    if(!team.length)return '';
+    const wins=team.filter(x=>x.win===true).length;
+    const losses=team.length-wins;
+    if(wins>losses)return '승리';
+    if(losses>wins)return '패배';
+    return '';
+  }
+  function banChipV29(b){
+    const name=b?.champion_name||'-';
+    const icon=typeof window.honeyPortrait==='function'?window.honeyPortrait(name,'',false):`<img class="champ-icon" src="${champImg(name)}" onerror="this.style.display='none'"/>`;
+    return `<span class="ban-chip-v28" title="${htmlSafe(name)}">${icon}<span class="ban-chip-name-v28">${htmlSafe(name)}</span></span>`;
+  }
+  function bansHtmlV29(matchId){
+    const arr=(bans||[]).filter(b=>String(b.match_id)===String(matchId)&&b.champion_name);
+    const blue=arr.filter(b=>String(b.team_id)==='100'||String(b.team_id).toLowerCase()==='blue');
+    const red=arr.filter(b=>String(b.team_id)==='200'||String(b.team_id).toLowerCase()==='red');
+    const unknown=arr.filter(b=>!blue.includes(b)&&!red.includes(b));
+    const blueList=blue.length?blue:unknown.slice(0,5);
+    const redList=red.length?red:unknown.slice(5,10);
+    if(!arr.length)return `<div class="internal-match-bans-v28"><div class="ban-team-v28" style="grid-column:1/-1"><div class="ban-title-v28">🚫 밴 챔피언</div><div class="ban-empty-v28">밴 기록 없음</div></div></div>`;
+    return `<div class="internal-match-bans-v28"><div class="ban-team-v28 blue-ban-v29"><div class="ban-title-v28">🔵 블루팀 밴</div><div class="ban-list-v28">${blueList.length?blueList.map(banChipV29).join(''):`<span class="ban-empty-v28">밴 기록 없음</span>`}</div></div><div class="ban-team-v28 red-ban-v29"><div class="ban-title-v28">🔴 레드팀 밴</div><div class="ban-list-v28">${redList.length?redList.map(banChipV29).join(''):`<span class="ban-empty-v28">밴 기록 없음</span>`}</div></div></div>`;
+  }
+  function internalCardV29(match){
+    const ordered=orderedMatchRowsV29(match.arr);
+    const blueTeam=ordered.slice(0,5).sort((a,b)=>laneRankV29(a.lane)-laneRankV29(b.lane));
+    const redTeam=ordered.slice(5,10).sort((a,b)=>laneRankV29(a.lane)-laneRankV29(b.lane));
+    const blueResult=teamResultTextV29(blueTeam),redResult=teamResultTextV29(redTeam);
+    const date=match.created?new Date(match.created).toLocaleString('ko-KR'):'';
+    return `<div class="internal-match-card-v24"><div class="internal-match-head-v24"><div class="internal-match-id-v24">Game ID: ${htmlSafe(match.id)}</div><div class="internal-match-date-v24">${htmlSafe(date)}</div></div><div class="internal-match-result-head-v28"><div style="text-align:left"><span class="team-result-pill-v28 team-result-pill-v29 blue">블루팀${blueResult?` <span class="team-result-text-v29">${blueResult}</span>`:''}</span></div><div class="team-result-mid-v28">라인</div><div style="text-align:right"><span class="team-result-pill-v28 team-result-pill-v29 red">레드팀${redResult?` <span class="team-result-text-v29">${redResult}</span>`:''}</span></div></div>${LANE_ORDER.map(l=>internalLineV29(blueTeam.find(x=>x.lane===l),redTeam.find(x=>x.lane===l),l)).join('')}${bansHtmlV29(match.id)}</div>`;
+  }
+  window.renderInternalRecordV23=function(){
+    const q=currentTab==='internalRecord'?((searchInput?.value||'').trim().toLowerCase()):'';
+    const box=document.getElementById('internalRecordListV23');if(!box)return;
+    const list=matchGroupsV29().filter(m=>!q||String(m.id||'').toLowerCase().includes(q));
+    box.innerHTML=list.length?list.map(internalCardV29).join(''):`<div class="section">검색 결과가 없습니다.</div>`;
+  };
+  window.renderInternalRecordV29=window.renderInternalRecordV23;
+  [0,200,600].forEach(ms=>setTimeout(()=>{try{if(currentTab==='internalRecord')window.renderInternalRecordV23();}catch(e){}},ms));
+})();
+
 </script>
 </body>
 </html>
