@@ -5752,6 +5752,267 @@ loadData();setInterval(loadData,30000);
   setTimeout(()=>{cleanExtraTabs();syncInternalSearchText();setMainPlaceholder('player');document.getElementById('recordFullInlineV23')?.remove();},0);
 })();
 
+/* ===== final polish patch: smoother slides / tighter records / one internal search ===== */
+(function(){
+  const text={
+    player:'\uD50C\uB808\uC774\uC5B4 \uC774\uB984 \uAC80\uC0C9...',
+    champion:'\uCC54\uD53C\uC5B8 \uC774\uB984 \uAC80\uC0C9...',
+    match:'\uB9E4\uCE58 ID \uAC80\uC0C9...',
+    internal:'\uB0B4\uC804 \uAE30\uB85D',
+    close:'\uB2EB\uAE30',
+    total:'\uC804\uCCB4',
+    records:'\uAC1C \uAE30\uB85D',
+    allRecord:'\uC804\uCCB4 \uC804\uC801\uBCF4\uAE30'
+  };
+  const style=document.createElement('style');
+  style.textContent=`
+    html{scroll-behavior:smooth;}
+    .bandle-side-page{
+      transition:transform .72s cubic-bezier(.16,1,.3,1),opacity .44s ease!important;
+      will-change:transform,opacity!important;
+    }
+    .bandle-side-page.show{transform:translateX(0)!important;opacity:1!important;}
+    .bandle-side-page.hide-right{transform:translateX(100vw)!important;opacity:.98!important;}
+    .detail-page.slide-detail-only,.detail-page.slide-in-right,.main-card,.participants-slide-v20,.record-detail-panel{
+      transition-duration:.62s!important;
+      transition-timing-function:cubic-bezier(.16,1,.3,1)!important;
+    }
+    .match-participants-row-v20 .participants-slide-v20{
+      transition:max-height .62s cubic-bezier(.16,1,.3,1),opacity .34s ease,transform .62s cubic-bezier(.16,1,.3,1)!important;
+    }
+    .record-detail-panel{
+      transition:max-height .62s cubic-bezier(.16,1,.3,1),opacity .34s ease,transform .62s cubic-bezier(.16,1,.3,1),margin-top .62s cubic-bezier(.16,1,.3,1),padding .62s cubic-bezier(.16,1,.3,1)!important;
+    }
+    .recent-table,.recent-table-v20,.bandle-side-body .recent-table,.best-record-area .recent-table{
+      border-spacing:0 2px!important;
+      border-collapse:separate!important;
+    }
+    .recent-table-v20 tbody tr:not(.match-participants-row-v20) td,
+    .bandle-side-body .recent-table-v20 tbody tr:not(.match-participants-row-v20) td,
+    .best-record-area .recent-table-v20 tbody tr:not(.match-participants-row-v20) td{
+      padding-top:6px!important;
+      padding-bottom:6px!important;
+      height:48px!important;
+    }
+    .recent-table-v20 .champ-icon{width:40px!important;height:40px!important;border-radius:9px!important;}
+    .bandle-side-body .recent-table-v20 .champ-icon{width:38px!important;height:38px!important;}
+    .best-record-area .recent-table-v20 .champ-icon{width:38px!important;height:38px!important;}
+    .participants-slide-v20{margin-top:1px!important;}
+    #internalRecordMainV23 .internal-record-search-wrap-v22{display:none!important;}
+    #matchTab,#internalRecordTabV22{display:none!important;}
+    .champ-icon,.small-champ-icon,.participant-icon-v20,.player-avatar{
+      border-width:2px!important;
+      border-style:solid!important;
+      border-color:rgba(148,163,184,.75)!important;
+      box-sizing:border-box!important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  function tierColorFinal(t){
+    return ({OP:'#ff334e',S:'#ff8a1c',A:'#ffe14d',B:'#31e981',C:'#60a5fa'}[t]||'#60a5fa');
+  }
+  function tierClassFinal(t){
+    return ({OP:'tier-red',S:'tier-orange',A:'tier-yellow',B:'tier-green',C:'tier-blue'}[t]||'tier-blue');
+  }
+  function tiersForNameFinal(name,lane){
+    try{
+      let list=getAllChampionComboList().filter(c=>c.name===name && (!lane||lane==='ALL'||c.displayLane===lane)).map(c=>c.tier).filter(Boolean);
+      if(!list.length)list=getAllChampionComboList().filter(c=>c.name===name).map(c=>c.tier).filter(Boolean);
+      return list.length?list:['C'];
+    }catch(e){return ['C'];}
+  }
+  function reverseChampMapFinal(){
+    const rev={};
+    Object.entries(championNameToId||{}).forEach(([name,id])=>{rev[String(id).toLowerCase()]=name;});
+    return rev;
+  }
+  function inferChampNameFinal(img,rev){
+    const title=img.closest('[title]')?.getAttribute('title')||'';
+    if(title)return title.split('/')[0].trim();
+    const src=decodeURIComponent(img.getAttribute('src')||'');
+    const file=(src.split('/').pop()||'').replace(/\.(png|jpg|jpeg|webp).*$/i,'').toLowerCase();
+    return rev[file]||img.closest('.champ-cell,.opponent-champ-cell-v20')?.querySelector('.champ-name')?.textContent?.trim()||'';
+  }
+  function paintIconBordersFinal(root=document){
+    const rev=reverseChampMapFinal();
+    root.querySelectorAll('img.champ-icon,img.small-champ-icon,img.participant-icon-v20').forEach(img=>{
+      const name=inferChampNameFinal(img,rev);
+      if(!name)return;
+      const tiers=tiersForNameFinal(name);
+      const first=tiers[0]||'C';
+      ['tier-red','tier-orange','tier-yellow','tier-green','tier-blue'].forEach(c=>img.classList.remove(c));
+      img.classList.add(tierClassFinal(first));
+      img.style.borderColor=tierColorFinal(first);
+      img.style.boxShadow=`0 0 0 1px rgba(15,23,42,.7),0 0 12px ${tierColorFinal(first)}66`;
+    });
+  }
+
+  function cleanInternalFinal(){
+    document.querySelectorAll('#matchTab,#internalRecordTabV22').forEach(x=>x.remove());
+    const tabs=[...document.querySelectorAll('#internalRecordTabV23')];
+    tabs.slice(1).forEach(x=>x.remove());
+    const tab=document.getElementById('internalRecordTabV23');
+    if(tab)tab.textContent=text.internal;
+    const oldValue=document.getElementById('internalRecordSearchInputV23')?.value||'';
+    const lower=document.querySelector('#internalRecordMainV23 .internal-record-search-wrap-v22');
+    if(lower)lower.remove();
+    const page=document.getElementById('internalRecordMainV23');
+    if(page&&!document.getElementById('internalRecordSearchInputV23')){
+      const hidden=document.createElement('input');
+      hidden.type='hidden';
+      hidden.id='internalRecordSearchInputV23';
+      hidden.value=oldValue;
+      page.prepend(hidden);
+    }
+  }
+  function setPlaceholderFinal(type){
+    const input=document.getElementById('searchInput');
+    if(!input)return;
+    input.placeholder=type==='champion'?text.champion:type==='internal'?text.match:text.player;
+  }
+  function currentInternalQueryFinal(){
+    const top=document.getElementById('searchInput');
+    const lower=document.getElementById('internalRecordSearchInputV23');
+    return (document.getElementById('internalRecordTabV23')?.classList.contains('active')?(top?.value||''):(lower?.value||'')).toLowerCase();
+  }
+  if(typeof window.renderInternalRecordV23==='function'){
+    const oldRenderInternal=window.renderInternalRecordV23;
+    window.renderInternalRecordV23=function(){
+      const lower=document.getElementById('internalRecordSearchInputV23');
+      const top=document.getElementById('searchInput');
+      if(lower&&top&&document.getElementById('internalRecordTabV23')?.classList.contains('active'))lower.value=top.value;
+      oldRenderInternal();
+      cleanInternalFinal();
+    };
+  }
+  if(typeof window.showInternalRecordV23==='function'){
+    const oldShowInternal=window.showInternalRecordV23;
+    window.showInternalRecordV23=function(){
+      oldShowInternal();
+      cleanInternalFinal();
+      setPlaceholderFinal('internal');
+      const top=document.getElementById('searchInput');
+      if(top)top.value='';
+      window.renderInternalRecordV23?.();
+    };
+  }
+  document.getElementById('searchBtn')?.addEventListener('click',e=>{
+    if(!document.getElementById('internalRecordTabV23')?.classList.contains('active'))return;
+    e.preventDefault();e.stopImmediatePropagation();
+    window.renderInternalRecordV23?.();
+  },true);
+  document.getElementById('searchInput')?.addEventListener('input',()=>{
+    if(document.getElementById('internalRecordTabV23')?.classList.contains('active'))window.renderInternalRecordV23?.();
+  },true);
+  document.getElementById('searchInput')?.addEventListener('keydown',e=>{
+    if(e.key!=='Enter'||!document.getElementById('internalRecordTabV23')?.classList.contains('active'))return;
+    e.preventDefault();e.stopImmediatePropagation();
+    window.renderInternalRecordV23?.();
+  },true);
+
+  function fullTitleFinal(mode,name,lane,search){
+    const laneName=lane&&lane!=='ALL'?(LANE_LABELS[lane]||lane):'';
+    if(search&&laneName)return `${name} - ${search} ${laneName} \uC804\uC801`;
+    if(search)return `${name} - ${search} \uC804\uC801`;
+    if(laneName)return `${name} - ${laneName} \uC804\uC801`;
+    return `${name} ${text.allRecord}`;
+  }
+  function dataForFullFinal(mode,name,lane='ALL',search=''){
+    let list=rows.filter(r=>mode==='champion'?r.champion_name===name:r.lol_name===name);
+    if(lane&&lane!=='ALL')list=list.filter(r=>r.lane===lane);
+    const q=String(search||'').trim().toLowerCase();
+    if(q){
+      list=list.filter(r=>String(mode==='champion'?r.lol_name:r.champion_name||'').toLowerCase().includes(q));
+    }
+    return list.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+  }
+  function ensureSideFinal2(){
+    let el=document.getElementById('bandleSidePage');
+    if(!el){
+      el=document.createElement('div');
+      el.id='bandleSidePage';
+      el.className='bandle-side-page';
+      el.innerHTML=`<div class="bandle-side-head"><div id="bandleSideTitle" class="bandle-side-title"></div><button id="bandleSideClose" class="bandle-side-close" type="button">${text.close}</button></div><div id="bandleSideBody" class="bandle-side-body"></div>`;
+      document.body.appendChild(el);
+    }
+    const close=document.getElementById('bandleSideClose');
+    if(close)close.onclick=()=>closeSideFinal2();
+    return el;
+  }
+  function closeSideFinal2(){
+    const el=document.getElementById('bandleSidePage');
+    if(!el)return;
+    el.classList.remove('show');
+    el.classList.add('hide-right');
+    setTimeout(()=>{
+      el.style.display='none';
+      el.classList.remove('bandle-force-show','hide-right');
+      document.body.classList.remove('side-page-open');
+    },720);
+  }
+  function openFullFinal2(mode,name,lane='ALL',search=''){
+    document.getElementById('recordFullInlineV23')?.remove();
+    const el=ensureSideFinal2();
+    const data=dataForFullFinal(mode,name,lane,search);
+    const title=fullTitleFinal(mode,name,lane,search);
+    document.getElementById('bandleSideTitle').textContent=title;
+    document.getElementById('bandleSideClose').textContent=text.close;
+    document.getElementById('bandleSideBody').innerHTML=`<div class="bandle-side-desc">${text.total} ${data.length}${text.records}</div>${recentTableRows(data,mode)}`;
+    el.style.display='flex';
+    el.classList.remove('hide-right','show');
+    el.classList.add('bandle-force-show');
+    document.body.classList.add('side-page-open');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      el.classList.add('show');
+      paintIconBordersFinal(el);
+    }));
+  }
+  window.openRecordFullV23=openFullFinal2;
+  window.openRecordFullV22=openFullFinal2;
+  window.openRecordFullV20=openFullFinal2;
+  window.openRecordSidePage=openFullFinal2;
+  window.openRecordSidePageV10=openFullFinal2;
+  window.safeOpenRecordV19=openFullFinal2;
+
+  document.addEventListener('click',function(e){
+    const btn=e.target.closest('.recent-full-view-btn-v22,.recent-full-view-btn-v20');
+    if(!btn)return;
+    e.preventDefault();e.stopImmediatePropagation();
+    const mode=btn.dataset.mode || (document.getElementById('championRecentMatchArea')?'champion':'player');
+    const name=btn.dataset.name || currentDetailName;
+    openFullFinal2(mode,name,recentLane||'ALL',recentChampionSearch||'');
+  },true);
+
+  if(typeof window.showBestRecord==='function'){
+    const oldBest=window.showBestRecord;
+    window.showBestRecord=function(kind,label,rowId){
+      oldBest(kind,label,rowId);
+      setTimeout(()=>paintIconBordersFinal(document.getElementById('recordDetailPanel')||document),30);
+    };
+  }
+  const oldPlayerClickFinal=document.getElementById('playerTab')?.onclick;
+  const oldChampionClickFinal=document.getElementById('championTab')?.onclick;
+  if(document.getElementById('playerTab'))document.getElementById('playerTab').onclick=function(){
+    oldPlayerClickFinal?.call(this);
+    cleanInternalFinal();
+    setPlaceholderFinal('player');
+    setTimeout(()=>paintIconBordersFinal(),40);
+  };
+  if(document.getElementById('championTab'))document.getElementById('championTab').onclick=function(){
+    oldChampionClickFinal?.call(this);
+    cleanInternalFinal();
+    setPlaceholderFinal('champion');
+    setTimeout(()=>paintIconBordersFinal(),40);
+  };
+  const observer=new MutationObserver(muts=>{
+    const touched=muts.some(m=>[...m.addedNodes].some(n=>n.nodeType===1));
+    if(touched)setTimeout(()=>paintIconBordersFinal(),20);
+  });
+  observer.observe(document.body,{childList:true,subtree:true});
+  setTimeout(()=>{cleanInternalFinal();setPlaceholderFinal('player');paintIconBordersFinal();},80);
+})();
+
 </script>
 </body>
 </html>
