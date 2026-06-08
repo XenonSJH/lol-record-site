@@ -45,6 +45,70 @@ h1{text-align:center;font-size:42px;margin:0 0 12px;font-weight:1000}.summary{te
 .rebuilt-score-low{color:#93c5fd!important}
 .rebuilt-score-bad{color:#cbd5e1!important}
 
+
+/* v40: 이상해진 목차/플로팅 메뉴 버튼 숨김 */
+#tocButton,#tocToggle,#floatingMenuBtn,.toc-button,.toc-toggle,.floating-menu-btn,.section-menu-btn,.quick-menu-btn{display:none!important;pointer-events:none!important}
+
+
+/* v40: 최근전적 섹션 완전 숨김 */
+#recentMatchSection,#championRecentMatchSection,.recent-preview-section-v33{display:none!important}
+
+
+/* v41: BANDLE.GG custom scrollbars */
+html{
+  scrollbar-width:thin;
+  scrollbar-color:rgba(96,165,250,.75) rgba(15,23,42,.75);
+}
+body::-webkit-scrollbar,
+.main-card::-webkit-scrollbar,
+.detail-page::-webkit-scrollbar,
+.section::-webkit-scrollbar,
+.table-scroll-wrap::-webkit-scrollbar{
+  width:11px;
+  height:11px;
+}
+body::-webkit-scrollbar-track,
+.main-card::-webkit-scrollbar-track,
+.detail-page::-webkit-scrollbar-track,
+.section::-webkit-scrollbar-track,
+.table-scroll-wrap::-webkit-scrollbar-track{
+  background:rgba(15,23,42,.72);
+  border-radius:999px;
+}
+body::-webkit-scrollbar-thumb,
+.main-card::-webkit-scrollbar-thumb,
+.detail-page::-webkit-scrollbar-thumb,
+.section::-webkit-scrollbar-thumb,
+.table-scroll-wrap::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,rgba(96,165,250,.95),rgba(37,99,235,.75));
+  border:2px solid rgba(15,23,42,.72);
+  border-radius:999px;
+  box-shadow:0 0 10px rgba(59,130,246,.35);
+}
+body::-webkit-scrollbar-thumb:hover,
+.main-card::-webkit-scrollbar-thumb:hover,
+.detail-page::-webkit-scrollbar-thumb:hover,
+.section::-webkit-scrollbar-thumb:hover,
+.table-scroll-wrap::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(180deg,rgba(147,197,253,1),rgba(59,130,246,.95));
+}
+.table-scroll-wrap{
+  width:100%;
+  overflow:auto;
+  border-radius:18px;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(96,165,250,.75) rgba(15,23,42,.75);
+}
+.table-scroll-wrap>table{
+  min-width:920px;
+}
+.detail-page{
+  padding-bottom:24px;
+}
+@media(max-width:760px){
+  .table-scroll-wrap>table{min-width:900px}
+}
+
 @media(max-width:1100px){body{padding:22px 0}h1{font-size:36px}th,td{font-size:13px;padding:11px 5px}.sort-btn{font-size:12px;padding:7px 4px}.champ-icon{width:38px;height:38px}.tier-badge{min-width:44px;height:30px;padding:0 9px}.stat-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:760px){body{padding:14px 0}h1{font-size:28px}.top-tabs{gap:8px}.tab{flex:1;padding:10px 0;font-size:15px}.search-box{font-size:14px;padding:13px}.search-btn{width:50px}.lane-filter{padding:8px 10px;font-size:13px}.lane-icon{width:19px;height:19px}th,td{font-size:11px;padding:9px 3px}.sort-btn{font-size:10px;padding:6px 2px}.champ-icon{width:30px;height:30px}.stat-grid{grid-template-columns:repeat(2,1fr)}.detail-hero{align-items:flex-start;padding:16px;gap:12px}.champ-icon.big,.profile-box{width:76px;height:76px}.hero-title{font-size:24px}.section{padding:14px}.section-title{font-size:17px}.detail-table th,.detail-table td{font-size:10px}.recent-search-wrap{min-width:100%}.recent-lane-filter{padding:7px 9px;font-size:12px}.recent-table th,.recent-table td{font-size:8.5px;padding:8px 3px}.recent-table .champ-icon{width:26px;height:26px}.floating-title-bar{height:52px;padding:0 16px}#floatingTitleText{font-size:19px}}
 </style>
@@ -7138,6 +7202,173 @@ var honeyPortrait = function(name,lane='',big=false){
     },0);
   };
   goBack=window.goBack;
+})();
+
+
+/* ===== v40 final navigation restore ===== */
+(function(){
+  function cleanupBrokenButtons(){
+    document.querySelectorAll('#tocButton,#tocToggle,#floatingMenuBtn,.toc-button,.toc-toggle,.floating-menu-btn,.section-menu-btn,.quick-menu-btn').forEach(el=>el.remove());
+  }
+  function cleanupRecent(){
+    document.querySelectorAll('#recentMatchSection,#championRecentMatchSection,.recent-preview-section-v33').forEach(el=>el.remove());
+  }
+
+  // 상세 페이지 안에서 전체보기로 들어가기 직전의 정확한 화면을 저장
+  window.__bandleDetailStackV40 = window.__bandleDetailStackV40 || [];
+
+  function saveDetailStateV40(){
+    const detail=document.getElementById('detailContent');
+    if(!detail)return;
+    window.__bandleDetailStackV40.push({
+      html:detail.innerHTML,
+      scroll:window.scrollY||document.documentElement.scrollTop||0,
+      title:window.currentDetailName||currentDetailName||''
+    });
+  }
+
+  // 전체보기 버튼 함수들을 감싸서, 버튼 누르기 직전 상태를 저장
+  const wrapNames=[
+    'openAllPlayedChampionsPageV33',
+    'openAllPlayedChampionsPage',
+    'openAllChampionsPage',
+    'openAllPlayerChampions',
+    'openPlayedChampionPage',
+    'openAllRecentMatchesPage'
+  ];
+  wrapNames.forEach(name=>{
+    const fn=window[name];
+    if(typeof fn==='function' && !fn.__v40Wrapped){
+      const wrapped=function(...args){
+        saveDetailStateV40();
+        return fn.apply(this,args);
+      };
+      wrapped.__v40Wrapped=true;
+      window[name]=wrapped;
+      try{ eval(`${name}=window[name]`); }catch(e){}
+    }
+  });
+
+  // 모스트 챔피언 전체보기 버튼 이름 고정 + 빈 공간 클릭 방지
+  window.fixMostButtonV40=function(){
+    document.querySelectorAll('button,a').forEach(btn=>{
+      const t=(btn.textContent||'').trim();
+      if(t.includes('플레이한')||t.includes('챔피언 전체보기')||t.includes('젠체보기')){
+        btn.textContent='전체보기';
+      }
+    });
+    const sec=document.getElementById('mostChampionSection');
+    if(sec){
+      sec.onclick=null;
+      sec.querySelectorAll('.collapsible-header,.section-title').forEach(el=>{
+        if((el.textContent||'').includes('모스트 챔피언')) return;
+      });
+    }
+  };
+
+  // 최종 goBack: 스택이 있으면 HTML과 스크롤을 정확히 되돌림
+  window.goBack=function(){
+    cleanupBrokenButtons();
+    cleanupRecent();
+
+    if(window.__bandleDetailStackV40 && window.__bandleDetailStackV40.length){
+      const prev=window.__bandleDetailStackV40.pop();
+      const detail=document.getElementById('detailContent');
+      if(detail)detail.innerHTML=prev.html;
+      try{ currentDetailName=prev.title||currentDetailName; }catch(e){}
+      setTimeout(()=>{
+        cleanupBrokenButtons();
+        cleanupRecent();
+        if(typeof initFloatingTitle==='function')initFloatingTitle();
+        if(typeof window.fixMostButtonV40==='function')window.fixMostButtonV40();
+        window.scrollTo({top:prev.scroll||0,behavior:'auto'});
+      },0);
+      setTimeout(()=>window.scrollTo({top:prev.scroll||0,behavior:'auto'}),80);
+      return;
+    }
+
+    document.getElementById("detailPage").style.display="none";
+    document.getElementById("mainPage").style.display="block";
+    const tabs=document.querySelector(".top-tabs");
+    if(tabs)tabs.style.display="flex";
+    const summary=document.getElementById("summary");
+    if(summary)summary.style.display="block";
+    const bar=document.getElementById("floatingTitleBar");
+    if(bar)bar.classList.remove("show");
+    try{window.removeEventListener("scroll",floatingTitleScrollHandler)}catch(e){}
+    setTimeout(()=>{cleanupBrokenButtons();cleanupRecent();},0);
+  };
+  try{ goBack=window.goBack; }catch(e){}
+
+  // 상세 페이지가 열린 뒤 항상 정리
+  const oldShowDetail=window.showDetail || (typeof showDetail==='function'?showDetail:null);
+  if(typeof oldShowDetail==='function' && !oldShowDetail.__v40Wrapped){
+    const wrapped=function(...args){
+      const res=oldShowDetail.apply(this,args);
+      setTimeout(()=>{cleanupBrokenButtons();cleanupRecent();window.fixMostButtonV40();},0);
+      return res;
+    };
+    wrapped.__v40Wrapped=true;
+    window.showDetail=wrapped;
+    try{ showDetail=window.showDetail; }catch(e){}
+  }
+
+  setTimeout(()=>{cleanupBrokenButtons();cleanupRecent();window.fixMostButtonV40();},0);
+  setInterval(()=>{cleanupBrokenButtons();cleanupRecent();window.fixMostButtonV40();},800);
+})();
+
+
+/* ===== v41 table scrollbar wrapper ===== */
+(function(){
+  function wrapTablesForScroll(){
+    document.querySelectorAll('#mainPage table,#detailContent table').forEach(table=>{
+      if(table.parentElement && table.parentElement.classList.contains('table-scroll-wrap'))return;
+      const wrap=document.createElement('div');
+      wrap.className='table-scroll-wrap';
+      table.parentNode.insertBefore(wrap,table);
+      wrap.appendChild(table);
+    });
+  }
+
+  const oldRenderMain=window.renderMain || (typeof renderMain==='function'?renderMain:null);
+  if(typeof oldRenderMain==='function' && !oldRenderMain.__v41Wrapped){
+    const wrapped=function(...args){
+      const res=oldRenderMain.apply(this,args);
+      setTimeout(wrapTablesForScroll,0);
+      return res;
+    };
+    wrapped.__v41Wrapped=true;
+    window.renderMain=wrapped;
+    try{renderMain=window.renderMain}catch(e){}
+  }
+
+  const oldShowDetail=window.showDetail || (typeof showDetail==='function'?showDetail:null);
+  if(typeof oldShowDetail==='function' && !oldShowDetail.__v41Wrapped){
+    const wrapped=function(...args){
+      const res=oldShowDetail.apply(this,args);
+      setTimeout(wrapTablesForScroll,0);
+      setTimeout(wrapTablesForScroll,120);
+      return res;
+    };
+    wrapped.__v41Wrapped=true;
+    window.showDetail=wrapped;
+    try{showDetail=window.showDetail}catch(e){}
+  }
+
+  const oldGoBack=window.goBack;
+  if(typeof oldGoBack==='function' && !oldGoBack.__v41Wrapped){
+    const wrapped=function(...args){
+      const res=oldGoBack.apply(this,args);
+      setTimeout(wrapTablesForScroll,0);
+      return res;
+    };
+    wrapped.__v41Wrapped=true;
+    window.goBack=wrapped;
+    try{goBack=window.goBack}catch(e){}
+  }
+
+  setTimeout(wrapTablesForScroll,0);
+  setTimeout(wrapTablesForScroll,400);
 })();
 
 </script>
