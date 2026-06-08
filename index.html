@@ -222,8 +222,8 @@ function getBestPlayerDuo(playerName){const baseRows=rows.filter(r=>r.lol_name==
 function synergyTable(list,type){if(!list.length)return`<div>3판 이상 기록된 데이터가 없습니다.</div>`;const baseLaneMap={};list.forEach(x=>{if(!baseLaneMap[x.baseLane])baseLaneMap[x.baseLane]=[];baseLaneMap[x.baseLane].push(x)});const baseLanes=LANE_ORDER.filter(l=>baseLaneMap[l]?.length);return`<div style="display:flex;flex-direction:column;gap:18px;">${baseLanes.map(baseLane=>{const baseList=baseLaneMap[baseLane],mateLaneMap={};baseList.forEach(x=>{if(!mateLaneMap[x.mateLane])mateLaneMap[x.mateLane]=[];mateLaneMap[x.mateLane].push(x)});const baseName=type==="champion"?htmlSafe(baseList[0].baseChampion):htmlSafe(baseList[0].basePlayer);return`<div style="background:rgba(15,23,42,.55);border:1px solid rgba(96,165,250,.18);border-radius:18px;padding:14px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;color:#bfdbfe;font-size:17px;font-weight:1000;">${laneIcon(baseLane)} ${LANE_LABELS[baseLane]||baseLane} ${baseName}</div><div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;">${LANE_ORDER.map(mateLane=>`<div style="background:rgba(30,41,59,.92);border:1px solid rgba(148,163,184,.25);border-radius:16px;padding:12px;min-height:118px;min-width:0;"><div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;color:#bfdbfe;font-weight:1000;">${laneIcon(mateLane)} ${LANE_LABELS[mateLane]||mateLane}</div>${mateLaneMap[mateLane]?.length?mateLaneMap[mateLane].sort((a,b)=>b.score-a.score||b.winRate-a.winRate||b.games-a.games).slice(0,5).map((x,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-top:1px solid rgba(51,65,85,.7);font-weight:1000;min-width:0;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">${i+1}. ${type==="champion"?htmlSafe(x.mateChampion):htmlSafe(x.matePlayer)}</span><span class="${rateClass(x.winRate)}" style="flex-shrink:0;">${pct(x.winRate)}</span></div>`).join(""):`<div style="color:#475569;text-align:center;padding:22px 0;font-weight:1000;">-</div>`}</div>`).join("")}</div></div>`}).join("")}</div>`}
 function getMasterStats(championName,lane=masterLane){let data=rows.filter(r=>r.champion_name===championName);if(lane!=="ALL")data=data.filter(r=>r.lane===lane);const map={};data.forEach(r=>{if(!map[r.lol_name])map[r.lol_name]=[];map[r.lol_name].push(r)});let list=Object.entries(map).map(([name,arr])=>{const games=arr.length,wins=arr.filter(r=>r.win).length,losses=games-wins,kills=arr.reduce((s,r)=>s+num(r.kills),0),deaths=arr.reduce((s,r)=>s+num(r.deaths),0),assists=arr.reduce((s,r)=>s+num(r.assists),0),kpList=arr.map(kp).filter(v=>v!==null),winRate=games?wins/games*100:0,avgKills=games?kills/games:0,avgDeaths=games?deaths/games:0,avgAssists=games?assists/games:0,kdaValue=getKda(kills,deaths,assists),kpAvg=average(kpList),score=games*8+winRate*.45+kdaValue*4+kpAvg*.15;return{name,games,wins,losses,winRate,avgKills,avgDeaths,avgAssists,kda:kdaValue,kp:kpAvg,score}});list.sort((a,b)=>{let r=0;if(masterSort==="name")r=compareName(a.name,b.name);else if(masterSort==="games")r=a.games-b.games;else if(masterSort==="winRate")r=a.winRate-b.winRate;else if(masterSort==="avgKills")r=a.avgKills-b.avgKills;else if(masterSort==="avgDeaths")r=a.avgDeaths-b.avgDeaths;else if(masterSort==="avgAssists")r=a.avgAssists-b.avgAssists;else if(masterSort==="kda")r=a.kda-b.kda;else if(masterSort==="kp")r=a.kp-b.kp;else r=a.score-b.score;return masterAsc?r:-r});return list}
 function renderMasterRankingArea(championName){const area=document.getElementById("masterRankingArea");if(!area)return;const list=getMasterStats(championName,masterLane);area.innerHTML=`<div class="master-filter-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">${["ALL",...LANE_ORDER].map(l=>`<button class="master-filter ${masterLane===l?"active":""}" onclick="setMasterLane('${l}','${safe(championName)}')">${l==="ALL"?"":laneIcon(l)} ${LANE_LABELS[l]}</button>`).join("")}</div><table class="detail-table"><colgroup><col class="col-rank"><col class="col-name"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-score"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortMaster('name','${safe(championName)}')">플레이어</button></th><th><button class="sort-btn" onclick="sortMaster('games','${safe(championName)}')">판수</button></th><th><button class="sort-btn" onclick="sortMaster('winRate','${safe(championName)}')">승률</button></th><th><button class="sort-btn" onclick="sortMaster('avgKills','${safe(championName)}')">평균 킬</button></th><th><button class="sort-btn" onclick="sortMaster('avgDeaths','${safe(championName)}')">평균 데스</button></th><th><button class="sort-btn" onclick="sortMaster('avgAssists','${safe(championName)}')">평균 어시</button></th><th><button class="sort-btn" onclick="sortMaster('kda','${safe(championName)}')">KDA</button></th><th><button class="sort-btn" onclick="sortMaster('kp','${safe(championName)}')">킬관여율</button></th><th><button class="sort-btn" onclick="sortMaster('score','${safe(championName)}')">점수</button></th></tr></thead><tbody>${list.map((p,i)=>`<tr><td>${rankText(i+1)}</td><td class="nickname" title="${htmlSafe(p.name)}">${htmlSafe(p.name)}</td><td>${p.games}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${p.avgKills.toFixed(1)}</td><td>${p.avgDeaths.toFixed(1)}</td><td>${p.avgAssists.toFixed(1)}</td><td>${p.kda.toFixed(2)}</td><td>${pct(p.kp)}</td><td>${p.score.toFixed(1)}</td></tr>`).join("")}</tbody></table>`}
-function openPlayerDetail(playerName){currentDetailName=playerName;recentLane="ALL";recentChampionSearch="";mostLane="ALL";const player=players.find(p=>p.lol_name===playerName)||{},s=calcPlayerStats(playerName,"ALL"),data=s.rows,lanes=mainLanes(data),st=streaks(data),bestKill=bestRecord(data,"kills"),bestDeath=bestRecord(data,"deaths"),bestAssist=bestRecord(data,"assists"),bestKp=bestRecord(data,"kp"),profile=player.profile_image_url?`<img src="${player.profile_image_url}" onerror="this.parentElement.innerHTML='프로필 사진을<br>추가해주세요!'"/>`:`프로필 사진을<br>추가해주세요!`;const html=`<div class="detail-hero"><div class="profile-box">${profile}</div><div><div class="hero-title">${htmlSafe(playerName)}</div><div class="hero-sub">${lanes.length?lanes.map(lanePill).join(""):`<span class="lane-pill">라인 기록 없음</span>`}</div></div></div><div class="section"><div class="section-title">전체 전적</div>${statCards([{label:"판수",value:s.games},{label:"승",value:s.wins,cls:"win"},{label:"패",value:s.losses,cls:"loss"},{label:"승률",value:pct(s.winRate),cls:rateClass(s.winRate)},{label:"평균 킬",value:s.avgKills.toFixed(1)},{label:"평균 데스",value:s.avgDeaths.toFixed(1)},{label:"평균 어시",value:s.avgAssists.toFixed(1)},{label:"평균 KDA",value:s.kda.toFixed(2)},{label:"평균 킬관여율",value:pct(s.kp)},{label:"주 라인",value:lanes[0]?LANE_LABELS[lanes[0]]:"-"}])}</div><div class="section"><div class="section-title">최고 기록</div>${statCards([{label:"최다 킬",value:bestKill?num(bestKill.kills):"-",extra:playerRecordExtra(bestKill)},{label:"최다 데스",value:bestDeath?num(bestDeath.deaths):"-",extra:playerRecordExtra(bestDeath)},{label:"최다 어시스트",value:bestAssist?num(bestAssist.assists):"-",extra:playerRecordExtra(bestAssist)},{label:"최대 킬관여율",value:bestKp?pct(kp(bestKp)||0):"-",extra:playerRecordExtra(bestKp)},{label:"최대 연승",value:`${st.maxWin}연승`,cls:"win"},{label:"최대 연패",value:`${st.maxLose}연패`,cls:"loss"}])}</div><div class="section"><div class="section-title">최근 기록 10판</div>${recentBlocks(data)}</div><div class="section"><div class="section-title">라인 비율</div>${laneRatio(data)}</div><div class="section"><div class="section-title">라인별 전적</div>${tableStatsRows(getPlayerLaneStats(playerName),"라인")}</div><div class="section"><div class="section-title">최고의 듀오 TOP 5 <span class="section-sub">(3판 이상 함께 플레이한 기록만 반영)</span></div>${synergyTable(getBestPlayerDuo(playerName),"player")}</div>${collapsibleSection("mostChampionSection","모스트 챔피언",`<div id="mostChampionArea"></div>`)}${collapsibleSection("recentMatchSection","전적",recentControls(playerName))}`;showDetail(html);renderMostChampionArea(playerName);renderRecentMatchArea(playerName)}
-function openChampionDetail(championName){currentDetailName=championName;recentLane="ALL";recentChampionSearch="";masterLane="ALL";const s=calcChampionStats(championName,"ALL"),laneTierList=getAllChampionComboList().filter(c=>c.name===championName).sort((a,b)=>LANE_ORDER.indexOf(a.displayLane)-LANE_ORDER.indexOf(b.displayLane)),portraitBorder=laneTierList.length?comboPortraitStyle(laneTierList.map(c=>c.tier))+"padding:3px;":"",data=s.rows,bestKill=bestRecord(data,"kills"),bestDeath=bestRecord(data,"deaths"),bestAssist=bestRecord(data,"assists"),bestKp=bestRecord(data,"kp"),laneTierBadges=laneTierList.length?laneTierList.map(c=>`<span class="lane-pill">${laneIcon(c.displayLane)} ${tierBadge(c.tier)}</span>`).join(""):`<span class="lane-pill">라인별 티어 없음</span>`;const html=`<div class="detail-hero"><div style="${portraitBorder};border-radius:27px;"><img class="champ-icon big" src="${champImg(championName)}" onerror="this.style.display='none'"/></div><div><div class="hero-title">${htmlSafe(championName)}</div><div class="hero-sub">${laneTierBadges}</div></div></div><div class="section"><div class="section-title">전체 통계</div>${statCards([{label:"판수",value:s.games},{label:"승",value:s.wins,cls:"win"},{label:"패",value:s.losses,cls:"loss"},{label:"승률",value:pct(s.winRate),cls:rateClass(s.winRate)},{label:"픽률",value:pct(s.pickRate)},{label:"밴율",value:pct(s.banRate)},{label:"평균 킬",value:s.avgKills.toFixed(1)},{label:"평균 데스",value:s.avgDeaths.toFixed(1)},{label:"평균 어시",value:s.avgAssists.toFixed(1)},{label:"KDA",value:s.kda.toFixed(2)},{label:"평균 킬관여율",value:pct(s.kp)}])}</div><div class="section"><div class="section-title">최고 기록</div>${statCards([{label:"최다 킬",value:bestKill?`${num(bestKill.kills)}회`:"-",extra:championRecordExtra(bestKill)},{label:"최다 데스",value:bestDeath?`${num(bestDeath.deaths)}회`:"-",extra:championRecordExtra(bestDeath)},{label:"최다 어시스트",value:bestAssist?`${num(bestAssist.assists)}회`:"-",extra:championRecordExtra(bestAssist)},{label:"최대 킬관여율",value:bestKp?pct(kp(bestKp)||0):"-",extra:championRecordExtra(bestKp)}])}</div><div class="section"><div class="section-title">최근 기록 10판</div>${recentBlocks(data)}</div><div class="section"><div class="section-title">라인 비율</div>${laneRatio(data)}</div><div class="section"><div class="section-title">라인별 통계</div>${tableStatsRows(getChampionLaneStats(championName),"라인")}</div><div class="section"><div class="section-title">같이 조합되면 좋은 챔피언 TOP 5 <span class="section-sub">(3판 이상 함께 플레이한 기록만 반영)</span></div>${synergyTable(getBestChampionSynergy(championName),"champion")}</div><div class="section"><div class="section-title">${htmlSafe(championName)} 장인 랭킹</div><div id="masterRankingArea"></div></div>${collapsibleSection("championRecentMatchSection","전적",championRecentControls(championName))}`;showDetail(html);renderMasterRankingArea(championName);renderChampionRecentMatchArea(championName)}
+function openPlayerDetail(playerName){currentDetailName=playerName;recentLane="ALL";recentChampionSearch="";mostLane="ALL";const player=players.find(p=>p.lol_name===playerName)||{},s=calcPlayerStats(playerName,"ALL"),data=s.rows,lanes=mainLanes(data),st=streaks(data),bestKill=bestRecord(data,"kills"),bestDeath=bestRecord(data,"deaths"),bestAssist=bestRecord(data,"assists"),bestKp=bestRecord(data,"kp"),profile=player.profile_image_url?`<img src="${player.profile_image_url}" onerror="this.parentElement.innerHTML='프로필 사진을<br>추가해주세요!'"/>`:`프로필 사진을<br>추가해주세요!`;const html=`<div class="detail-hero"><div class="profile-box">${profile}</div><div><div class="hero-title">${htmlSafe(playerName)}</div><div class="hero-sub">${lanes.length?lanes.map(lanePill).join(""):`<span class="lane-pill">라인 기록 없음</span>`}</div></div></div><div class="section"><div class="section-title">전체 전적</div>${statCards([{label:"판수",value:s.games},{label:"승",value:s.wins,cls:"win"},{label:"패",value:s.losses,cls:"loss"},{label:"승률",value:pct(s.winRate),cls:rateClass(s.winRate)},{label:"평균 킬",value:s.avgKills.toFixed(1)},{label:"평균 데스",value:s.avgDeaths.toFixed(1)},{label:"평균 어시",value:s.avgAssists.toFixed(1)},{label:"평균 KDA",value:s.kda.toFixed(2)},{label:"평균 킬관여율",value:pct(s.kp)},{label:"주 라인",value:lanes[0]?LANE_LABELS[lanes[0]]:"-"}])}</div><div class="section"><div class="section-title">최고 기록</div>${statCards([{label:"최다 킬",value:bestKill?num(bestKill.kills):"-",extra:playerRecordExtra(bestKill)},{label:"최다 데스",value:bestDeath?num(bestDeath.deaths):"-",extra:playerRecordExtra(bestDeath)},{label:"최다 어시스트",value:bestAssist?num(bestAssist.assists):"-",extra:playerRecordExtra(bestAssist)},{label:"최대 킬관여율",value:bestKp?pct(kp(bestKp)||0):"-",extra:playerRecordExtra(bestKp)},{label:"최대 연승",value:`${st.maxWin}연승`,cls:"win"},{label:"최대 연패",value:`${st.maxLose}연패`,cls:"loss"}])}</div><div class="section"><div class="section-title">최근 기록 10판</div>${recentBlocks(data)}</div><div class="section"><div class="section-title">라인 비율</div>${laneRatio(data)}</div><div class="section"><div class="section-title">라인별 전적</div>${tableStatsRows(getPlayerLaneStats(playerName),"라인")}</div><div class="section"><div class="section-title">최고의 듀오 TOP 5 <span class="section-sub">(3판 이상 함께 플레이한 기록만 반영)</span></div>${synergyTable(getBestPlayerDuo(playerName),"player")}</div>${collapsibleSection("mostChampionSection","모스트 챔피언",`<div id="mostChampionArea"></div>`)}${collapsibleSection("recentMatchSection","최근전적",recentControls(playerName))}`;showDetail(html);renderMostChampionArea(playerName);renderRecentMatchArea(playerName)}
+function openChampionDetail(championName){currentDetailName=championName;recentLane="ALL";recentChampionSearch="";masterLane="ALL";const s=calcChampionStats(championName,"ALL"),laneTierList=getAllChampionComboList().filter(c=>c.name===championName).sort((a,b)=>LANE_ORDER.indexOf(a.displayLane)-LANE_ORDER.indexOf(b.displayLane)),portraitBorder=laneTierList.length?comboPortraitStyle(laneTierList.map(c=>c.tier))+"padding:3px;":"",data=s.rows,bestKill=bestRecord(data,"kills"),bestDeath=bestRecord(data,"deaths"),bestAssist=bestRecord(data,"assists"),bestKp=bestRecord(data,"kp"),laneTierBadges=laneTierList.length?laneTierList.map(c=>`<span class="lane-pill">${laneIcon(c.displayLane)} ${tierBadge(c.tier)}</span>`).join(""):`<span class="lane-pill">라인별 티어 없음</span>`;const html=`<div class="detail-hero"><div style="${portraitBorder};border-radius:27px;"><img class="champ-icon big" src="${champImg(championName)}" onerror="this.style.display='none'"/></div><div><div class="hero-title">${htmlSafe(championName)}</div><div class="hero-sub">${laneTierBadges}</div></div></div><div class="section"><div class="section-title">전체 통계</div>${statCards([{label:"판수",value:s.games},{label:"승",value:s.wins,cls:"win"},{label:"패",value:s.losses,cls:"loss"},{label:"승률",value:pct(s.winRate),cls:rateClass(s.winRate)},{label:"픽률",value:pct(s.pickRate)},{label:"밴율",value:pct(s.banRate)},{label:"평균 킬",value:s.avgKills.toFixed(1)},{label:"평균 데스",value:s.avgDeaths.toFixed(1)},{label:"평균 어시",value:s.avgAssists.toFixed(1)},{label:"KDA",value:s.kda.toFixed(2)},{label:"평균 킬관여율",value:pct(s.kp)}])}</div><div class="section"><div class="section-title">최고 기록</div>${statCards([{label:"최다 킬",value:bestKill?`${num(bestKill.kills)}회`:"-",extra:championRecordExtra(bestKill)},{label:"최다 데스",value:bestDeath?`${num(bestDeath.deaths)}회`:"-",extra:championRecordExtra(bestDeath)},{label:"최다 어시스트",value:bestAssist?`${num(bestAssist.assists)}회`:"-",extra:championRecordExtra(bestAssist)},{label:"최대 킬관여율",value:bestKp?pct(kp(bestKp)||0):"-",extra:championRecordExtra(bestKp)}])}</div><div class="section"><div class="section-title">최근 기록 10판</div>${recentBlocks(data)}</div><div class="section"><div class="section-title">라인 비율</div>${laneRatio(data)}</div><div class="section"><div class="section-title">라인별 통계</div>${tableStatsRows(getChampionLaneStats(championName),"라인")}</div><div class="section"><div class="section-title">같이 조합되면 좋은 챔피언 TOP 5 <span class="section-sub">(3판 이상 함께 플레이한 기록만 반영)</span></div>${synergyTable(getBestChampionSynergy(championName),"champion")}</div><div class="section"><div class="section-title">${htmlSafe(championName)} 장인 랭킹</div><div id="masterRankingArea"></div></div>${collapsibleSection("championRecentMatchSection","최근전적",championRecentControls(championName))}`;showDetail(html);renderMasterRankingArea(championName);renderChampionRecentMatchArea(championName)}
 var jumpReturnY=0;
 function jumpReturnButton(){return`<button id="jumpReturnBtn" class="jump-return-btn ${jumpReturnY?"show":""}" type="button" onclick="returnToJumpSource()">↑ 보던 위치로 돌아가기</button>`}
 function resetRecentJump(){if(!jumpReturnY)return;recentLane="ALL";recentChampionSearch="";const mode=recentJumpMode,name=recentJumpName;jumpReturnY=0;recentJumpMode="";recentJumpName="";window.removeEventListener("scroll",recentJumpScrollHandler);const secId=mode==="player"?"recentMatchSection":"championRecentMatchSection",sec=document.getElementById(secId);if(sec){const c=sec.querySelector(".collapsible-content");if(c)c.innerHTML=mode==="player"?recentControls(name):championRecentControls(name);if(mode==="player")renderRecentMatchArea(name);else renderChampionRecentMatchArea(name)}}
@@ -245,8 +245,8 @@ setRecentLane=function(lane,playerName){recentLane=lane;const sec=document.getEl
 renderMostChampionArea=function(playerName){const area=document.getElementById("mostChampionArea");if(!area)return;const list=getPlayerMostStats(playerName);if(!list.length){area.innerHTML=mostLaneFilters(playerName)+`<div>모스트 챔피언 데이터가 없습니다.</div>`;return}area.innerHTML=mostLaneFilters(playerName)+`<table class="detail-table"><colgroup><col class="col-rank"><col class="col-champ"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-score"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortMost('name','${safe(playerName)}')">챔피언</button></th><th><button class="sort-btn" onclick="sortMost('games','${safe(playerName)}')">판수</button></th><th><button class="sort-btn" onclick="sortMost('winRate','${safe(playerName)}')">승률</button></th><th><button class="sort-btn" onclick="sortMost('avgKills','${safe(playerName)}')">평균 킬</button></th><th><button class="sort-btn" onclick="sortMost('avgDeaths','${safe(playerName)}')">평균 데스</button></th><th><button class="sort-btn" onclick="sortMost('avgAssists','${safe(playerName)}')">평균 어시</button></th><th><button class="sort-btn" onclick="sortMost('kda','${safe(playerName)}')">KDA</button></th><th><button class="sort-btn" onclick="sortMost('kp','${safe(playerName)}')">킬관여율</button></th><th><button class="sort-btn" onclick="sortMost('score','${safe(playerName)}')">점수</button></th></tr></thead><tbody>${list.map((c,i)=>`<tr class="clickable-row" onclick="jumpFromMost('${safe(playerName)}','${safe(c.champion)}','${safe(c.lane)}')"><td>${rankText(i+1)}</td><td style="text-align:left"><div class="champ-cell" title="${htmlSafe(c.champion)}"><img class="champ-icon" src="${champImg(c.champion)}" onerror="this.style.display='none'"/><span class="champ-lane-icon">${laneIcon(c.lane)}</span><span class="champ-name">${htmlSafe(c.champion)}</span></div></td><td>${c.games}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${c.avgKills.toFixed(1)}</td><td>${c.avgDeaths.toFixed(1)}</td><td>${c.avgAssists.toFixed(1)}</td><td>${c.kda.toFixed(2)}</td><td>${pct(c.kp)}</td><td>${c.score.toFixed(1)}</td></tr>`).join("")}</tbody></table>`};
 getMasterStats=function(championName,lane=masterLane){let data=rows.filter(r=>r.champion_name===championName);if(lane!=="ALL")data=data.filter(r=>r.lane===lane);const map={};data.forEach(r=>{const key=`${r.lol_name}__${r.lane||"UNKNOWN"}`;if(!map[key])map[key]=[];map[key].push(r)});let list=Object.entries(map).map(([key,arr])=>{const[name,lane]=key.split("__"),games=arr.length,wins=arr.filter(r=>r.win).length,losses=games-wins,kills=arr.reduce((s,r)=>s+num(r.kills),0),deaths=arr.reduce((s,r)=>s+num(r.deaths),0),assists=arr.reduce((s,r)=>s+num(r.assists),0),kpList=arr.map(kp).filter(v=>v!==null),winRate=games?wins/games*100:0,avgKills=games?kills/games:0,avgDeaths=games?deaths/games:0,avgAssists=games?assists/games:0,kdaValue=getKda(kills,deaths,assists),kpAvg=average(kpList),score=games*8+winRate*.45+kdaValue*4+kpAvg*.15;return{name,lane,games,wins,losses,winRate,avgKills,avgDeaths,avgAssists,kda:kdaValue,kp:kpAvg,score}});list.sort((a,b)=>{let r=0;if(masterSort==="name")r=compareName(a.name,b.name);else if(masterSort==="games")r=a.games-b.games;else if(masterSort==="winRate")r=a.winRate-b.winRate;else if(masterSort==="avgKills")r=a.avgKills-b.avgKills;else if(masterSort==="avgDeaths")r=a.avgDeaths-b.avgDeaths;else if(masterSort==="avgAssists")r=a.avgAssists-b.avgAssists;else if(masterSort==="kda")r=a.kda-b.kda;else if(masterSort==="kp")r=a.kp-b.kp;else r=a.score-b.score;return masterAsc?r:-r});return list};
 renderMasterRankingArea=function(championName){const area=document.getElementById("masterRankingArea");if(!area)return;const list=getMasterStats(championName,masterLane);area.innerHTML=`<div class="master-filter-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">${["ALL",...LANE_ORDER].map(l=>`<button class="master-filter ${masterLane===l?"active":""}" onclick="setMasterLane('${l}','${safe(championName)}')">${l==="ALL"?"":laneIcon(l)} ${LANE_LABELS[l]}</button>`).join("")}</div><table class="detail-table"><colgroup><col class="col-rank"><col class="col-name"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-score"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortMaster('name','${safe(championName)}')">플레이어</button></th><th><button class="sort-btn" onclick="sortMaster('games','${safe(championName)}')">판수</button></th><th><button class="sort-btn" onclick="sortMaster('winRate','${safe(championName)}')">승률</button></th><th><button class="sort-btn" onclick="sortMaster('avgKills','${safe(championName)}')">평균 킬</button></th><th><button class="sort-btn" onclick="sortMaster('avgDeaths','${safe(championName)}')">평균 데스</button></th><th><button class="sort-btn" onclick="sortMaster('avgAssists','${safe(championName)}')">평균 어시</button></th><th><button class="sort-btn" onclick="sortMaster('kda','${safe(championName)}')">KDA</button></th><th><button class="sort-btn" onclick="sortMaster('kp','${safe(championName)}')">킬관여율</button></th><th><button class="sort-btn" onclick="sortMaster('score','${safe(championName)}')">점수</button></th></tr></thead><tbody>${list.map((p,i)=>`<tr class="clickable-row" onclick="jumpFromMaster('${safe(championName)}','${safe(p.name)}','${safe(p.lane)}')"><td>${rankText(i+1)}</td><td class="nickname" title="${htmlSafe(p.name)}"><div class="player-name-cell"><span>${htmlSafe(p.name)}</span><span class="champ-lane-icon">${laneIcon(p.lane)}</span><span>${LANE_LABELS[p.lane]||p.lane}</span></div></td><td>${p.games}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${p.avgKills.toFixed(1)}</td><td>${p.avgDeaths.toFixed(1)}</td><td>${p.avgAssists.toFixed(1)}</td><td>${p.kda.toFixed(2)}</td><td>${pct(p.kp)}</td><td>${p.score.toFixed(1)}</td></tr>`).join("")}</tbody></table>`};
-openPlayerDetail=function(playerName){currentDetailName=playerName;recentLane="ALL";recentChampionSearch="";mostLane="ALL";jumpReturnY=0;const player=players.find(p=>p.lol_name===playerName)||{},s=calcPlayerStats(playerName,"ALL"),data=s.rows,lanes=mainLanes(data),st=streaks(data),bestKill=bestRecord(data,"kills"),bestDeath=bestRecord(data,"deaths"),bestAssist=bestRecord(data,"assists"),bestKp=bestRecord(data,"kp"),profile=player.profile_image_url?`<img src="${player.profile_image_url}" onerror="this.parentElement.innerHTML='프로필 사진을<br>추가해주세요!'"/>`:`프로필 사진을<br>추가해주세요!`;const html=`<div class="detail-hero"><div class="profile-box">${profile}</div><div><div class="hero-title">${htmlSafe(playerName)}</div><div class="hero-sub">${lanes.length?lanes.map(lanePill).join(""):`<span class="lane-pill">라인 기록 없음</span>`}</div></div></div><div class="section"><div class="section-title">전체 전적</div>${statCards([{label:"판수",value:s.games},{label:"승",value:s.wins,cls:"win"},{label:"패",value:s.losses,cls:"loss"},{label:"승률",value:pct(s.winRate),cls:rateClass(s.winRate)},{label:"평균 킬",value:s.avgKills.toFixed(1)},{label:"평균 데스",value:s.avgDeaths.toFixed(1)},{label:"평균 어시",value:s.avgAssists.toFixed(1)},{label:"평균 KDA",value:s.kda.toFixed(2)},{label:"평균 킬관여율",value:pct(s.kp)},{label:"주 라인",value:lanes[0]?LANE_LABELS[lanes[0]]:"-"}])}</div><div class="section"><div class="section-title">최고 기록</div>${statCards([{label:"최다 킬",value:bestKill?num(bestKill.kills):"-",extra:playerRecordExtra(bestKill),onclick:bestKill?`showBestRecord('player','최다 킬','${bestKill.id}')`:""},{label:"최다 데스",value:bestDeath?num(bestDeath.deaths):"-",extra:playerRecordExtra(bestDeath),onclick:bestDeath?`showBestRecord('player','최다 데스','${bestDeath.id}')`:""},{label:"최다 어시스트",value:bestAssist?num(bestAssist.assists):"-",extra:playerRecordExtra(bestAssist),onclick:bestAssist?`showBestRecord('player','최다 어시스트','${bestAssist.id}')`:""},{label:"최대 킬관여율",value:bestKp?pct(kp(bestKp)||0):"-",extra:playerRecordExtra(bestKp),onclick:bestKp?`showBestRecord('player','최대 킬관여율','${bestKp.id}')`:""},{label:"최대 연승",value:`${st.maxWin}연승`,cls:"win"},{label:"최대 연패",value:`${st.maxLose}연패`,cls:"loss"}])}<div id="recordDetailPanel" class="record-detail-panel"></div></div><div class="section"><div class="section-title">최근 기록 10판</div>${recentBlocks(data)}</div><div class="section"><div class="section-title">라인 비율</div>${laneRatio(data)}</div><div class="section"><div class="section-title">라인별 전적</div>${tableStatsRows(getPlayerLaneStats(playerName),"라인","player",playerName)}</div><div class="section"><div class="section-title">최고의 듀오 TOP 5 <span class="section-sub">(3판 이상 함께 플레이한 기록만 반영)</span></div>${synergyTable(getBestPlayerDuo(playerName),"player")}</div>${collapsibleSection("mostChampionSection","모스트 챔피언",`<div id="mostChampionArea"></div>`)}${collapsibleSection("recentMatchSection","전적",recentControls(playerName))}`;showDetail(html);renderMostChampionArea(playerName);renderRecentMatchArea(playerName)};
-openChampionDetail=function(championName){currentDetailName=championName;recentLane="ALL";recentChampionSearch="";masterLane="ALL";jumpReturnY=0;const s=calcChampionStats(championName,"ALL"),laneTierList=getAllChampionComboList().filter(c=>c.name===championName).sort((a,b)=>LANE_ORDER.indexOf(a.displayLane)-LANE_ORDER.indexOf(b.displayLane)),portraitBorder=laneTierList.length?comboPortraitStyle(laneTierList.map(c=>c.tier))+"padding:3px;":"",data=s.rows,bestKill=bestRecord(data,"kills"),bestDeath=bestRecord(data,"deaths"),bestAssist=bestRecord(data,"assists"),bestKp=bestRecord(data,"kp"),laneTierBadges=laneTierList.length?laneTierList.map(c=>`<span class="lane-pill">${laneIcon(c.displayLane)} ${tierBadge(c.tier)}</span>`).join(""):`<span class="lane-pill">라인별 티어 없음</span>`;const html=`<div class="detail-hero"><div style="${portraitBorder};border-radius:27px;"><img class="champ-icon big" src="${champImg(championName)}" onerror="this.style.display='none'"/></div><div><div class="hero-title">${htmlSafe(championName)}</div><div class="hero-sub">${laneTierBadges}</div></div></div><div class="section"><div class="section-title">전체 통계</div>${statCards([{label:"판수",value:s.games},{label:"승",value:s.wins,cls:"win"},{label:"패",value:s.losses,cls:"loss"},{label:"승률",value:pct(s.winRate),cls:rateClass(s.winRate)},{label:"픽률",value:pct(s.pickRate)},{label:"밴율",value:pct(s.banRate)},{label:"평균 킬",value:s.avgKills.toFixed(1)},{label:"평균 데스",value:s.avgDeaths.toFixed(1)},{label:"평균 어시",value:s.avgAssists.toFixed(1)},{label:"KDA",value:s.kda.toFixed(2)},{label:"평균 킬관여율",value:pct(s.kp)}])}</div><div class="section"><div class="section-title">최고 기록</div>${statCards([{label:"최다 킬",value:bestKill?`${num(bestKill.kills)}회`:"-",extra:championRecordExtra(bestKill),onclick:bestKill?`showBestRecord('champion','최다 킬','${bestKill.id}')`:""},{label:"최다 데스",value:bestDeath?`${num(bestDeath.deaths)}회`:"-",extra:championRecordExtra(bestDeath),onclick:bestDeath?`showBestRecord('champion','최다 데스','${bestDeath.id}')`:""},{label:"최다 어시스트",value:bestAssist?`${num(bestAssist.assists)}회`:"-",extra:championRecordExtra(bestAssist),onclick:bestAssist?`showBestRecord('champion','최다 어시스트','${bestAssist.id}')`:""},{label:"최대 킬관여율",value:bestKp?pct(kp(bestKp)||0):"-",extra:championRecordExtra(bestKp),onclick:bestKp?`showBestRecord('champion','최대 킬관여율','${bestKp.id}')`:""}])}<div id="recordDetailPanel" class="record-detail-panel"></div></div><div class="section"><div class="section-title">최근 기록 10판</div>${recentBlocks(data)}</div><div class="section"><div class="section-title">라인 비율</div>${laneRatio(data)}</div><div class="section"><div class="section-title">라인별 통계</div>${tableStatsRows(getChampionLaneStats(championName),"라인","champion",championName)}</div><div class="section"><div class="section-title">같이 조합되면 좋은 챔피언 TOP 5 <span class="section-sub">(3판 이상 함께 플레이한 기록만 반영)</span></div>${synergyTable(getBestChampionSynergy(championName),"champion")}</div><div class="section"><div class="section-title">${htmlSafe(championName)} 장인 랭킹</div><div id="masterRankingArea"></div></div>${collapsibleSection("championRecentMatchSection","전적",championRecentControls(championName))}`;showDetail(html);renderMasterRankingArea(championName);renderChampionRecentMatchArea(championName)};
+openPlayerDetail=function(playerName){currentDetailName=playerName;recentLane="ALL";recentChampionSearch="";mostLane="ALL";jumpReturnY=0;const player=players.find(p=>p.lol_name===playerName)||{},s=calcPlayerStats(playerName,"ALL"),data=s.rows,lanes=mainLanes(data),st=streaks(data),bestKill=bestRecord(data,"kills"),bestDeath=bestRecord(data,"deaths"),bestAssist=bestRecord(data,"assists"),bestKp=bestRecord(data,"kp"),profile=player.profile_image_url?`<img src="${player.profile_image_url}" onerror="this.parentElement.innerHTML='프로필 사진을<br>추가해주세요!'"/>`:`프로필 사진을<br>추가해주세요!`;const html=`<div class="detail-hero"><div class="profile-box">${profile}</div><div><div class="hero-title">${htmlSafe(playerName)}</div><div class="hero-sub">${lanes.length?lanes.map(lanePill).join(""):`<span class="lane-pill">라인 기록 없음</span>`}</div></div></div><div class="section"><div class="section-title">전체 전적</div>${statCards([{label:"판수",value:s.games},{label:"승",value:s.wins,cls:"win"},{label:"패",value:s.losses,cls:"loss"},{label:"승률",value:pct(s.winRate),cls:rateClass(s.winRate)},{label:"평균 킬",value:s.avgKills.toFixed(1)},{label:"평균 데스",value:s.avgDeaths.toFixed(1)},{label:"평균 어시",value:s.avgAssists.toFixed(1)},{label:"평균 KDA",value:s.kda.toFixed(2)},{label:"평균 킬관여율",value:pct(s.kp)},{label:"주 라인",value:lanes[0]?LANE_LABELS[lanes[0]]:"-"}])}</div><div class="section"><div class="section-title">최고 기록</div>${statCards([{label:"최다 킬",value:bestKill?num(bestKill.kills):"-",extra:playerRecordExtra(bestKill),onclick:bestKill?`showBestRecord('player','최다 킬','${bestKill.id}')`:""},{label:"최다 데스",value:bestDeath?num(bestDeath.deaths):"-",extra:playerRecordExtra(bestDeath),onclick:bestDeath?`showBestRecord('player','최다 데스','${bestDeath.id}')`:""},{label:"최다 어시스트",value:bestAssist?num(bestAssist.assists):"-",extra:playerRecordExtra(bestAssist),onclick:bestAssist?`showBestRecord('player','최다 어시스트','${bestAssist.id}')`:""},{label:"최대 킬관여율",value:bestKp?pct(kp(bestKp)||0):"-",extra:playerRecordExtra(bestKp),onclick:bestKp?`showBestRecord('player','최대 킬관여율','${bestKp.id}')`:""},{label:"최대 연승",value:`${st.maxWin}연승`,cls:"win"},{label:"최대 연패",value:`${st.maxLose}연패`,cls:"loss"}])}<div id="recordDetailPanel" class="record-detail-panel"></div></div><div class="section"><div class="section-title">최근 기록 10판</div>${recentBlocks(data)}</div><div class="section"><div class="section-title">라인 비율</div>${laneRatio(data)}</div><div class="section"><div class="section-title">라인별 전적</div>${tableStatsRows(getPlayerLaneStats(playerName),"라인","player",playerName)}</div><div class="section"><div class="section-title">최고의 듀오 TOP 5 <span class="section-sub">(3판 이상 함께 플레이한 기록만 반영)</span></div>${synergyTable(getBestPlayerDuo(playerName),"player")}</div>${collapsibleSection("mostChampionSection","모스트 챔피언",`<div id="mostChampionArea"></div>`)}${collapsibleSection("recentMatchSection","최근전적",recentControls(playerName))}`;showDetail(html);renderMostChampionArea(playerName);renderRecentMatchArea(playerName)};
+openChampionDetail=function(championName){currentDetailName=championName;recentLane="ALL";recentChampionSearch="";masterLane="ALL";jumpReturnY=0;const s=calcChampionStats(championName,"ALL"),laneTierList=getAllChampionComboList().filter(c=>c.name===championName).sort((a,b)=>LANE_ORDER.indexOf(a.displayLane)-LANE_ORDER.indexOf(b.displayLane)),portraitBorder=laneTierList.length?comboPortraitStyle(laneTierList.map(c=>c.tier))+"padding:3px;":"",data=s.rows,bestKill=bestRecord(data,"kills"),bestDeath=bestRecord(data,"deaths"),bestAssist=bestRecord(data,"assists"),bestKp=bestRecord(data,"kp"),laneTierBadges=laneTierList.length?laneTierList.map(c=>`<span class="lane-pill">${laneIcon(c.displayLane)} ${tierBadge(c.tier)}</span>`).join(""):`<span class="lane-pill">라인별 티어 없음</span>`;const html=`<div class="detail-hero"><div style="${portraitBorder};border-radius:27px;"><img class="champ-icon big" src="${champImg(championName)}" onerror="this.style.display='none'"/></div><div><div class="hero-title">${htmlSafe(championName)}</div><div class="hero-sub">${laneTierBadges}</div></div></div><div class="section"><div class="section-title">전체 통계</div>${statCards([{label:"판수",value:s.games},{label:"승",value:s.wins,cls:"win"},{label:"패",value:s.losses,cls:"loss"},{label:"승률",value:pct(s.winRate),cls:rateClass(s.winRate)},{label:"픽률",value:pct(s.pickRate)},{label:"밴율",value:pct(s.banRate)},{label:"평균 킬",value:s.avgKills.toFixed(1)},{label:"평균 데스",value:s.avgDeaths.toFixed(1)},{label:"평균 어시",value:s.avgAssists.toFixed(1)},{label:"KDA",value:s.kda.toFixed(2)},{label:"평균 킬관여율",value:pct(s.kp)}])}</div><div class="section"><div class="section-title">최고 기록</div>${statCards([{label:"최다 킬",value:bestKill?`${num(bestKill.kills)}회`:"-",extra:championRecordExtra(bestKill),onclick:bestKill?`showBestRecord('champion','최다 킬','${bestKill.id}')`:""},{label:"최다 데스",value:bestDeath?`${num(bestDeath.deaths)}회`:"-",extra:championRecordExtra(bestDeath),onclick:bestDeath?`showBestRecord('champion','최다 데스','${bestDeath.id}')`:""},{label:"최다 어시스트",value:bestAssist?`${num(bestAssist.assists)}회`:"-",extra:championRecordExtra(bestAssist),onclick:bestAssist?`showBestRecord('champion','최다 어시스트','${bestAssist.id}')`:""},{label:"최대 킬관여율",value:bestKp?pct(kp(bestKp)||0):"-",extra:championRecordExtra(bestKp),onclick:bestKp?`showBestRecord('champion','최대 킬관여율','${bestKp.id}')`:""}])}<div id="recordDetailPanel" class="record-detail-panel"></div></div><div class="section"><div class="section-title">최근 기록 10판</div>${recentBlocks(data)}</div><div class="section"><div class="section-title">라인 비율</div>${laneRatio(data)}</div><div class="section"><div class="section-title">라인별 통계</div>${tableStatsRows(getChampionLaneStats(championName),"라인","champion",championName)}</div><div class="section"><div class="section-title">같이 조합되면 좋은 챔피언 TOP 5 <span class="section-sub">(3판 이상 함께 플레이한 기록만 반영)</span></div>${synergyTable(getBestChampionSynergy(championName),"champion")}</div><div class="section"><div class="section-title">${htmlSafe(championName)} 장인 랭킹</div><div id="masterRankingArea"></div></div>${collapsibleSection("championRecentMatchSection","최근전적",championRecentControls(championName))}`;showDetail(html);renderMasterRankingArea(championName);renderChampionRecentMatchArea(championName)};
 window.openPlayerDetail=openPlayerDetail;window.openChampionDetail=openChampionDetail;window.setRecentLane=setRecentLane;window.setChampionRecentLane=setChampionRecentLane;window.runRecentSearch=runRecentSearch;window.renderRecentSuggestions=renderRecentSuggestions;
 var mainReturnY=0,recentJumpMode="",recentJumpName="";
 showDetail=function(html){mainReturnY=window.scrollY;const main=document.getElementById("mainPage"),detail=document.getElementById("detailPage");main.classList.add("slide-out-left");document.getElementById("detailContent").innerHTML=html;document.querySelector(".top-tabs").style.display="none";document.getElementById("summary").style.display="none";detail.style.display="block";detail.classList.remove("slide-in-right");void detail.offsetWidth;detail.classList.add("slide-in-right");setTimeout(()=>{main.style.display="none";main.classList.remove("slide-out-left")},320);window.scrollTo(0,0);setTimeout(initFloatingTitle,100)};
@@ -1222,185 +1222,326 @@ renderMasterRankingArea=function(championName){
   window.showBestRecord=showBestRecord;
 })();
 
+window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCollapsible=toggleCollapsible;window.returnToJumpSource=returnToJumpSource;window.openRecentByFilter=openRecentByFilter;window.resetRecentJump=resetRecentJump;window.showBestRecord=showBestRecord;window.closeRecordPanel=closeRecordPanel;window.renderMasterRankingArea=renderMasterRankingArea;
 
 
-/* ===== 2026-06-08 v6 패치: 전체보기 상단 여백 / 내부스크롤 끝에서 페이지스크롤 / 목차 복구 ===== */
+/* ===== 2026-06-08 v6 요청 반영 패치: 불투명 전체보기 / 미리보기 개수 제한 / 내부 스크롤 제거 / 목차 보정 ===== */
 (function(){
+  const RECENT_PREVIEW_COUNT=10;
+  const MOST_PREVIEW_COUNT=3;
+
   const style=document.createElement('style');
   style.textContent=`
-    /* 전체 보기 눌렀을 때 상단 고정 배너에 안 잘리도록 여백 확보 */
-    .smart-scroll-section.smart-full-view{
-      top:94px!important;
-      bottom:18px!important;
-    }
-
-    /* 내부 스크롤 영역이 끝에 닿으면 바깥 상세 페이지로 휠이 넘어가게 함 */
+    /* 내부 스크롤 제거 + 전적/모스트 창 불투명 */
     .smart-scroll-area{
+      max-height:none!important;
+      overflow:visible!important;
       overscroll-behavior:auto!important;
+      background:#0f172a!important;
+      border:1px solid rgba(96,165,250,.32)!important;
+      border-radius:16px!important;
+      padding:4px!important;
+    }
+    .smart-scroll-section{
+      background:#0f172a!important;
+      border-color:rgba(96,165,250,.34)!important;
+    }
+    .smart-scroll-section .collapsible-content{
+      overflow:visible!important;
     }
 
-    /* 목차는 상세 페이지가 열려 있을 때 항상 다시 만들 수 있게 고정 */
-    .toc-orb-wrap{
+    /* 전체보기는 진짜 한 창처럼 불투명하게 */
+    .smart-scroll-section.smart-full-view{
       position:fixed!important;
-      right:18px!important;
-      top:50%!important;
-      transform:translateY(-50%)!important;
-      z-index:13000!important;
+      left:2.5%!important;
+      right:2.5%!important;
+      top:86px!important;
+      bottom:auto!important;
+      max-height:none!important;
+      width:auto!important;
+      z-index:12000!important;
+      margin:0!important;
+      padding:18px!important;
+      display:block!important;
+      background:#0f172a!important;
+      border:1px solid rgba(147,197,253,.62)!important;
+      box-shadow:0 30px 100px rgba(0,0,0,.82)!important;
+      animation:smartFullGrow .22s ease both;
     }
-    .toc-orb-wrap.show{display:flex!important;}
+    body.smart-full-active::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:rgba(2,6,23,.72);
+      z-index:11990;
+    }
+    body.smart-full-active #floatingTitleBar{display:none!important;}
+    .smart-scroll-section.smart-full-view .collapsible-content{
+      display:block!important;
+      max-height:none!important;
+      overflow:visible!important;
+    }
+    .smart-scroll-section.smart-full-view .smart-scroll-area{
+      max-height:none!important;
+      overflow:visible!important;
+      background:#0f172a!important;
+    }
+
+    .smart-preview-note{
+      margin:8px 0 12px;
+      color:#94a3b8;
+      font-size:13px;
+      font-weight:1000;
+    }
+
+    /* 목차 클릭 영역/스크롤 위치 보정 */
+    .toc-orb-wrap{z-index:13000!important;pointer-events:none!important;}
     .toc-orb{pointer-events:auto!important;}
-    .toc-panel{
-      right:54px!important;
-      max-height:70vh!important;
-      overflow-y:auto!important;
-    }
+    .toc-orb-wrap.open .toc-panel{pointer-events:auto!important;}
+    .toc-panel{max-height:70vh!important;overflow:auto!important;background:#0f172a!important;}
+    .toc-item{cursor:pointer!important;}
 
     @media(max-width:760px){
-      .smart-scroll-section.smart-full-view{
-        top:76px!important;
-        bottom:10px!important;
-      }
-      .toc-orb-wrap{right:10px!important;}
+      .smart-scroll-section.smart-full-view{left:8px!important;right:8px!important;top:70px!important;padding:12px!important;}
     }
   `;
   document.head.appendChild(style);
 
-  function getDetailScroller(){
-    const d=document.getElementById('detailPage');
-    if(d && d.style.display!=='none')return d;
-    return document.scrollingElement||document.documentElement;
+  function detailBox(){return document.getElementById('detailPage')}
+  function sectionTitle(id){
+    if(id==='mostChampionSection')return '플레이한 챔피언 전체보기';
+    return '전적 전체보기';
   }
-
-  function topForSection(sec,extra=132){
-    const d=getDetailScroller();
-    if(d===document.scrollingElement || d===document.documentElement){
-      return Math.max(0,(window.scrollY||0)+sec.getBoundingClientRect().top-extra);
+  function previewTitle(id){
+    if(id==='mostChampionSection')return '플레이한 챔피언 전체보기';
+    return '전적 전체보기';
+  }
+  function isFull(id){return document.getElementById(id)?.classList.contains('smart-full-view')}
+  function secByArea(areaId){
+    if(areaId==='mostChampionArea')return document.getElementById('mostChampionSection');
+    if(areaId==='championRecentMatchArea')return document.getElementById('championRecentMatchSection');
+    return document.getElementById('recentMatchSection');
+  }
+  function setButton(sec){
+    const btn=sec?.querySelector('.collapse-toggle');
+    if(!btn)return;
+    btn.innerHTML=`${sec.classList.contains('smart-full-view')?'돌아가기':previewTitle(sec.id)} <span class="collapse-arrow">⌄</span>`;
+  }
+  function markSec(id,name,mode){
+    const sec=document.getElementById(id);
+    if(!sec)return;
+    sec.dataset.smartName=name||'';
+    sec.dataset.smartMode=mode||'';
+    sec.classList.add('smart-scroll-section','open');
+    setButton(sec);
+  }
+  function wrapTable(area){
+    if(!area)return;
+    const old=area.querySelector('.smart-scroll-area');
+    if(old){
+      old.style.maxHeight='none';
+      old.style.overflow='visible';
+      return;
     }
-    return Math.max(0,sec.offsetTop-extra);
+    const table=area.querySelector('table');
+    if(!table)return;
+    const wrapper=document.createElement('div');
+    wrapper.className='smart-scroll-area';
+    table.parentNode.insertBefore(wrapper,table);
+    wrapper.appendChild(table);
+  }
+  function recentDataFor(mode,name,full){
+    let d=mode==='champion'?rows.filter(r=>r.champion_name===name):rows.filter(r=>r.lol_name===name);
+    if(recentLane!=='ALL')d=d.filter(r=>r.lane===recentLane);
+    if(recentChampionSearch){
+      const q=recentChampionSearch.toLowerCase();
+      d=mode==='champion'?d.filter(r=>(r.lol_name||'').toLowerCase().includes(q)):d.filter(r=>(r.champion_name||'').toLowerCase().includes(q));
+    }
+    d=d.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+    return full?d:d.slice(0,RECENT_PREVIEW_COUNT);
   }
 
-  function scrollDetailTo(sec,extra=132){
-    const d=getDetailScroller();
-    const top=topForSection(sec,extra);
-    if(d===document.scrollingElement || d===document.documentElement)window.scrollTo({top,behavior:'smooth'});
-    else d.scrollTo({top,behavior:'smooth'});
-  }
+  const __v6RecentControls=recentControls;
+  recentControls=function(playerName){
+    return __v6RecentControls(playerName).replace('<div id="recentMatchArea"></div>','<div class="smart-preview-note">최근전적 10개만 표시됩니다. 전체 기록은 오른쪽 버튼을 누르세요.</div><div id="recentMatchArea"></div>');
+  };
 
-  function bindScrollChain(area){
-    if(!area || area.dataset.scrollChainBound==='1')return;
-    area.dataset.scrollChainBound='1';
-    area.addEventListener('wheel',function(e){
-      const delta=e.deltaY||0;
-      if(!delta)return;
+  const __v6ChampionRecentControls=championRecentControls;
+  championRecentControls=function(championName){
+    return __v6ChampionRecentControls(championName).replace('<div id="championRecentMatchArea"></div>','<div class="smart-preview-note">최근전적 10개만 표시됩니다. 전체 기록은 오른쪽 버튼을 누르세요.</div><div id="championRecentMatchArea"></div>');
+  };
 
-      const canScroll=area.scrollHeight>area.clientHeight+1;
-      if(!canScroll)return;
+  renderRecentMatchArea=function(playerName){
+    markSec('recentMatchSection',playerName,'player');
+    const area=document.getElementById('recentMatchArea');
+    if(!area)return;
+    area.innerHTML=recentTableRows(recentDataFor('player',playerName,isFull('recentMatchSection')),'player');
+    wrapTable(area);
+  };
 
-      const atTop=area.scrollTop<=0;
-      const atBottom=area.scrollTop+area.clientHeight>=area.scrollHeight-1;
+  renderChampionRecentMatchArea=function(championName){
+    markSec('championRecentMatchSection',championName,'champion');
+    const area=document.getElementById('championRecentMatchArea');
+    if(!area)return;
+    area.innerHTML=recentTableRows(recentDataFor('champion',championName,isFull('championRecentMatchSection')),'champion');
+    wrapTable(area);
+  };
 
-      if((delta<0 && atTop) || (delta>0 && atBottom)){
-        const d=getDetailScroller();
-        if(d){
-          e.preventDefault();
-          if(d===document.scrollingElement || d===document.documentElement)window.scrollBy({top:delta,behavior:'auto'});
-          else d.scrollBy({top:delta,behavior:'auto'});
-        }
-      }
-    },{passive:false});
-  }
+  renderMostChampionArea=function(playerName){
+    markSec('mostChampionSection',playerName,'most');
+    const area=document.getElementById('mostChampionArea');
+    if(!area)return;
+    const full=isFull('mostChampionSection');
+    const original=getPlayerMostStats(playerName);
+    const list=full?original:original.slice(0,MOST_PREVIEW_COUNT);
+    if(!original.length){
+      area.innerHTML=mostLaneFilters(playerName)+`<div>모스트 챔피언 데이터가 없습니다.</div>`;
+      return;
+    }
+    area.innerHTML=mostLaneFilters(playerName)+(!full?`<div class="smart-preview-note">모스트 챔피언 TOP 3만 표시됩니다. 전체 기록은 오른쪽 버튼을 누르세요.</div>`:'')+`<table class="detail-table"><colgroup><col class="col-rank"><col class="col-champ"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-score"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortMost('name','${safe(playerName)}')">챔피언</button></th><th><button class="sort-btn" onclick="sortMost('games','${safe(playerName)}')">판수</button></th><th><button class="sort-btn" onclick="sortMost('winRate','${safe(playerName)}')">승률</button></th><th><button class="sort-btn" onclick="sortMost('avgKills','${safe(playerName)}')">평균 킬</button></th><th><button class="sort-btn" onclick="sortMost('avgDeaths','${safe(playerName)}')">평균 데스</button></th><th><button class="sort-btn" onclick="sortMost('avgAssists','${safe(playerName)}')">평균 어시</button></th><th><button class="sort-btn" onclick="sortMost('kda','${safe(playerName)}')">KDA</button></th><th><button class="sort-btn" onclick="sortMost('kp','${safe(playerName)}')">킬관여율</button></th><th><button class="sort-btn" onclick="sortMost('score','${safe(playerName)}')">점수</button></th></tr></thead><tbody>${list.map((c,i)=>`<tr><td>${rankText(i+1)}</td><td style="text-align:left"><div class="champ-cell" title="${htmlSafe(c.champion)}"><img class="champ-icon" src="${champImg(c.champion)}" onerror="this.style.display='none'"/><span class="champ-lane-icon">${laneIcon(c.lane)}</span><span class="champ-name">${htmlSafe(c.champion)}</span></div></td><td>${c.games}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${c.avgKills.toFixed(1)}</td><td>${c.avgDeaths.toFixed(1)}</td><td>${c.avgAssists.toFixed(1)}</td><td>${c.kda.toFixed(2)}</td><td>${pct(c.kp)}</td><td>${c.score.toFixed(1)}</td></tr>`).join('')}</tbody></table>`;
+    wrapTable(area);
+  };
 
-  function bindAllScrollChains(){
-    document.querySelectorAll('.smart-scroll-area').forEach(bindScrollChain);
-  }
+  toggleSmartSection=function(id){
+    const sec=document.getElementById(id);
+    if(!sec)return;
+    const d=detailBox();
+    if(sec.classList.contains('smart-full-view')){
+      const y=Number(sec.dataset.beforeFullScroll||0);
+      sec.classList.remove('smart-full-view');
+      document.body.classList.remove('smart-full-active');
+      setButton(sec);
+      if(id==='mostChampionSection')renderMostChampionArea(sec.dataset.smartName);
+      else if(id==='championRecentMatchSection')renderChampionRecentMatchArea(sec.dataset.smartName);
+      else renderRecentMatchArea(sec.dataset.smartName);
+      requestAnimationFrame(()=>{if(d)d.scrollTo({top:y,behavior:'auto'});});
+    }else{
+      sec.dataset.beforeFullScroll=d?String(d.scrollTop||0):String(window.scrollY||0);
+      sec.classList.add('open','smart-full-view');
+      document.body.classList.add('smart-full-active');
+      setButton(sec);
+      if(id==='mostChampionSection')renderMostChampionArea(sec.dataset.smartName);
+      else if(id==='championRecentMatchSection')renderChampionRecentMatchArea(sec.dataset.smartName);
+      else renderRecentMatchArea(sec.dataset.smartName);
+      const topPad=window.innerWidth<=760?70:86;
+      sec.style.top=topPad+'px';
+    }
+  };
 
-  const oldWrapFirstTable=window.wrapFirstTable;
-  window.__bindSmartScrollChains=bindAllScrollChains;
+  toggleCollapsible=function(id){
+    if(['recentMatchSection','championRecentMatchSection','mostChampionSection'].includes(id))return toggleSmartSection(id);
+    const s=document.getElementById(id);
+    if(!s)return;
+    s.classList.toggle('open');
+    const b=s.querySelector('.collapse-toggle');
+    if(b){const o=s.classList.contains('open');b.innerHTML=`${o?'접기':'펼치기'} <span class="collapse-arrow">⌄</span>`;}
+  };
 
-  const oldMakeToc=window.__makeToc;
+  setRecentLane=function(lane,playerName){
+    recentLane=lane;
+    const sec=document.getElementById('recentMatchSection');
+    if(sec){const c=sec.querySelector('.collapsible-content');if(c)c.innerHTML=recentControls(playerName);}
+    renderRecentMatchArea(playerName);
+  };
+
+  setChampionRecentLane=function(lane,championName){
+    recentLane=lane;
+    const sec=document.getElementById('championRecentMatchSection');
+    if(sec){const c=sec.querySelector('.collapsible-content');if(c)c.innerHTML=championRecentControls(championName);}
+    renderChampionRecentMatchArea(championName);
+  };
+
+  runRecentSearch=function(target,value){
+    recentChampionSearch=(value||'').trim();
+    const i=document.getElementById('recentSearchInput');
+    if(i)i.value=recentChampionSearch;
+    const b=document.getElementById('recentSuggestBox');
+    if(b){b.style.display='none';b.innerHTML='';}
+    if(document.getElementById('championRecentMatchArea'))renderChampionRecentMatchArea(target);
+    else renderRecentMatchArea(target);
+  };
+
+  setMostLane=function(lane,playerName){mostLane=lane;renderMostChampionArea(playerName);};
+  sortMost=function(type,playerName){
+    if(mostSort===type)mostAsc=!mostAsc;
+    else{mostSort=type;mostAsc=type==='name';}
+    renderMostChampionArea(playerName);
+  };
+
+  openRecentByFilter=function(mode,name,lane,search){
+    const id=mode==='player'?'recentMatchSection':'championRecentMatchSection';
+    const sec=document.getElementById(id);
+    const d=detailBox();
+    if(!sec)return;
+    __recentJumpState={mode,name,lane:recentLane,search:recentChampionSearch,wasOpen:true};
+    jumpReturnY=d?d.scrollTop||0:window.scrollY||0;
+    recentLane=lane||'ALL';
+    recentChampionSearch=search||'';
+    sec.classList.remove('smart-full-view');
+    document.body.classList.remove('smart-full-active');
+    const c=sec.querySelector('.collapsible-content');
+    if(c)c.innerHTML=mode==='player'?recentControls(name):championRecentControls(name);
+    if(mode==='player')renderRecentMatchArea(name);else renderChampionRecentMatchArea(name);
+    document.getElementById('jumpReturnBtn')?.classList.add('show');
+    const top=Math.max(0,sec.offsetTop-100);
+    if(d)d.scrollTo({top,behavior:'smooth'});else window.scrollTo({top,behavior:'smooth'});
+  };
+
   window.__makeToc=function(){
     const old=document.getElementById('tocOrbWrap');
     if(old)old.remove();
-
     const wrap=document.createElement('div');
     wrap.id='tocOrbWrap';
-    wrap.className='toc-orb-wrap';
+    wrap.className='toc-orb-wrap show';
     wrap.innerHTML=`<div class="toc-panel" id="tocPanel"></div><button class="toc-orb" type="button" title="목차">☰</button>`;
     document.body.appendChild(wrap);
-
     const orb=wrap.querySelector('.toc-orb');
     const panel=wrap.querySelector('#tocPanel');
-    const sections=[...document.querySelectorAll('#detailContent .section')]
-      .map((sec,i)=>({sec,title:(sec.querySelector('.section-title')?.textContent||`항목 ${i+1}`).replace(/\s+/g,' ').trim()}))
-      .filter(x=>x.sec);
-
-    panel.innerHTML=sections.length
-      ? sections.map((x,i)=>`<button class="toc-item" type="button" data-toc="${i}">${htmlSafe(x.title)}</button>`).join('')
-      : `<button class="toc-item" type="button">목차 없음</button>`;
-
+    const detail=detailBox();
     let closeTimer=null;
     const open=()=>{clearTimeout(closeTimer);wrap.classList.add('open');};
     const closeSoon=()=>{clearTimeout(closeTimer);closeTimer=setTimeout(()=>wrap.classList.remove('open'),360);};
-
     orb.addEventListener('mouseenter',open);
     orb.addEventListener('mouseleave',closeSoon);
+    orb.addEventListener('click',(e)=>{e.stopPropagation();wrap.classList.toggle('open');});
     panel.addEventListener('mouseenter',open);
     panel.addEventListener('mouseleave',closeSoon);
-    orb.addEventListener('click',e=>{e.stopPropagation();wrap.classList.toggle('open');});
-    document.addEventListener('click',e=>{if(!wrap.contains(e.target))wrap.classList.remove('open');});
+    document.addEventListener('click',(e)=>{if(!wrap.contains(e.target))wrap.classList.remove('open');});
 
-    [...panel.querySelectorAll('.toc-item')].forEach(btn=>{
-      btn.onclick=e=>{
-        e.stopPropagation();
-        const target=sections[Number(btn.dataset.toc)]?.sec;
-        if(target)scrollDetailTo(target,132);
-        wrap.classList.remove('open');
-      };
+    const sections=[...document.querySelectorAll('#detailContent .section')].map((sec,i)=>({sec,title:(sec.querySelector('.section-title')?.textContent||`항목 ${i+1}`).replace(/\s+/g,' ').trim()}));
+    panel.innerHTML=sections.map((x,i)=>`<button class="toc-item" type="button" data-toc="${i}">${htmlSafe(x.title)}</button>`).join('');
+    [...panel.querySelectorAll('.toc-item')].forEach(btn=>btn.onclick=(e)=>{
+      e.stopPropagation();
+      const target=sections[Number(btn.dataset.toc)]?.sec;
+      if(!target||!detail)return;
+      const top=Math.max(0,target.offsetTop-86);
+      detail.scrollTo({top,behavior:'smooth'});
+      wrap.classList.remove('open');
     });
-
-    wrap.classList.add('show');
   };
 
-  const oldShowDetail=showDetail;
+  const __v6ShowDetail=showDetail;
   showDetail=function(html){
-    oldShowDetail(html);
+    __v6ShowDetail(html);
     setTimeout(()=>{
-      bindAllScrollChains();
+      ['recentMatchSection','championRecentMatchSection','mostChampionSection'].forEach(id=>setButton(document.getElementById(id)));
       window.__makeToc?.();
-    },620);
+    },550);
   };
 
-  const patchRender=function(fnName){
-    const old=window[fnName];
-    if(typeof old!=='function')return;
-    window[fnName]=function(...args){
-      const result=old.apply(this,args);
-      setTimeout(bindAllScrollChains,0);
-      return result;
-    };
-  };
-
-  ['renderRecentMatchArea','renderChampionRecentMatchArea','renderMostChampionArea'].forEach(patchRender);
-
-  const oldToggleSmart=window.toggleSmartSection;
-  if(typeof oldToggleSmart==='function'){
-    window.toggleSmartSection=function(id){
-      oldToggleSmart(id);
-      const sec=document.getElementById(id);
-      if(sec?.classList.contains('smart-full-view')){
-        const d=getDetailScroller();
-        const top=topForSection(sec,110);
-        if(d===document.scrollingElement || d===document.documentElement)window.scrollTo({top,behavior:'auto'});
-        else d.scrollTo({top,behavior:'auto'});
-      }
-      setTimeout(bindAllScrollChains,0);
-    };
-  }
-
-  bindAllScrollChains();
+  window.toggleSmartSection=toggleSmartSection;
+  window.toggleCollapsible=toggleCollapsible;
+  window.renderRecentMatchArea=renderRecentMatchArea;
+  window.renderChampionRecentMatchArea=renderChampionRecentMatchArea;
+  window.renderMostChampionArea=renderMostChampionArea;
+  window.setRecentLane=setRecentLane;
+  window.setChampionRecentLane=setChampionRecentLane;
+  window.runRecentSearch=runRecentSearch;
+  window.setMostLane=setMostLane;
+  window.sortMost=sortMost;
+  window.openRecentByFilter=openRecentByFilter;
 })();
 
-window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCollapsible=toggleCollapsible;window.returnToJumpSource=returnToJumpSource;window.openRecentByFilter=openRecentByFilter;window.resetRecentJump=resetRecentJump;window.showBestRecord=showBestRecord;window.closeRecordPanel=closeRecordPanel;window.renderMasterRankingArea=renderMasterRankingArea;
 loadData();setInterval(loadData,30000);
 </script>
 </body>
