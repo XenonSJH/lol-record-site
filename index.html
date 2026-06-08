@@ -6144,6 +6144,151 @@ loadData();setInterval(loadData,30000);
   [0,100,300,700,1200,2000,3500].forEach(ms=>setTimeout(()=>{killMatchTabHard();forceBordersHard();},ms));
 })();
 
+/* ===== border reset from internal-record logic / unified spacing / themed scrollbars ===== */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    html,body,.detail-page,.bandle-side-body,.toc-panel,.smart-scroll-area,.match-history-body-v18{
+      scrollbar-width:thin!important;
+      scrollbar-color:rgba(96,165,250,.62) rgba(15,23,42,.42)!important;
+      -ms-overflow-style:auto!important;
+    }
+    html::-webkit-scrollbar,body::-webkit-scrollbar,.detail-page::-webkit-scrollbar,.bandle-side-body::-webkit-scrollbar,.toc-panel::-webkit-scrollbar,.smart-scroll-area::-webkit-scrollbar,.match-history-body-v18::-webkit-scrollbar{
+      width:10px!important;
+      height:10px!important;
+      display:block!important;
+    }
+    html::-webkit-scrollbar-track,body::-webkit-scrollbar-track,.detail-page::-webkit-scrollbar-track,.bandle-side-body::-webkit-scrollbar-track,.toc-panel::-webkit-scrollbar-track,.smart-scroll-area::-webkit-scrollbar-track,.match-history-body-v18::-webkit-scrollbar-track{
+      background:rgba(15,23,42,.46)!important;
+      border-radius:999px!important;
+      border:1px solid rgba(51,65,85,.45)!important;
+    }
+    html::-webkit-scrollbar-thumb,body::-webkit-scrollbar-thumb,.detail-page::-webkit-scrollbar-thumb,.bandle-side-body::-webkit-scrollbar-thumb,.toc-panel::-webkit-scrollbar-thumb,.smart-scroll-area::-webkit-scrollbar-thumb,.match-history-body-v18::-webkit-scrollbar-thumb{
+      background:linear-gradient(180deg,rgba(96,165,250,.8),rgba(37,99,235,.68))!important;
+      border-radius:999px!important;
+      border:2px solid rgba(15,23,42,.75)!important;
+    }
+    table,.detail-table,.recent-table,.recent-table-v20,.bandle-side-body .detail-table,.best-record-area .detail-table,.match-history-table-v19,.match-history-table-v20{
+      border-spacing:0 10px!important;
+      border-collapse:separate!important;
+    }
+    td,.detail-table td,.recent-table-v20 tbody tr:not(.match-participants-row-v20) td,.bandle-side-body .recent-table-v20 tbody tr:not(.match-participants-row-v20) td,.best-record-area .recent-table-v20 tbody tr:not(.match-participants-row-v20) td{
+      padding-top:14px!important;
+      padding-bottom:14px!important;
+      height:auto!important;
+      min-height:0!important;
+    }
+    .recent-table-v20 img.champ-icon,.recent-table-v20 img.participant-icon-v20,.best-record-area img.champ-icon,.best-record-area img.small-champ-icon,.record-icons img.small-champ-icon,img.bandle-internal-tier-border{
+      border-width:2px!important;
+      border-style:solid!important;
+      outline:none!important;
+      box-sizing:border-box!important;
+    }
+    .combo-portrait-wrap{
+      padding:3px!important;
+      border:none!important;
+      box-shadow:none!important;
+    }
+    .combo-portrait-wrap > img.champ-icon{
+      border:0!important;
+      outline:none!important;
+      box-shadow:none!important;
+    }
+    #matchTab,#matchHistoryMainV20,#matchHistoryPageV18{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+  `;
+  document.head.appendChild(style);
+
+  const tierOrder={OP:1,S:2,A:3,B:4,C:5};
+  const tierColors={OP:'#ff334e',S:'#ff8a1c',A:'#ffe14d',B:'#31e981',C:'#60a5fa'};
+  const tierClasses={OP:'tier-red',S:'tier-orange',A:'tier-yellow',B:'tier-green',C:'tier-blue'};
+  function cleanMatchTabInternalStyle(){
+    document.querySelectorAll('#matchTab,#matchHistoryMainV20,#matchHistoryPageV18').forEach(el=>el.remove());
+    document.querySelectorAll('.top-tabs .tab').forEach(tab=>{
+      const compact=(tab.textContent||'').replace(/\s+/g,'');
+      if(compact==='\uB300\uC804\uAE30\uB85D')tab.remove();
+    });
+  }
+  function reverseChampIdMap(){
+    const rev={};
+    try{Object.entries(championNameToId||{}).forEach(([name,id])=>{rev[String(id).toLowerCase()]=name;});}catch(e){}
+    return rev;
+  }
+  function champNameFromImg(img,rev){
+    const holder=img.closest('.champ-cell,.opponent-champ-cell-v20,[title]');
+    const title=holder?.getAttribute('title')||'';
+    if(title)return title.split('/')[0].trim();
+    const label=img.closest('.champ-cell,.opponent-champ-cell-v20')?.querySelector('.champ-name')?.textContent?.trim();
+    if(label)return label;
+    const src=decodeURIComponent(img.getAttribute('src')||'');
+    const id=(src.split('/').pop()||'').replace(/\.(png|jpg|jpeg|webp).*$/i,'').toLowerCase();
+    return rev[id]||'';
+  }
+  function laneFromRecordRow(img){
+    const row=img.closest('tr');
+    if(!row)return '';
+    const cells=[...row.children];
+    const index=cells.findIndex(td=>td.contains(img));
+    const laneCell=index<=6?cells[1]:cells[11];
+    const laneImg=laneCell?.querySelector('img.lane-icon');
+    const src=laneImg?.getAttribute('src')||'';
+    if(src.includes('position-top'))return 'TOP';
+    if(src.includes('position-jungle'))return 'JUNGLE';
+    if(src.includes('position-middle'))return 'MID';
+    if(src.includes('position-bottom'))return 'ADC';
+    if(src.includes('position-utility'))return 'SUPPORT';
+    return '';
+  }
+  function tierForChampLaneLikeInternal(name,lane){
+    try{
+      let list=getAllChampionComboList().filter(c=>c.name===name && lane && c.displayLane===lane).map(c=>c.tier).filter(Boolean);
+      if(!list.length)list=getAllChampionComboList().filter(c=>c.name===name).map(c=>c.tier).filter(Boolean);
+      list.sort((a,b)=>(tierOrder[a]||99)-(tierOrder[b]||99));
+      return list[0]||'C';
+    }catch(e){return 'C';}
+  }
+  function normalizeOneBorder(img,rev){
+    if(img.closest('.combo-portrait-wrap'))return;
+    const name=champNameFromImg(img,rev);
+    if(!name)return;
+    const lane=laneFromRecordRow(img);
+    const tier=tierForChampLaneLikeInternal(name,lane);
+    const color=tierColors[tier]||tierColors.C;
+    Object.values(tierClasses).forEach(cls=>img.classList.remove(cls));
+    img.classList.add(tierClasses[tier]||'tier-blue','bandle-internal-tier-border');
+    img.style.setProperty('border','2px solid '+color,'important');
+    img.style.setProperty('border-color',color,'important');
+    img.style.setProperty('outline','none','important');
+    img.style.setProperty('box-shadow',`0 0 18px ${color}88`,'important');
+    img.style.setProperty('box-sizing','border-box','important');
+  }
+  function normalizeAllBorders(root=document){
+    const rev=reverseChampIdMap();
+    root.querySelectorAll('img.champ-icon,img.small-champ-icon,img.participant-icon-v20').forEach(img=>normalizeOneBorder(img,rev));
+  }
+  function refreshAll(){
+    cleanMatchTabInternalStyle();
+    normalizeAllBorders();
+  }
+  const oldRecentInternalStyle=recentTableRows;
+  recentTableRows=function(data,mode){
+    const out=oldRecentInternalStyle(data,mode);
+    setTimeout(refreshAll,0);
+    return out;
+  };
+  window.recentTableRows=recentTableRows;
+  if(typeof showBestRecord==='function'){
+    const oldBestInternalStyle=showBestRecord;
+    showBestRecord=function(kind,label,rowId){
+      oldBestInternalStyle(kind,label,rowId);
+      setTimeout(()=>normalizeAllBorders(document.getElementById('recordDetailPanel')||document),30);
+    };
+    window.showBestRecord=showBestRecord;
+  }
+  const observerInternalStyle=new MutationObserver(()=>setTimeout(refreshAll,0));
+  observerInternalStyle.observe(document.body,{childList:true,subtree:true});
+  [0,100,300,700,1200,2500,5000].forEach(ms=>setTimeout(refreshAll,ms));
+})();
+
 </script>
 </body>
 </html>
