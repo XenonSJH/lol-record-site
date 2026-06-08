@@ -55,6 +55,19 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
 .champion-stat-box{background:#111827;border:1px solid #334155;border-radius:14px;padding:12px}
 .champion-stat-label{color:#94A3B8;font-size:13px;margin-bottom:4px}
 .champion-stat-value{font-size:18px;font-weight:900}
+.match-card{background:#1E293B;border:1px solid #334155;border-radius:20px;padding:22px;cursor:pointer;transition:.2s}
+.match-card:hover{transform:translateY(-4px);border-color:#8B5CF6}
+.match-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.match-code{font-size:20px;font-weight:900}
+.match-date{color:#94A3B8;font-size:14px}
+.score-box{display:flex;align-items:center;justify-content:center;gap:18px;font-size:22px;font-weight:900;margin:18px 0}
+.blue{color:#60A5FA}
+.red{color:#F87171}
+.team-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+.team-card{background:#111827;border:1px solid #334155;border-radius:18px;padding:18px}
+.team-title{font-size:20px;font-weight:900;margin-bottom:14px}
+.record-row{display:grid;grid-template-columns:1fr 90px 90px 90px;gap:10px;padding:10px 0;border-bottom:1px solid #334155}
+.record-row:last-child{border-bottom:none}
 </style>
 </head>
 <body>
@@ -65,7 +78,7 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
         <button class="active" onclick="showPage('home',this)">🏠 홈</button>
         <button onclick="showPage('players',this)">👤 플레이어</button>
         <button onclick="showPage('champions',this); loadChampions();">⚔️ 챔피언</button>
-        <button>📜 내전기록</button>
+        <button onclick="showPage('matches',this); loadMatches();">📜 내전기록</button>
         <button>🎯 전적등록</button>
         <button>⚙️ 설정</button>
     </div>
@@ -79,22 +92,10 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
 
 <div id="home" class="page active">
     <div class="cards">
-        <div class="card">
-            <div class="card-title">플레이어</div>
-            <div class="card-value" id="playerCount">0</div>
-        </div>
-        <div class="card">
-            <div class="card-title">총 경기</div>
-            <div class="card-value" id="totalGameCount">-</div>
-        </div>
-        <div class="card">
-            <div class="card-title">이번주 경기</div>
-            <div class="card-value">-</div>
-        </div>
-        <div class="card">
-            <div class="card-title">평균 승률</div>
-            <div class="card-value" id="avgWinrate">-</div>
-        </div>
+        <div class="card"><div class="card-title">플레이어</div><div class="card-value" id="playerCount">0</div></div>
+        <div class="card"><div class="card-title">총 경기</div><div class="card-value" id="totalGameCount">-</div></div>
+        <div class="card"><div class="card-title">이번주 경기</div><div class="card-value" id="weeklyGameCount">-</div></div>
+        <div class="card"><div class="card-title">평균 승률</div><div class="card-value" id="avgWinrate">-</div></div>
     </div>
 
     <div class="section">
@@ -105,16 +106,22 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
 
 <div id="players" class="page">
     <h2 style="margin-bottom:20px;">👤 플레이어 랭킹</h2>
-    <div id="playersContainer" class="player-grid">
-        <div class="loading">데이터 불러오는 중...</div>
-    </div>
+    <div id="playersContainer" class="player-grid"><div class="loading">데이터 불러오는 중...</div></div>
 </div>
 
 <div id="champions" class="page">
     <h2 style="margin-bottom:20px;">⚔️ 챔피언 통계</h2>
-    <div id="championsContainer" class="player-grid">
-        <div class="loading">챔피언 데이터 불러오는 중...</div>
-    </div>
+    <div id="championsContainer" class="player-grid"><div class="loading">챔피언 데이터 불러오는 중...</div></div>
+</div>
+
+<div id="matches" class="page">
+    <h2 style="margin-bottom:20px;">📜 내전 기록</h2>
+    <div id="matchesContainer" class="player-grid"><div class="loading">내전 기록 불러오는 중...</div></div>
+</div>
+
+<div id="matchDetail" class="page">
+    <button class="back-btn" onclick="backToMatches()">← 내전 기록</button>
+    <div id="matchDetailContent"></div>
 </div>
 
 <div id="playerDetail" class="page">
@@ -129,6 +136,7 @@ const SUPABASE_KEY = "sb_publishable_QHDiR1qAWGVaKSDZguc0qg_fE_eVCwZ";
 
 let db = null;
 let playersCache = [];
+let matchesCache = [];
 
 if(SUPABASE_URL && SUPABASE_KEY){
     db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -144,34 +152,19 @@ function showPage(id,btn){
 function refreshCurrentPage(){
     const activePage = document.querySelector(".page.active");
     if(!activePage) return;
-
-    if(activePage.id === "champions"){
-        loadChampions();
-        return;
-    }
-
+    if(activePage.id === "champions") return loadChampions();
+    if(activePage.id === "matches") return loadMatches();
     loadPlayers();
 }
 
 async function loadPlayers(){
     if(!db) return;
 
-    const {data,error} = await db
-        .from('bc_players')
-        .select('*')
-        .order('carry_score',{ascending:false});
-
-    if(error){
-        console.error(error);
-        return;
-    }
+    const {data,error} = await db.from('bc_players').select('*').order('carry_score',{ascending:false});
+    if(error){console.error(error);return;}
 
     playersCache = data;
-
     document.getElementById('playerCount').innerText = data.length;
-
-    const totalGames = data.reduce((sum,p)=>sum + (p.total_games || 0),0);
-    document.getElementById('totalGameCount').innerText = totalGames;
 
     const validPlayers = data.filter(p=>p.total_games > 0);
     const avgWinrate = validPlayers.length
@@ -180,8 +173,25 @@ async function loadPlayers(){
 
     document.getElementById('avgWinrate').innerText = avgWinrate.toFixed(1) + "%";
 
+    await loadHomeMatchStats();
+
     renderPlayers(data);
     renderTopPlayers(data);
+}
+
+async function loadHomeMatchStats(){
+    const {count,error} = await db.from('bc_matches').select('*',{count:'exact',head:true});
+    if(!error && count !== null) document.getElementById('totalGameCount').innerText = count;
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const {count:weekCount,error:weekError} = await db
+        .from('bc_matches')
+        .select('*',{count:'exact',head:true})
+        .gte('played_at',sevenDaysAgo.toISOString());
+
+    if(!weekError && weekCount !== null) document.getElementById('weeklyGameCount').innerText = weekCount;
 }
 
 async function loadChampions(){
@@ -190,9 +200,7 @@ async function loadChampions(){
     const container = document.getElementById("championsContainer");
     container.innerHTML = `<div class="loading">챔피언 데이터 불러오는 중...</div>`;
 
-    const {data,error} = await db
-        .from('bc_records')
-        .select('*');
+    const {data,error} = await db.from('bc_records').select('*');
 
     if(error){
         console.error(error);
@@ -201,6 +209,150 @@ async function loadChampions(){
     }
 
     renderChampions(data || []);
+}
+
+async function loadMatches(){
+    if(!db) return;
+    if(!playersCache.length) await loadPlayers();
+
+    const container = document.getElementById("matchesContainer");
+    container.innerHTML = `<div class="loading">내전 기록 불러오는 중...</div>`;
+
+    const {data:matches,error:matchError} = await db
+        .from('bc_matches')
+        .select('*')
+        .order('played_at',{ascending:false});
+
+    if(matchError){
+        console.error(matchError);
+        container.innerHTML = `<div class="empty-box">내전 기록을 불러오지 못했습니다.</div>`;
+        return;
+    }
+
+    if(!matches.length){
+        container.innerHTML = `<div class="empty-box">아직 내전 기록이 없습니다.</div>`;
+        return;
+    }
+
+    const matchIds = matches.map(m=>m.id);
+
+    const {data:records,error:recordError} = await db
+        .from('bc_records')
+        .select('*')
+        .in('match_id',matchIds);
+
+    if(recordError){
+        console.error(recordError);
+        container.innerHTML = `<div class="empty-box">참가자 기록을 불러오지 못했습니다.</div>`;
+        return;
+    }
+
+    matchesCache = matches.map(match=>{
+        return {
+            ...match,
+            records:(records || []).filter(r=>r.match_id === match.id)
+        };
+    });
+
+    renderMatches(matchesCache);
+}
+
+function renderMatches(matches){
+    const container = document.getElementById("matchesContainer");
+
+    container.innerHTML = matches.map(match=>{
+        const blueRecords = match.records.filter(r=>r.team === "blue");
+        const redRecords = match.records.filter(r=>r.team === "red");
+
+        const winnerText = match.winner === "blue" ? "블루 승리" : "레드 승리";
+        const winnerClass = match.winner === "blue" ? "blue" : "red";
+
+        return `
+            <div class="match-card" onclick="openMatch(${match.id})">
+                <div class="match-card-top">
+                    <div class="match-code">${escapeHtml(match.match_code || "MATCH-" + match.id)}</div>
+                    <div class="match-date">${formatDate(match.played_at)}</div>
+                </div>
+
+                <div class="score-box">
+                    <span class="blue">BLUE ${match.blue_score ?? 0}</span>
+                    <span>:</span>
+                    <span class="red">${match.red_score ?? 0} RED</span>
+                </div>
+
+                <div class="stat">
+                    결과: <span class="${winnerClass}">${winnerText}</span>
+                </div>
+                <div class="stat">
+                    참가자: 블루 ${blueRecords.length}명 / 레드 ${redRecords.length}명
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function openMatch(id){
+    const match = matchesCache.find(m=>m.id === id);
+    if(!match) return;
+
+    const blueRecords = match.records.filter(r=>r.team === "blue");
+    const redRecords = match.records.filter(r=>r.team === "red");
+
+    document.getElementById("matchDetailContent").innerHTML = `
+        <div class="section">
+            <div class="card">
+                <div class="match-card-top">
+                    <div>
+                        <h1>${escapeHtml(match.match_code || "MATCH-" + match.id)}</h1>
+                        <p class="stat">${formatDate(match.played_at)}</p>
+                    </div>
+                    <div class="badge">${match.winner === "blue" ? "블루 승리" : "레드 승리"}</div>
+                </div>
+
+                <div class="score-box">
+                    <span class="blue">BLUE ${match.blue_score ?? 0}</span>
+                    <span>:</span>
+                    <span class="red">${match.red_score ?? 0} RED</span>
+                </div>
+            </div>
+
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-title blue">BLUE TEAM</div>
+                    ${buildTeamRecords(blueRecords)}
+                </div>
+
+                <div class="team-card">
+                    <div class="team-title red">RED TEAM</div>
+                    ${buildTeamRecords(redRecords)}
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById("matchDetail").classList.add("active");
+}
+
+function buildTeamRecords(records){
+    if(!records.length) return `<div class="empty-box">기록 없음</div>`;
+
+    return records.map(record=>{
+        const player = playersCache.find(p=>p.id === record.player_id);
+        const name = player ? player.nickname : "알 수 없음";
+
+        return `
+            <div class="record-row">
+                <div>
+                    <strong>${escapeHtml(name)}</strong>
+                    <div class="champion-sub">${escapeHtml(record.champion_name || "-")} · ${escapeHtml(record.lane || "-")}</div>
+                </div>
+                <div>${record.kills || 0}/${record.deaths || 0}/${record.assists || 0}</div>
+                <div>KP ${record.kp ?? 0}%</div>
+                <div>${record.score ?? 0}점</div>
+            </div>
+        `;
+    }).join('');
 }
 
 function renderChampions(records){
@@ -217,16 +369,7 @@ function renderChampions(records){
         const champ = record.champion_name || "알 수 없음";
 
         if(!map[champ]){
-            map[champ] = {
-                champion_name: champ,
-                games: 0,
-                wins: 0,
-                kills: 0,
-                deaths: 0,
-                assists: 0,
-                kp: 0,
-                score: 0
-            };
+            map[champ] = {champion_name:champ,games:0,wins:0,kills:0,deaths:0,assists:0,kp:0,score:0};
         }
 
         map[champ].games += 1;
@@ -238,8 +381,7 @@ function renderChampions(records){
         map[champ].score += Number(record.score || 0);
     });
 
-    const champions = Object.values(map)
-        .sort((a,b)=>b.games - a.games || b.wins - a.wins);
+    const champions = Object.values(map).sort((a,b)=>b.games - a.games || b.wins - a.wins);
 
     container.innerHTML = champions.map(champ=>{
         const winrate = champ.games ? ((champ.wins / champ.games) * 100).toFixed(1) : "0.0";
@@ -252,31 +394,14 @@ function renderChampions(records){
         return `
             <div class="player-card">
                 <div class="champion-card-title">${escapeHtml(champ.champion_name)}</div>
-
                 <div class="stat">⚔️ ${champ.games}판</div>
                 <div class="stat">🏆 ${champ.wins}승 ${champ.games - champ.wins}패</div>
                 <div class="stat">📈 승률 ${winrate}%</div>
-
                 <div class="champion-stats">
-                    <div class="champion-stat-box">
-                        <div class="champion-stat-label">평균 KDA</div>
-                        <div class="champion-stat-value">${avgK}/${avgD}/${avgA}</div>
-                    </div>
-
-                    <div class="champion-stat-box">
-                        <div class="champion-stat-label">평균 KP</div>
-                        <div class="champion-stat-value">${avgKP}%</div>
-                    </div>
-
-                    <div class="champion-stat-box">
-                        <div class="champion-stat-label">평균 점수</div>
-                        <div class="champion-stat-value">${avgScore}</div>
-                    </div>
-
-                    <div class="champion-stat-box">
-                        <div class="champion-stat-label">픽 비중</div>
-                        <div class="champion-stat-value">${champ.games}회</div>
-                    </div>
+                    <div class="champion-stat-box"><div class="champion-stat-label">평균 KDA</div><div class="champion-stat-value">${avgK}/${avgD}/${avgA}</div></div>
+                    <div class="champion-stat-box"><div class="champion-stat-label">평균 KP</div><div class="champion-stat-value">${avgKP}%</div></div>
+                    <div class="champion-stat-box"><div class="champion-stat-label">평균 점수</div><div class="champion-stat-value">${avgScore}</div></div>
+                    <div class="champion-stat-box"><div class="champion-stat-label">픽 비중</div><div class="champion-stat-value">${champ.games}회</div></div>
                 </div>
             </div>
         `;
@@ -284,20 +409,15 @@ function renderChampions(records){
 }
 
 function getWinrate(player){
-    return player.total_games
-        ? ((player.wins / player.total_games) * 100).toFixed(1)
-        : "0.0";
+    return player.total_games ? ((player.wins / player.total_games) * 100).toFixed(1) : "0.0";
 }
 
 function getWinPointChange(player,result){
     const totalGames = player.total_games || 0;
     const wins = player.wins || 0;
-
     const winrate = totalGames > 0 ? (wins / totalGames) * 100 : 50;
 
-    if(result === "lose"){
-        return -15;
-    }
+    if(result === "lose") return -15;
 
     let winPoint = 20;
 
@@ -348,32 +468,20 @@ async function openPlayer(id){
     const player = playersCache.find(p => p.id === id);
     if(!player) return;
 
-    const detail = document.getElementById("playerDetailContent");
-
-    detail.innerHTML = `
+    document.getElementById("playerDetailContent").innerHTML = `
         <div class="detail-layout">
             <div class="card">
                 <div class="big-profile"></div>
-                <h1>${escapeHtml(player.nickname)}</h1>
-                <br>
+                <h1>${escapeHtml(player.nickname)}</h1><br>
                 <p class="stat">⚔️ ${player.total_games}전</p>
                 <p class="stat">🏆 ${player.wins}승 ${player.losses}패</p>
                 <p class="stat">📈 승률 ${getWinrate(player)}%</p>
                 <p class="stat">⭐ 승점 ${player.carry_score}</p>
             </div>
-
             <div>
-                <div class="card">
-                    <h2>모스트 챔피언</h2>
-                    <br>
-                    <div class="detail-loading">전적 데이터를 불러오는 중...</div>
-                </div>
+                <div class="card"><h2>모스트 챔피언</h2><br><div class="detail-loading">전적 데이터를 불러오는 중...</div></div>
                 <br>
-                <div class="card">
-                    <h2>최근 전적</h2>
-                    <br>
-                    <div class="detail-loading">최근 전적을 불러오는 중...</div>
-                </div>
+                <div class="card"><h2>최근 전적</h2><br><div class="detail-loading">최근 전적을 불러오는 중...</div></div>
             </div>
         </div>
     `;
@@ -387,13 +495,7 @@ async function openPlayer(id){
 async function loadPlayerDetail(player){
     const {data,error} = await db
         .from('bc_records')
-        .select(`
-            *,
-            bc_matches (
-                match_code,
-                played_at
-            )
-        `)
+        .select(`*,bc_matches(match_code,played_at)`)
         .eq('player_id', player.id)
         .order('created_at',{ascending:false})
         .limit(20);
@@ -408,17 +510,14 @@ async function loadPlayerDetail(player){
 }
 
 function renderPlayerDetail(player,records){
-    const detail = document.getElementById("playerDetailContent");
-
     const mostChampionsHtml = buildMostChampions(records);
     const recentMatchesHtml = buildRecentMatches(player,records);
 
-    detail.innerHTML = `
+    document.getElementById("playerDetailContent").innerHTML = `
         <div class="detail-layout">
             <div class="card">
                 <div class="big-profile"></div>
-                <h1>${escapeHtml(player.nickname)}</h1>
-                <br>
+                <h1>${escapeHtml(player.nickname)}</h1><br>
                 <p class="stat">⚔️ ${player.total_games}전</p>
                 <p class="stat">🏆 ${player.wins}승 ${player.losses}패</p>
                 <p class="stat">📈 승률 ${getWinrate(player)}%</p>
@@ -427,45 +526,23 @@ function renderPlayerDetail(player,records){
                 <p class="stat">승리 시 예상 승점: +${getWinPointChange(player,"win")}</p>
                 <p class="stat">패배 시 예상 승점: -15</p>
             </div>
-
             <div>
-                <div class="card">
-                    <h2>모스트 챔피언</h2>
-                    <br>
-                    ${mostChampionsHtml}
-                </div>
+                <div class="card"><h2>모스트 챔피언</h2><br>${mostChampionsHtml}</div>
                 <br>
-                <div class="card">
-                    <h2>최근 전적</h2>
-                    <br>
-                    ${recentMatchesHtml}
-                </div>
+                <div class="card"><h2>최근 전적</h2><br>${recentMatchesHtml}</div>
             </div>
         </div>
     `;
 }
 
 function buildMostChampions(records){
-    if(!records.length){
-        return `<div class="empty-box">아직 전적 데이터가 없습니다.</div>`;
-    }
+    if(!records.length) return `<div class="empty-box">아직 전적 데이터가 없습니다.</div>`;
 
     const map = {};
 
     records.forEach(record=>{
         const champ = record.champion_name || "알 수 없음";
-
-        if(!map[champ]){
-            map[champ] = {
-                champion_name: champ,
-                games: 0,
-                wins: 0,
-                kills: 0,
-                deaths: 0,
-                assists: 0
-            };
-        }
-
+        if(!map[champ]) map[champ] = {champion_name:champ,games:0,wins:0,kills:0,deaths:0,assists:0};
         map[champ].games += 1;
         if(record.result === "win") map[champ].wins += 1;
         map[champ].kills += record.kills || 0;
@@ -473,9 +550,7 @@ function buildMostChampions(records){
         map[champ].assists += record.assists || 0;
     });
 
-    const champions = Object.values(map)
-        .sort((a,b)=>b.games - a.games)
-        .slice(0,5);
+    const champions = Object.values(map).sort((a,b)=>b.games - a.games).slice(0,5);
 
     return `
         <div class="champion-list">
@@ -500,9 +575,7 @@ function buildMostChampions(records){
 }
 
 function buildRecentMatches(player,records){
-    if(!records.length){
-        return `<div class="empty-box">아직 최근 전적 데이터가 없습니다.</div>`;
-    }
+    if(!records.length) return `<div class="empty-box">아직 최근 전적 데이터가 없습니다.</div>`;
 
     return `
         <div class="match-list">
@@ -514,7 +587,6 @@ function buildRecentMatches(player,records){
                 const score = record.score ?? 0;
                 const kp = record.kp ?? 0;
                 const matchCode = record.bc_matches?.match_code || "MATCH";
-
                 const pointChange = getWinPointChange(player,record.result);
                 const pointClass = pointChange >= 0 ? "point-plus" : "point-minus";
                 const pointText = pointChange >= 0 ? `+${pointChange}` : `${pointChange}`;
@@ -522,10 +594,7 @@ function buildRecentMatches(player,records){
                 return `
                     <div class="match-row">
                         <div class="${resultClass}">${resultText}</div>
-                        <div>
-                            <strong>${escapeHtml(champ)}</strong>
-                            <div class="champion-sub">${escapeHtml(matchCode)} · ${escapeHtml(lane)}</div>
-                        </div>
+                        <div><strong>${escapeHtml(champ)}</strong><div class="champion-sub">${escapeHtml(matchCode)} · ${escapeHtml(lane)}</div></div>
                         <div>${record.kills || 0} / ${record.deaths || 0} / ${record.assists || 0}</div>
                         <div>KP ${kp}%</div>
                         <div>점수 ${score}</div>
@@ -538,27 +607,17 @@ function buildRecentMatches(player,records){
 }
 
 function renderPlayerDetailError(player){
-    const detail = document.getElementById("playerDetailContent");
-
-    detail.innerHTML = `
+    document.getElementById("playerDetailContent").innerHTML = `
         <div class="detail-layout">
             <div class="card">
                 <div class="big-profile"></div>
-                <h1>${escapeHtml(player.nickname)}</h1>
-                <br>
+                <h1>${escapeHtml(player.nickname)}</h1><br>
                 <p class="stat">⚔️ ${player.total_games}전</p>
                 <p class="stat">🏆 ${player.wins}승 ${player.losses}패</p>
                 <p class="stat">📈 승률 ${getWinrate(player)}%</p>
                 <p class="stat">⭐ 승점 ${player.carry_score}</p>
             </div>
-
-            <div>
-                <div class="card">
-                    <h2>상세 정보</h2>
-                    <br>
-                    <div class="empty-box">전적 데이터를 불러오지 못했습니다. 콘솔 에러를 확인하세요.</div>
-                </div>
-            </div>
+            <div><div class="card"><h2>상세 정보</h2><br><div class="empty-box">전적 데이터를 불러오지 못했습니다.</div></div></div>
         </div>
     `;
 }
@@ -566,6 +625,17 @@ function renderPlayerDetailError(player){
 function backToPlayers(){
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
     document.getElementById("players").classList.add("active");
+}
+
+function backToMatches(){
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById("matches").classList.add("active");
+}
+
+function formatDate(value){
+    if(!value) return "-";
+    const date = new Date(value);
+    return date.toLocaleString("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
 }
 
 function escapeHtml(value){
