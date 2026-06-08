@@ -410,29 +410,34 @@ renderMasterRankingArea=function(championName){
 
 
 
-/* ===== numbered-fix-2026-06-08: 1 슬라이드 전체보기 / 2 전적 이동 / 3 최고기록 위치보정 ===== */
+
+/* ===== BANDLE_SAFE_UI_PATCH_ONLY_2026_06_08 ===== */
 (function(){
+  /*
+    데이터 로드/Supabase/import/loadChampionMeta/loadData는 수정하지 않음.
+    이 블록은 화면 동작 함수만 덮어씀.
+  */
   const RECENT_PREVIEW_LIMIT = 10;
   const MOST_PREVIEW_LIMIT = 3;
-  const SIDE_IDS = ["recentMatchSection","championRecentMatchSection","mostChampionSection"];
+  const SIDE_SECTION_IDS = ["recentMatchSection","championRecentMatchSection","mostChampionSection"];
 
   let sideStack = [];
   let sideReturnTop = 0;
-  let sideModeBeforeOpen = { recentLane:"ALL", recentChampionSearch:"" };
+  let savedRecentState = { lane:"ALL", search:"" };
   let lastRecordKey = "";
 
   const style = document.createElement("style");
   style.textContent = `
-    body.side-page-open{overflow:hidden!important;}
-    body.side-page-open #detailPage{overflow:hidden!important;}
+    body.bandle-side-open{overflow:hidden!important;}
+    body.bandle-side-open #detailPage{overflow:hidden!important;}
 
-    .side-slide-page{
+    .bandle-side-page{
       position:fixed!important;
       top:58px!important;
       right:0!important;
       bottom:0!important;
       width:min(1240px,95vw)!important;
-      background:radial-gradient(circle at left,rgba(15,23,42,.55),transparent 28%),radial-gradient(circle at right,rgba(15,23,42,.55),transparent 28%),linear-gradient(90deg,#111827,#1e293b 18%,#1e293b 82%,#111827)!important;
+      background:linear-gradient(90deg,#111827,#1e293b 18%,#1e293b 82%,#111827)!important;
       border-left:1px solid rgba(147,197,253,.55)!important;
       box-shadow:-28px 0 90px rgba(0,0,0,.72)!important;
       z-index:28000!important;
@@ -441,10 +446,10 @@ renderMasterRankingArea=function(championName){
       overflow:auto!important;
       scrollbar-width:none!important;
     }
-    .side-slide-page::-webkit-scrollbar{width:0!important;height:0!important;display:none!important;}
-    .side-slide-page.show{transform:translateX(0)!important;}
+    .bandle-side-page::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;}
+    .bandle-side-page.show{transform:translateX(0)!important;}
 
-    .side-slide-head{
+    .bandle-side-head{
       position:sticky!important;
       top:0!important;
       z-index:20!important;
@@ -458,7 +463,7 @@ renderMasterRankingArea=function(championName){
       border-bottom:1px solid rgba(96,165,250,.35)!important;
       backdrop-filter:blur(12px)!important;
     }
-    .side-slide-title{
+    .bandle-side-title{
       color:white!important;
       font-size:22px!important;
       font-weight:1000!important;
@@ -466,7 +471,7 @@ renderMasterRankingArea=function(championName){
       overflow:hidden!important;
       text-overflow:ellipsis!important;
     }
-    .side-slide-btn{
+    .bandle-side-btn{
       border:none!important;
       border-radius:999px!important;
       background:#2563eb!important;
@@ -477,27 +482,18 @@ renderMasterRankingArea=function(championName){
       flex-shrink:0!important;
       font-family:inherit!important;
     }
-    .side-slide-btn.prev{background:#475569!important;}
-    .side-slide-body{padding:18px!important;}
+    .bandle-side-btn.prev{background:#475569!important;}
+    .bandle-side-body{padding:18px!important;}
 
-    .smart-scroll-section{background:rgba(15,23,42,.92)!important;opacity:1!important;}
-    .smart-scroll-section .collapsible-content{
-      max-height:none!important;
+    .bandle-side-body .section,
+    .bandle-side-body table,
+    .bandle-side-body th,
+    .bandle-side-body td{
       opacity:1!important;
-      margin-top:14px!important;
-      overflow:visible!important;
-      display:block!important;
-    }
-    .smart-scroll-area{
-      background:transparent!important;
-      max-height:none!important;
-      overflow:visible!important;
-      border:none!important;
-      padding:0!important;
     }
 
-    .side-click-row{cursor:pointer!important;}
-    .side-click-row:hover td{background:rgba(37,99,235,.22)!important;}
+    .bandle-click-row{cursor:pointer!important;}
+    .bandle-click-row:hover td{background:rgba(37,99,235,.22)!important;}
 
     .record-detail-panel{
       background:#0f172a!important;
@@ -506,76 +502,87 @@ renderMasterRankingArea=function(championName){
       box-shadow:0 18px 50px rgba(0,0,0,.42)!important;
       opacity:1!important;
     }
-    .record-detail-panel::before,.record-detail-panel::after{display:none!important;content:none!important;}
-    .record-detail-panel table,.record-detail-panel tr,.record-detail-panel td,.record-detail-panel th{border-top:none!important;}
+    .record-detail-panel::before,
+    .record-detail-panel::after{display:none!important;content:none!important;}
+    .record-detail-panel table,
+    .record-detail-panel tr,
+    .record-detail-panel td,
+    .record-detail-panel th{border-top:none!important;}
+
+    .collapsible-section.open .collapsible-content{
+      max-height:none!important;
+      overflow:visible!important;
+    }
 
     @media(max-width:760px){
-      .side-slide-page{top:52px!important;width:97vw!important;}
-      .side-slide-title{font-size:16px!important;}
-      .side-slide-body{padding:10px!important;}
-      .side-slide-btn{padding:8px 11px!important;font-size:12px!important;}
+      .bandle-side-page{top:52px!important;width:97vw!important;}
+      .bandle-side-title{font-size:16px!important;}
+      .bandle-side-body{padding:10px!important;}
+      .bandle-side-btn{padding:8px 11px!important;font-size:12px!important;}
     }
   `;
   document.head.appendChild(style);
 
-  function detailEl(){return document.getElementById("detailPage");}
-  function getCurrentScrollTop(){
-    const d = detailEl();
+  function detailPageEl(){ return document.getElementById("detailPage"); }
+
+  function getScrollTop(){
+    const d = detailPageEl();
     if(d && d.style.display !== "none") return d.scrollTop || 0;
     return window.scrollY || 0;
   }
-  function restoreScrollTop(y){
-    const d = detailEl();
-    if(d && d.style.display !== "none") d.scrollTo({top:y, behavior:"auto"});
-    else window.scrollTo({top:y, behavior:"auto"});
+
+  function setScrollTop(v){
+    const d = detailPageEl();
+    if(d && d.style.display !== "none") d.scrollTo({top:v, behavior:"auto"});
+    else window.scrollTo({top:v, behavior:"auto"});
   }
 
   function ensureSidePage(){
-    let page = document.getElementById("sideSlidePage");
-    if(!page){
-      page = document.createElement("div");
-      page.id = "sideSlidePage";
-      page.className = "side-slide-page";
-      page.innerHTML = `
-        <div class="side-slide-head">
-          <div id="sideSlideTitle" class="side-slide-title"></div>
-          <button id="sideSlideBtn" class="side-slide-btn" type="button"></button>
+    let el = document.getElementById("bandleSidePage");
+    if(!el){
+      el = document.createElement("div");
+      el.id = "bandleSidePage";
+      el.className = "bandle-side-page";
+      el.innerHTML = `
+        <div class="bandle-side-head">
+          <div id="bandleSideTitle" class="bandle-side-title"></div>
+          <button id="bandleSideBtn" class="bandle-side-btn" type="button"></button>
         </div>
-        <div id="sideSlideBody" class="side-slide-body"></div>
+        <div id="bandleSideBody" class="bandle-side-body"></div>
       `;
-      document.body.appendChild(page);
-      document.getElementById("sideSlideBtn").onclick = sideBackOrClose;
+      document.body.appendChild(el);
+      document.getElementById("bandleSideBtn").onclick = sideBackOrClose;
     }
-    return page;
+    return el;
   }
 
-  function renderSidePage(page, push=true){
-    const side = ensureSidePage();
+  function openSide(page, push=true){
+    const el = ensureSidePage();
     if(push) sideStack.push(page);
 
     const cur = sideStack[sideStack.length - 1];
-    document.getElementById("sideSlideTitle").textContent = cur.title;
-    document.getElementById("sideSlideBody").innerHTML = cur.html;
+    document.getElementById("bandleSideTitle").textContent = cur.title;
+    document.getElementById("bandleSideBody").innerHTML = cur.html;
 
-    const btn = document.getElementById("sideSlideBtn");
-    const isNested = sideStack.length > 1;
-    btn.textContent = isNested ? "이전화면으로 이동하기" : "나가기";
-    btn.classList.toggle("prev", isNested);
+    const btn = document.getElementById("bandleSideBtn");
+    const nested = sideStack.length > 1;
+    btn.textContent = nested ? "이전화면으로 이동하기" : "나가기";
+    btn.classList.toggle("prev", nested);
 
-    document.body.classList.add("side-page-open");
-    requestAnimationFrame(() => side.classList.add("show"));
+    document.body.classList.add("bandle-side-open");
+    requestAnimationFrame(() => el.classList.add("show"));
   }
 
-  function closeSidePage(){
-    const side = document.getElementById("sideSlidePage");
-    if(side) side.classList.remove("show");
+  function closeSide(){
+    const el = document.getElementById("bandleSidePage");
+    if(el) el.classList.remove("show");
+    document.body.classList.remove("bandle-side-open");
 
-    document.body.classList.remove("side-page-open");
     sideStack = [];
-    recentLane = sideModeBeforeOpen.recentLane || "ALL";
-    recentChampionSearch = sideModeBeforeOpen.recentChampionSearch || "";
+    recentLane = savedRecentState.lane || "ALL";
+    recentChampionSearch = savedRecentState.search || "";
 
-    setTimeout(() => restoreScrollTop(sideReturnTop || 0), 80);
+    setTimeout(() => setScrollTop(sideReturnTop || 0), 80);
   }
 
   function sideBackOrClose(){
@@ -583,20 +590,20 @@ renderMasterRankingArea=function(championName){
       sideStack.pop();
       recentLane = "ALL";
       recentChampionSearch = "";
-      renderSidePage(sideStack[sideStack.length - 1], false);
+      openSide(sideStack[sideStack.length - 1], false);
       return;
     }
-    closeSidePage();
+    closeSide();
   }
 
-  function beginSideOpen(){
+  function startSide(){
     if(!sideStack.length){
-      sideReturnTop = getCurrentScrollTop();
-      sideModeBeforeOpen = { recentLane, recentChampionSearch };
+      sideReturnTop = getScrollTop();
+      savedRecentState = { lane:recentLane, search:recentChampionSearch };
     }
   }
 
-  function recentRows(mode, name, full){
+  function getRecentRows(mode, name, full){
     let data = mode === "champion"
       ? rows.filter(r => r.champion_name === name)
       : rows.filter(r => r.lol_name === name);
@@ -615,27 +622,27 @@ renderMasterRankingArea=function(championName){
   }
 
   function sideRecentControls(mode, name){
-    const isChampion = mode === "champion";
+    const isChamp = mode === "champion";
     return `
       <div class="recent-control-wrap">
         <div class="recent-search-wrap">
           <div class="recent-search-row">
             <input id="recentSearchInput" class="recent-search-box" type="text"
-              placeholder="${isChampion ? "플레이어 이름 검색..." : "챔피언 이름 검색..."}"
+              placeholder="${isChamp ? "플레이어 이름 검색..." : "챔피언 이름 검색..."}"
               autocomplete="off"
               value="${htmlSafe(recentChampionSearch)}"
-              ${isChampion ? "" : `oninput="renderRecentSuggestions('${safe(name)}')"`}
+              ${isChamp ? "" : `oninput="renderRecentSuggestions('${safe(name)}')"`}
               onkeydown="if(event.key==='Enter')runRecentSearch('${safe(name)}',this.value)"
             />
             <button class="recent-search-btn" type="button"
               onclick="runRecentSearch('${safe(name)}',document.getElementById('recentSearchInput').value)">🔍</button>
           </div>
-          ${isChampion ? "" : `<div id="recentSuggestBox" class="recent-suggest-box"></div>`}
+          ${isChamp ? "" : `<div id="recentSuggestBox" class="recent-suggest-box"></div>`}
         </div>
         <div class="recent-filter-row">
           ${["ALL",...LANE_ORDER].map(l => `
             <button class="recent-lane-filter ${recentLane===l ? "active" : ""}" type="button"
-              onclick="${isChampion ? "setChampionRecentLane" : "setRecentLane"}('${l}','${safe(name)}')">
+              onclick="${isChamp ? "setChampionRecentLane" : "setRecentLane"}('${l}','${safe(name)}')">
               ${l==="ALL" ? "" : laneIcon(l)}<span>${LANE_LABELS[l]}</span>
             </button>
           `).join("")}
@@ -644,17 +651,15 @@ renderMasterRankingArea=function(championName){
     `;
   }
 
-  function recentPageHtml(mode, name){
-    return `${sideRecentControls(mode, name)}<div class="smart-scroll-area">${recentTableRows(recentRows(mode, name, true), mode)}</div>`;
+  function recentFullHtml(mode, name){
+    return `${sideRecentControls(mode, name)}${recentTableRows(getRecentRows(mode, name, true), mode)}`;
   }
 
-  function mostPageHtml(playerName, full){
-    const original = getPlayerMostStats(playerName);
-    const list = full ? original : original.slice(0, MOST_PREVIEW_LIMIT);
+  function mostHtml(playerName, full){
+    const all = getPlayerMostStats(playerName);
+    const list = full ? all : all.slice(0, MOST_PREVIEW_LIMIT);
 
-    if(!original.length){
-      return mostLaneFilters(playerName) + `<div>모스트 챔피언 데이터가 없습니다.</div>`;
-    }
+    if(!all.length) return mostLaneFilters(playerName) + `<div>모스트 챔피언 데이터가 없습니다.</div>`;
 
     return `
       ${mostLaneFilters(playerName)}
@@ -680,7 +685,7 @@ renderMasterRankingArea=function(championName){
         </thead>
         <tbody>
           ${list.map((c,i) => `
-            <tr class="side-click-row" onclick="openPlayerRecordFromMost('${safe(playerName)}','${safe(c.lane)}','${safe(c.champion)}')">
+            <tr class="bandle-click-row" onclick="openRecordFromMost('${safe(playerName)}','${safe(c.lane)}','${safe(c.champion)}')">
               <td>${rankText(i+1)}</td>
               <td style="text-align:left">
                 <div class="champ-cell" title="${htmlSafe(c.champion)}">
@@ -707,77 +712,69 @@ renderMasterRankingArea=function(championName){
   function markSection(id, name, mode){
     const sec = document.getElementById(id);
     if(!sec) return;
-
-    sec.dataset.sideName = name || "";
-    sec.dataset.sideMode = mode || "player";
-    sec.classList.add("smart-scroll-section", "open");
-
+    sec.dataset.bandleName = name || "";
+    sec.dataset.bandleMode = mode || "player";
+    sec.classList.add("open");
     const btn = sec.querySelector(".collapse-toggle");
     if(btn){
       btn.innerHTML = `${id === "mostChampionSection" ? "플레이한 챔피언 전체보기" : "전적 전체보기"} <span class="collapse-arrow">⌄</span>`;
     }
   }
 
-  function wrapAreaTable(area){
-    if(!area || area.querySelector(".smart-scroll-area")) return;
-    const table = area.querySelector("table");
-    if(!table) return;
-    const wrap = document.createElement("div");
-    wrap.className = "smart-scroll-area";
-    table.parentNode.insertBefore(wrap, table);
-    wrap.appendChild(table);
-  }
-
   renderRecentMatchArea = function(playerName){
     markSection("recentMatchSection", playerName, "player");
     const area = document.getElementById("recentMatchArea");
-    if(!area) return;
-    area.innerHTML = recentTableRows(recentRows("player", playerName, false), "player");
-    wrapAreaTable(area);
+    if(area) area.innerHTML = recentTableRows(getRecentRows("player", playerName, false), "player");
   };
 
   renderChampionRecentMatchArea = function(championName){
     markSection("championRecentMatchSection", championName, "champion");
     const area = document.getElementById("championRecentMatchArea");
-    if(!area) return;
-    area.innerHTML = recentTableRows(recentRows("champion", championName, false), "champion");
-    wrapAreaTable(area);
+    if(area) area.innerHTML = recentTableRows(getRecentRows("champion", championName, false), "champion");
   };
 
   renderMostChampionArea = function(playerName){
     markSection("mostChampionSection", playerName, "most");
     const area = document.getElementById("mostChampionArea");
-    if(!area) return;
-    area.innerHTML = mostPageHtml(playerName, false);
-    wrapAreaTable(area);
+    if(area) area.innerHTML = mostHtml(playerName, false);
   };
 
-  function openRecentSidePage(mode, name, titleName){
-    beginSideOpen();
-    renderSidePage({ kind:"recent", mode, name, title:`전적 전체보기-${titleName || name}`, html:recentPageHtml(mode, name) });
+  function openRecentSide(mode, name){
+    startSide();
+    openSide({
+      kind:"recent",
+      mode,
+      name,
+      title:`전적 전체보기-${name}`,
+      html:recentFullHtml(mode, name)
+    });
   }
 
   toggleSmartSection = function(id){
     const sec = document.getElementById(id);
     if(!sec) return;
-
-    const name = sec.dataset.sideName || currentDetailName || "";
-    const mode = sec.dataset.sideMode || "player";
+    const name = sec.dataset.bandleName || currentDetailName || "";
+    const mode = sec.dataset.bandleMode || "player";
 
     recentLane = "ALL";
     recentChampionSearch = "";
 
     if(id === "mostChampionSection"){
-      beginSideOpen();
-      renderSidePage({ kind:"most", playerName:name, title:`플레이한 챔피언 전체보기-${name}`, html:mostPageHtml(name, true) });
+      startSide();
+      openSide({
+        kind:"most",
+        playerName:name,
+        title:`플레이한 챔피언 전체보기-${name}`,
+        html:mostHtml(name, true)
+      });
       return;
     }
 
-    openRecentSidePage(mode, name, name);
+    openRecentSide(mode, name);
   };
 
   toggleCollapsible = function(id){
-    if(SIDE_IDS.includes(id)) return toggleSmartSection(id);
+    if(SIDE_SECTION_IDS.includes(id)) return toggleSmartSection(id);
 
     const sec = document.getElementById(id);
     if(!sec) return;
@@ -789,46 +786,31 @@ renderMasterRankingArea=function(championName){
     }
   };
 
-  openPlayerRecordFromMost = function(playerName, lane, champion){
+  openRecordFromMost = function(playerName, lane, champion){
     recentLane = lane || "ALL";
     recentChampionSearch = champion || "";
-    openRecentSidePage("player", playerName, playerName);
-  };
-
-  jumpFromMost = function(playerName, champion, lane){
-    beginSideOpen();
-    recentLane = lane || "ALL";
-    recentChampionSearch = champion || "";
-    openRecentSidePage("player", playerName, playerName);
-  };
-
-  jumpFromMaster = function(championName, playerName, lane){
-    beginSideOpen();
-    recentLane = lane || "ALL";
-    recentChampionSearch = playerName || "";
-    openRecentSidePage("champion", championName, championName);
-  };
-
-  jumpFromLaneStats = function(mode, name, lane){
-    beginSideOpen();
-    recentLane = lane || "ALL";
-    recentChampionSearch = "";
-    openRecentSidePage(mode, name, name);
+    openSide({
+      kind:"recent",
+      mode:"player",
+      name:playerName,
+      title:`전적 전체보기-${playerName}`,
+      html:recentFullHtml("player", playerName)
+    });
   };
 
   openRecentByFilter = function(mode, name, lane, search){
-    beginSideOpen();
+    startSide();
     recentLane = lane || "ALL";
     recentChampionSearch = search || "";
-    openRecentSidePage(mode, name, name);
+    openRecentSide(mode, name);
   };
 
   setRecentLane = function(lane, playerName){
     recentLane = lane;
     const cur = sideStack[sideStack.length - 1];
     if(cur && cur.kind === "recent" && cur.mode === "player"){
-      cur.html = recentPageHtml("player", playerName);
-      renderSidePage(cur, false);
+      cur.html = recentFullHtml("player", playerName);
+      openSide(cur, false);
       return;
     }
     renderRecentMatchArea(playerName);
@@ -838,8 +820,8 @@ renderMasterRankingArea=function(championName){
     recentLane = lane;
     const cur = sideStack[sideStack.length - 1];
     if(cur && cur.kind === "recent" && cur.mode === "champion"){
-      cur.html = recentPageHtml("champion", championName);
-      renderSidePage(cur, false);
+      cur.html = recentFullHtml("champion", championName);
+      openSide(cur, false);
       return;
     }
     renderChampionRecentMatchArea(championName);
@@ -847,23 +829,12 @@ renderMasterRankingArea=function(championName){
 
   runRecentSearch = function(target, value){
     recentChampionSearch = (value || "").trim();
-
-    const input = document.getElementById("recentSearchInput");
-    if(input) input.value = recentChampionSearch;
-
-    const suggest = document.getElementById("recentSuggestBox");
-    if(suggest){
-      suggest.style.display = "none";
-      suggest.innerHTML = "";
-    }
-
     const cur = sideStack[sideStack.length - 1];
     if(cur && cur.kind === "recent"){
-      cur.html = recentPageHtml(cur.mode, target);
-      renderSidePage(cur, false);
+      cur.html = recentFullHtml(cur.mode, target);
+      openSide(cur, false);
       return;
     }
-
     if(document.getElementById("championRecentMatchArea")) renderChampionRecentMatchArea(target);
     else renderRecentMatchArea(target);
   };
@@ -872,8 +843,8 @@ renderMasterRankingArea=function(championName){
     mostLane = lane;
     const cur = sideStack[sideStack.length - 1];
     if(cur && cur.kind === "most"){
-      cur.html = mostPageHtml(playerName, true);
-      renderSidePage(cur, false);
+      cur.html = mostHtml(playerName, true);
+      openSide(cur, false);
       return;
     }
     renderMostChampionArea(playerName);
@@ -885,11 +856,10 @@ renderMasterRankingArea=function(championName){
       mostSort = type;
       mostAsc = type === "name";
     }
-
     const cur = sideStack[sideStack.length - 1];
     if(cur && cur.kind === "most"){
-      cur.html = mostPageHtml(playerName, true);
-      renderSidePage(cur, false);
+      cur.html = mostHtml(playerName, true);
+      openSide(cur, false);
       return;
     }
     renderMostChampionArea(playerName);
@@ -898,10 +868,8 @@ renderMasterRankingArea=function(championName){
   closeRecordPanel = function(){
     const panel = document.getElementById("recordDetailPanel");
     if(!panel) return;
-
     panel.classList.remove("show");
     lastRecordKey = "";
-
     setTimeout(() => {
       if(!panel.classList.contains("show")) panel.innerHTML = "";
     }, 390);
@@ -913,7 +881,7 @@ renderMasterRankingArea=function(championName){
     if(!panel || !row) return;
 
     const key = `${kind}:${label}:${rowId}`;
-    if(panel.classList.contains("show") && lastRecordKey === key){
+    if(panel.classList.contains("show") && key === lastRecordKey){
       closeRecordPanel();
       return;
     }
@@ -931,52 +899,49 @@ renderMasterRankingArea=function(championName){
     setTimeout(() => {
       const margin = 22;
       const rect = panel.getBoundingClientRect();
-      const viewportH = window.innerHeight || document.documentElement.clientHeight;
+      const vh = window.innerHeight || document.documentElement.clientHeight;
       let delta = 0;
 
-      if(rect.bottom > viewportH - margin) delta = rect.bottom - (viewportH - margin);
+      if(rect.bottom > vh - margin) delta = rect.bottom - (vh - margin);
       else if(rect.top < margin) delta = rect.top - margin;
 
       if(delta !== 0){
-        const d = detailEl();
+        const d = detailPageEl();
         if(d && d.style.display !== "none") d.scrollBy({top:delta, behavior:"smooth"});
         else window.scrollBy({top:delta, behavior:"smooth"});
       }
-    }, 80);
+    }, 90);
   };
 
-  const oldShowDetail = showDetail;
+  const originalShowDetail = showDetail;
   showDetail = function(html){
-    closeSidePage();
+    closeSide();
     lastRecordKey = "";
-    oldShowDetail(html);
+    originalShowDetail(html);
   };
 
-  const oldGoBack = goBack;
+  const originalGoBack = goBack;
   goBack = function(){
-    closeSidePage();
-    oldGoBack();
+    closeSide();
+    originalGoBack();
   };
 
-  window.closeRecordPanel = closeRecordPanel;
-  window.showBestRecord = showBestRecord;
+  window.closeSmartDrawer = closeSide;
   window.sideBackOrClose = sideBackOrClose;
-  window.closeSmartDrawer = closeSidePage;
   window.renderRecentMatchArea = renderRecentMatchArea;
   window.renderChampionRecentMatchArea = renderChampionRecentMatchArea;
   window.renderMostChampionArea = renderMostChampionArea;
   window.toggleSmartSection = toggleSmartSection;
   window.toggleCollapsible = toggleCollapsible;
-  window.openPlayerRecordFromMost = openPlayerRecordFromMost;
-  window.jumpFromMost = jumpFromMost;
-  window.jumpFromMaster = jumpFromMaster;
-  window.jumpFromLaneStats = jumpFromLaneStats;
+  window.openRecordFromMost = openRecordFromMost;
   window.openRecentByFilter = openRecentByFilter;
   window.setRecentLane = setRecentLane;
   window.setChampionRecentLane = setChampionRecentLane;
   window.runRecentSearch = runRecentSearch;
   window.setMostLane = setMostLane;
   window.sortMost = sortMost;
+  window.closeRecordPanel = closeRecordPanel;
+  window.showBestRecord = showBestRecord;
 })();
 
 loadData();setInterval(loadData,30000);
