@@ -40,6 +40,25 @@ h1{text-align:center;font-size:42px;margin:0 0 12px;font-weight:1000}.summary{te
 .recent-vs-table .my-star{color:#facc15;margin-right:3px;text-shadow:0 0 8px rgba(250,204,21,.55)}
 .recent-score-high{color:#c084fc!important}.recent-score-good{color:#fbbf24!important}.recent-score-mid{color:#22c55e!important}.recent-score-low{color:#93c5fd!important}.recent-score-bad{color:#cbd5e1!important}
 
+
+/* clean recent match table */
+.clean-recent-table{table-layout:fixed;border-spacing:0 8px!important}
+.clean-recent-table th{font-size:11px!important;padding:8px 4px!important;background:rgba(30,41,59,.95)!important}
+.clean-recent-table td{font-size:11px!important;padding:9px 5px!important;height:auto!important;background:rgba(51,65,85,.82)!important}
+.clean-recent-table tr.recent-win-row td{border-bottom:1px solid rgba(34,197,94,.45)!important}
+.clean-recent-table tr.recent-loss-row td{border-bottom:1px solid rgba(239,68,68,.45)!important}
+.clean-recent-table .champ-cell{gap:7px!important}
+.clean-recent-table .champ-icon{width:34px!important;height:34px!important;border-radius:9px!important}
+.clean-recent-table .recent-vs-mark{font-size:14px;color:#94a3b8}
+.clean-recent-table .my-star{color:#facc15;margin-right:3px;text-shadow:0 0 8px rgba(250,204,21,.55)}
+.clean-recent-table .win-side{box-shadow:inset 4px 0 0 rgba(34,197,94,.8)}
+.clean-recent-table .loss-side{box-shadow:inset 4px 0 0 rgba(239,68,68,.8)}
+.clean-recent-score-high{color:#c084fc!important}
+.clean-recent-score-good{color:#fbbf24!important}
+.clean-recent-score-mid{color:#22c55e!important}
+.clean-recent-score-low{color:#93c5fd!important}
+.clean-recent-score-bad{color:#cbd5e1!important}
+
 @media(max-width:1100px){body{padding:22px 0}h1{font-size:36px}th,td{font-size:13px;padding:11px 5px}.sort-btn{font-size:12px;padding:7px 4px}.champ-icon{width:38px;height:38px}.tier-badge{min-width:44px;height:30px;padding:0 9px}.stat-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:760px){body{padding:14px 0}h1{font-size:28px}.top-tabs{gap:8px}.tab{flex:1;padding:10px 0;font-size:15px}.search-box{font-size:14px;padding:13px}.search-btn{width:50px}.lane-filter{padding:8px 10px;font-size:13px}.lane-icon{width:19px;height:19px}th,td{font-size:11px;padding:9px 3px}.sort-btn{font-size:10px;padding:6px 2px}.champ-icon{width:30px;height:30px}.stat-grid{grid-template-columns:repeat(2,1fr)}.detail-hero{align-items:flex-start;padding:16px;gap:12px}.champ-icon.big,.profile-box{width:76px;height:76px}.hero-title{font-size:24px}.section{padding:14px}.section-title{font-size:17px}.detail-table th,.detail-table td{font-size:10px}.recent-search-wrap{min-width:100%}.recent-lane-filter{padding:7px 9px;font-size:12px}.recent-table th,.recent-table td{font-size:8.5px;padding:8px 3px}.recent-table .champ-icon{width:26px;height:26px}.floating-title-bar{height:52px;padding:0 16px}#floatingTitleText{font-size:19px}}
 </style>
@@ -122,27 +141,41 @@ function recentChampionCell(row,star=false,showPlayer=false){
     </div>
   `;
 }
+function scoreClass(v){v=Number(v)||0;if(v>=90)return"clean-recent-score-high";if(v>=80)return"clean-recent-score-good";if(v>=70)return"clean-recent-score-mid";if(v>=60)return"clean-recent-score-low";return"clean-recent-score-bad"}
+function recentChampionCell(row,star=false,showPlayer=false){
+  if(!row)return"-";
+  const champ=htmlSafe(row.champion_name||"-");
+  const player=htmlSafe(row.lol_name||"-");
+  return`
+    <div class="champ-cell" title="${champ}${showPlayer?` / ${player}`:""}">
+      <img class="champ-icon" src="${champImg(row.champion_name)}" onerror="this.style.display='none'"/>
+      <div style="min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+        <span class="champ-name" style="width:100%;">${star?`<span class="my-star">★</span>`:""}${champ}</span>
+        ${showPlayer?`<span style="font-size:10px;color:#cbd5e1;font-weight:1000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${player}</span>`:""}
+      </div>
+    </div>
+  `;
+}
 function recentTableRows(data,mode){
   if(!data.length)return`<div class="recent-empty">조건에 맞는 전적이 없습니다.</div>`;
 
   return`
-    <table class="detail-table recent-table recent-vs-table">
+    <table class="detail-table clean-recent-table">
       <colgroup>
-        <col style="width:16%">
-        <col style="width:7%">
-        <col style="width:8%">
-        <col style="width:8%">
-        <col style="width:7%">
-        <col style="width:7%">
+        <col class="col-champ">
+        <col class="col-lane">
+        <col class="col-score">
+        <col class="col-rate">
+        <col class="col-rate">
+        <col class="col-rate">
         <col style="width:4%">
-        <col style="width:7%">
-        <col style="width:7%">
-        <col style="width:8%">
-        <col style="width:8%">
-        <col style="width:7%">
-        <col style="width:16%">
+        <col class="col-rate">
+        <col class="col-rate">
+        <col class="col-rate">
+        <col class="col-score">
+        <col class="col-lane">
+        <col class="col-champ">
       </colgroup>
-
       <thead>
         <tr>
           <th>챔피언</th>
@@ -151,7 +184,7 @@ function recentTableRows(data,mode){
           <th>K/D/A</th>
           <th>KDA</th>
           <th>KP</th>
-          <th>⚔</th>
+          <th>VS</th>
           <th>KP</th>
           <th>KDA</th>
           <th>K/D/A</th>
@@ -160,28 +193,19 @@ function recentTableRows(data,mode){
           <th>챔피언</th>
         </tr>
       </thead>
-
       <tbody>
         ${data.map(r=>{
           const o=findOpponent(r);
 
-          const k=num(r.kills);
-          const d=num(r.deaths);
-          const a=num(r.assists);
-          const kdaValue=getKda(k,d,a);
-          const kpValue=kp(r);
-          const score=recentMatchScore(r);
+          const k=num(r.kills),d=num(r.deaths),a=num(r.assists);
+          const kdaValue=getKda(k,d,a),kpValue=kp(r),score=recentMatchScore(r);
 
-          const ok=o?num(o.kills):0;
-          const od=o?num(o.deaths):0;
-          const oa=o?num(o.assists):0;
-          const okda=o?getKda(ok,od,oa):0;
-          const okp=o?kp(o):null;
-          const oscore=o?recentMatchScore(o):0;
+          const ok=o?num(o.kills):0,od=o?num(o.deaths):0,oa=o?num(o.assists):0;
+          const okda=o?getKda(ok,od,oa):0,okp=o?kp(o):null,oscore=o?recentMatchScore(o):0;
 
           return`
-            <tr class="${r.win?"recent-my-win":"recent-my-loss"}">
-              <td style="text-align:left">${recentChampionCell(r,true,mode==="champion")}</td>
+            <tr class="${r.win?"recent-win-row":"recent-loss-row"}">
+              <td class="${r.win?"win-side":"loss-side"}" style="text-align:left">${recentChampionCell(r,true,mode==="champion")}</td>
               <td>${laneIcon(r.lane)} ${LANE_LABELS[r.lane]||r.lane||"-"}</td>
               <td class="${scoreClass(score)}">${score.toFixed(1)}</td>
               <td>${k}/${d}/${a}</td>
