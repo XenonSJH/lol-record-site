@@ -6289,6 +6289,385 @@ loadData();setInterval(loadData,30000);
   [0,100,300,700,1200,2500,5000].forEach(ms=>setTimeout(refreshAll,ms));
 })();
 
+/* ===== absolute honey score tier system / icon badges / full-page records ===== */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    body.side-page-open{overflow:hidden!important;}
+    #bandleSidePage{
+      position:fixed!important;
+      inset:0!important;
+      width:100vw!important;
+      height:100vh!important;
+      max-width:none!important;
+      z-index:9999!important;
+      background:radial-gradient(circle at top left,rgba(37,99,235,.16),transparent 30%),linear-gradient(180deg,#0f172a,#111827)!important;
+    }
+    #bandleSidePage.bandle-force-show{display:flex!important;pointer-events:auto!important;}
+    .bandle-side-body{overflow-y:auto!important;height:calc(100vh - 72px)!important;padding-bottom:40px!important;}
+    .bandle-side-body .recent-table,.bandle-side-body .recent-table-v20{border-spacing:0 4px!important;}
+    .bandle-side-body .recent-table-v20 tbody tr:not(.match-participants-row-v20) td{padding-top:8px!important;padding-bottom:8px!important;height:52px!important;}
+    img.champ-icon,img.small-champ-icon,img.participant-icon-v20,img.participant-icon-v21,img.participant-icon-v22,img.participant-icon-v23{
+      border:0!important;
+      outline:0!important;
+      box-shadow:none!important;
+      box-sizing:border-box!important;
+    }
+    .combo-portrait-wrap{background:transparent!important;padding:0!important;border:0!important;box-shadow:none!important;}
+    .tier-icon-wrap{
+      position:relative;
+      display:inline-flex;
+      flex-shrink:0;
+      line-height:0;
+      overflow:visible;
+      vertical-align:middle;
+    }
+    .tier-icon-wrap > img{display:block!important;}
+    .tier-num-badge{
+      position:absolute;
+      left:-5px;
+      top:-7px;
+      min-width:19px;
+      height:19px;
+      padding:0 4px;
+      border-radius:5px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      font-weight:1000;
+      color:#fff;
+      background:#64748b;
+      box-shadow:0 4px 10px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.35);
+      z-index:3;
+    }
+    .tier-num-badge.tier-1{background:#ef4444;}
+    .tier-num-badge.tier-2{background:#f97316;}
+    .tier-num-badge.tier-3{background:#eab308;color:#111827;}
+    .tier-num-badge.tier-4{background:#22c55e;color:#052e16;}
+    .tier-num-badge.tier-5{background:#3b82f6;}
+    .tier-op-corner{
+      position:absolute;
+      right:-8px;
+      top:-8px;
+      height:16px;
+      padding:0 5px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:9px;
+      font-weight:1000;
+      color:white;
+      background:#be123c;
+      box-shadow:0 4px 10px rgba(0,0,0,.45);
+      z-index:4;
+    }
+    .tier-pill-v2{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      min-width:58px;
+      height:32px;
+      padding:0 12px;
+      border-radius:999px;
+      color:#f8fafc;
+      font-weight:1000;
+      background:rgba(51,65,85,.9);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 8px 18px rgba(0,0,0,.26);
+      white-space:nowrap;
+    }
+    .tier-pill-v2.tier-1{background:linear-gradient(135deg,#991b1b,#ef4444);}
+    .tier-pill-v2.tier-2{background:linear-gradient(135deg,#9a3412,#f97316);}
+    .tier-pill-v2.tier-3{background:linear-gradient(135deg,#854d0e,#eab308);color:#111827;}
+    .tier-pill-v2.tier-4{background:linear-gradient(135deg,#166534,#22c55e);color:#052e16;}
+    .tier-pill-v2.tier-5{background:linear-gradient(135deg,#1e3a8a,#3b82f6);}
+    .tier-pill-v2 .op-mini{
+      padding:1px 6px;
+      border-radius:999px;
+      background:#be123c;
+      color:white;
+      font-size:11px;
+      line-height:1.3;
+    }
+    .honey-score-cell{color:#fde68a!important;text-shadow:0 0 10px rgba(234,179,8,.26);}
+    #championTable col.col-tier{display:none!important;}
+    #suggestBox .suggest-meta{font-size:11px;color:#94a3b8;margin-left:6px;}
+  `;
+  document.head.appendChild(style);
+
+  function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+  function honeyScoreFromStat(stat){
+    const games=Number(stat.games)||0;
+    const winRate=Number(stat.winRate)||0;
+    const pickRate=Number(stat.pickRate)||0;
+    const banRate=Number(stat.banRate)||0;
+    const kpVal=Number(stat.kp)||0;
+    const kdaVal=Number(stat.kda)||0;
+    const winScore=clamp((winRate-45)*0.9,0,32);
+    const pickScore=clamp(pickRate*1.2,0,20);
+    const banScore=clamp(banRate*0.7,0,12);
+    const kpScore=clamp((kpVal-45)*0.35,0,18);
+    const gamesScore=clamp(games*1.1,0,10);
+    const kdaScore=clamp((kdaVal-1.5)*3,0,8);
+    return +(winScore+pickScore+banScore+kpScore+gamesScore+kdaScore).toFixed(1);
+  }
+  function absoluteTierFromScore(score,stat={}){
+    const games=Number(stat.games)||0;
+    const winRate=Number(stat.winRate)||0;
+    const pickRate=Number(stat.pickRate)||0;
+    const isOP=games>=3 && score>=86 && (score>=92 || winRate>=65 || pickRate>=8);
+    const tier=score>=72?1:score>=58?2:score>=44?3:score>=30?4:5;
+    return {tier,isOP};
+  }
+  function decorateStat(stat){
+    stat.honeyScore=honeyScoreFromStat(stat);
+    const t=absoluteTierFromScore(stat.honeyScore,stat);
+    stat.absTier=t.tier;
+    stat.isOP=t.isOP;
+    stat.tier=String(t.tier);
+    return stat;
+  }
+  championScore=function(stat){return honeyScoreFromStat(stat);};
+  assignChampionTiers=function(list){
+    return [...list].filter(c=>c.games>=1).map(c=>decorateStat(c)).sort((a,b)=>b.honeyScore-a.honeyScore);
+  };
+  tierBadge=function(t,isOP=false){
+    const n=String(t||'5').replace(/[^1-5]/g,'')||'5';
+    return `<span class="tier-pill-v2 tier-${n}"><span>${n}티어</span>${isOP?`<span class="op-mini">OP</span>`:''}</span>`;
+  };
+  comboTierBadge=function(tiers){
+    const nums=(tiers||[]).map(x=>String(x).replace(/[^1-5]/g,'')).filter(Boolean);
+    if(!nums.length)return tierBadge(5,false);
+    const best=Math.min(...nums.map(Number));
+    const unique=[...new Set(nums)].sort((a,b)=>Number(a)-Number(b));
+    return `<span class="tier-pill-v2 tier-${best}"><span>${best}티어</span>${unique.length>1?`<span class="op-mini">+${unique.length-1}</span>`:''}</span>`;
+  };
+
+  function getAbsoluteChampionList(){
+    const lane=effectiveLane();
+    const map={};
+    rows.forEach(r=>{
+      if(!r.champion_name||!r.lane)return;
+      if(lane!=='ALL'&&r.lane!==lane)return;
+      map[`${r.champion_name}__${r.lane}`]={champion:r.champion_name,lane:r.lane};
+    });
+    let list=Object.values(map).map(i=>{
+      const s=decorateStat(calcChampionStats(i.champion,i.lane));
+      s.displayName=i.champion;
+      s.displayLane=i.lane;
+      return s;
+    }).filter(c=>c.games>=1);
+    if(championSort==='banRate'){
+      const merged={};
+      list.forEach(c=>{
+        if(!merged[c.name]){
+          const base=decorateStat(calcChampionStats(c.name,lane==='ALL'?'ALL':lane));
+          merged[c.name]={...base,displayLane:lane==='ALL'?'BAN_MERGED':lane,tierList:[],absTierList:[],opList:[]};
+        }
+        merged[c.name].tierList.push(String(c.absTier));
+        merged[c.name].absTierList.push(c.absTier);
+        merged[c.name].opList.push(c.isOP);
+      });
+      list=Object.values(merged).map(c=>{
+        c.absTier=Math.min(...c.absTierList);
+        c.isOP=c.opList.some(Boolean);
+        c.tier=String(c.absTier);
+        return c;
+      });
+    }
+    if(activeSearch){
+      const q=activeSearch.toLowerCase();
+      list=list.filter(c=>c.name.toLowerCase().includes(q));
+    }
+    list.sort((a,b)=>{
+      let r=0;
+      if(championSort==='tier')r=a.absTier-b.absTier || b.honeyScore-a.honeyScore;
+      else if(championSort==='honeyScore')r=a.honeyScore-b.honeyScore;
+      else if(championSort==='name')r=compareName(a.name,b.name);
+      else if(championSort==='games')r=a.games-b.games;
+      else if(championSort==='wins')r=a.wins-b.wins;
+      else if(championSort==='losses')r=a.losses-b.losses;
+      else if(championSort==='pickRate')r=a.pickRate-b.pickRate;
+      else if(championSort==='banRate')r=a.banRate-b.banRate || a.games-b.games;
+      else if(championSort==='kp')r=a.kp-b.kp;
+      else if(championSort==='winRate')r=a.winRate-b.winRate;
+      else r=a.honeyScore-b.honeyScore;
+      return championAsc?r:-r;
+    });
+    return list;
+  }
+  getChampionRanking=function(){return getAbsoluteChampionList();};
+  window.sortChampion=function(type){
+    if(championSort===type)championAsc=!championAsc;
+    else{championSort=type;championAsc=type==='name'||type==='tier';}
+    renderMain();
+  };
+  function updateChampionHeader(){
+    const table=document.getElementById('championTable');
+    if(!table)return;
+    table.innerHTML=`<colgroup><col class="col-rank"><col class="col-champ"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-score"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortChampion('name')">챔피언</button></th><th><button class="sort-btn" onclick="sortChampion('games')">판수</button></th><th><button class="sort-btn" onclick="sortChampion('wins')">승</button></th><th><button class="sort-btn" onclick="sortChampion('losses')">패</button></th><th><button class="sort-btn" onclick="sortChampion('winRate')">승률</button></th><th><button class="sort-btn" onclick="sortChampion('pickRate')">픽률</button></th><th><button class="sort-btn" onclick="sortChampion('banRate')">밴율</button></th><th><button class="sort-btn" onclick="sortChampion('kp')">킬관여율</button></th><th><button class="sort-btn" onclick="sortChampion('honeyScore')">꿀챔점수</button></th></tr></thead><tbody id="championRanking"></tbody>`;
+  }
+  renderChampionRanking=function(){
+    updateChampionHeader();
+    const tbody=document.getElementById('championRanking'),list=getAbsoluteChampionList();
+    if(!list.length){tbody.innerHTML=`<tr><td colspan="10">챔피언 데이터가 없습니다.</td></tr>`;return;}
+    tbody.innerHTML=list.map((c,i)=>{
+      const isBanMerged=championSort==='banRate';
+      const tierList=(c.tierList?.length?c.tierList:[String(c.absTier)]);
+      const tierToken=isBanMerged&&tierList.length>1?`${Math.min(...tierList.map(Number))}+`:String(c.absTier);
+      return `<tr class="clickable-row" onclick="openChampionDetail('${safe(c.name)}')"><td>${rankText(i+1)}</td><td class="champ-td"><div class="champ-cell" title="${htmlSafe(c.name)}"><span class="tier-icon-wrap" data-tier="${tierToken}" data-op="${c.isOP?'1':'0'}"><img class="champ-icon" src="${champImg(c.name)}" onerror="this.style.display='none'"/><span class="tier-num-badge tier-${c.absTier}">${tierToken}</span>${c.isOP?`<span class="tier-op-corner">OP</span>`:''}</span>${isBanMerged?'':`<span class="champ-lane-icon">${laneIcon(c.displayLane)}</span>`}<span class="champ-name">${htmlSafe(c.name)}</span></div></td><td>${c.games}</td><td class="win">${c.wins}</td><td class="loss">${c.losses}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${pct(c.pickRate)}</td><td>${pct(c.banRate)}</td><td>${pct(c.kp)}</td><td class="honey-score-cell">${c.honeyScore.toFixed(1)}</td></tr>`;
+    }).join('');
+    setTimeout(applyTierIconBadges,0);
+  };
+
+  function reverseChampIdMapV2(){
+    const rev={};
+    try{Object.entries(championNameToId||{}).forEach(([name,id])=>{rev[String(id).toLowerCase()]=name;});}catch(e){}
+    return rev;
+  }
+  function inferNameFromIconV2(img,rev){
+    const title=img.closest('.champ-cell,.opponent-champ-cell-v20,[title]')?.getAttribute('title')||'';
+    if(title)return title.split('/')[0].trim();
+    const label=img.closest('.champ-cell,.opponent-champ-cell-v20')?.querySelector('.champ-name')?.textContent?.trim();
+    if(label)return label;
+    const src=decodeURIComponent(img.getAttribute('src')||'');
+    const id=(src.split('/').pop()||'').replace(/\.(png|jpg|jpeg|webp).*$/i,'').toLowerCase();
+    return rev[id]||'';
+  }
+  function laneFromIconV2(img){
+    const title=img.closest('.champ-cell,.opponent-champ-cell-v20,[title]')?.getAttribute('title')||'';
+    const row=img.closest('tr');
+    if(row){
+      const cells=[...row.children],idx=cells.findIndex(td=>td.contains(img));
+      const laneCell=idx>=0&&idx<=6?cells[1]:cells[11];
+      const src=laneCell?.querySelector('img.lane-icon')?.getAttribute('src')||'';
+      if(src.includes('position-top'))return 'TOP';
+      if(src.includes('position-jungle'))return 'JUNGLE';
+      if(src.includes('position-middle'))return 'MID';
+      if(src.includes('position-bottom'))return 'ADC';
+      if(src.includes('position-utility'))return 'SUPPORT';
+    }
+    const laneImg=img.closest('.champ-cell')?.querySelector('.champ-lane-icon img.lane-icon');
+    const src=laneImg?.getAttribute('src')||'';
+    if(src.includes('position-top'))return 'TOP';
+    if(src.includes('position-jungle'))return 'JUNGLE';
+    if(src.includes('position-middle'))return 'MID';
+    if(src.includes('position-bottom'))return 'ADC';
+    if(src.includes('position-utility'))return 'SUPPORT';
+    return '';
+  }
+  function tierInfoForIcon(name,lane){
+    if(!name)return {tier:5,isOP:false};
+    const stat=decorateStat(calcChampionStats(name,lane||'ALL'));
+    if(!stat.games&&lane)decorateStat(calcChampionStats(name,'ALL'));
+    return {tier:stat.absTier||5,isOP:!!stat.isOP};
+  }
+  function wrapIconBadge(img,info){
+    if(!img||img.closest('.tier-icon-wrap'))return;
+    img.style.setProperty('border','0','important');
+    img.style.setProperty('outline','0','important');
+    img.style.setProperty('box-shadow','none','important');
+    const wrap=document.createElement('span');
+    wrap.className='tier-icon-wrap';
+    img.parentNode.insertBefore(wrap,img);
+    wrap.appendChild(img);
+    const badge=document.createElement('span');
+    badge.className=`tier-num-badge tier-${info.tier}`;
+    badge.textContent=String(info.tier);
+    wrap.appendChild(badge);
+    if(info.isOP){
+      const op=document.createElement('span');
+      op.className='tier-op-corner';
+      op.textContent='OP';
+      wrap.appendChild(op);
+    }
+  }
+  function applyTierIconBadges(root=document){
+    const rev=reverseChampIdMapV2();
+    root.querySelectorAll('img.champ-icon,img.small-champ-icon,img.participant-icon-v20,img.participant-icon-v21,img.participant-icon-v22,img.participant-icon-v23').forEach(img=>{
+      if(img.closest('.tier-icon-wrap'))return;
+      const name=inferNameFromIconV2(img,rev);
+      const lane=laneFromIconV2(img);
+      wrapIconBadge(img,tierInfoForIcon(name,lane));
+    });
+    root.querySelectorAll('img.champ-icon,img.small-champ-icon,img.participant-icon-v20,img.participant-icon-v21,img.participant-icon-v22,img.participant-icon-v23').forEach(img=>{
+      img.style.setProperty('border','0','important');
+      img.style.setProperty('outline','0','important');
+      img.style.setProperty('box-shadow','none','important');
+    });
+  }
+
+  function internalMatchGroupsV2(){
+    const map=new Map();
+    rows.forEach(r=>{if(!map.has(r.match_id))map.set(r.match_id,[]);map.get(r.match_id).push(r);});
+    return [...map.entries()].map(([id,arr])=>({id,arr,created:arr.map(x=>new Date(x.created_at||0).getTime()).filter(Boolean).sort((a,b)=>b-a)[0]||0})).sort((a,b)=>b.created-a.created);
+  }
+  let internalCommittedQuery='';
+  function renderInternalSuggestionsV2(){
+    if(currentTab!=='internalRecord')return false;
+    const q=(searchInput.value||'').trim().toLowerCase();
+    if(!q){suggestBox.style.display='none';suggestBox.innerHTML='';return true;}
+    const list=internalMatchGroupsV2().map(m=>String(m.id||'')).filter(id=>id.toLowerCase().includes(q)).slice(0,8);
+    if(!list.length){suggestBox.style.display='none';suggestBox.innerHTML='';return true;}
+    suggestBox.innerHTML=list.map(id=>`<div class="suggest-item" onclick="runSearch('${safe(id)}')">${htmlSafe(id)}<span class="suggest-meta">Match ID</span></div>`).join('');
+    suggestBox.style.display='block';
+    return true;
+  }
+  function internalCardV2(match){
+    const date=match.created?new Date(match.created).toLocaleString('ko-KR'):'';
+    const sorted=[...match.arr].sort((a,b)=>LANE_ORDER.indexOf(a.lane)-LANE_ORDER.indexOf(b.lane));
+    return `<div class="internal-match-card-v23"><div class="internal-match-head-v23"><div class="internal-match-id-v23">Match ID: ${htmlSafe(match.id)}</div><div class="internal-match-date-v23">${htmlSafe(date)}</div></div>${sorted.map(r=>`<div class="internal-match-line-v23"><div class="participant-card-v20 ${r.win?'':'enemy'}"><img class="participant-icon-v20 champ-icon" src="${champImg(r.champion_name)}" onerror="this.style.display='none'"/><div class="participant-main-v20"><span class="participant-name-v20">${htmlSafe(r.lol_name||'-')}</span><span class="participant-champ-v20">${htmlSafe(r.champion_name||'-')}</span></div><div class="participant-stat-v20">${laneIcon(r.lane)} ${num(r.kills)}/${num(r.deaths)}/${num(r.assists)}</div></div></div>`).join('')}</div>`;
+  }
+  window.renderInternalRecordV23=function(){
+    const box=document.getElementById('internalRecordListV23');if(!box)return;
+    const q=internalCommittedQuery.toLowerCase();
+    const list=internalMatchGroupsV2().filter(m=>!q||String(m.id||'').toLowerCase().includes(q));
+    box.innerHTML=list.length?list.map(internalCardV2).join(''):`<div class="section">검색 결과가 없습니다.</div>`;
+    setTimeout(applyTierIconBadges,0);
+  };
+  const oldShowInternalV2=window.showInternalRecordV23;
+  if(typeof oldShowInternalV2==='function'){
+    window.showInternalRecordV23=function(){
+      oldShowInternalV2();
+      currentTab='internalRecord';
+      internalCommittedQuery='';
+      searchInput.value='';
+      searchInput.placeholder='매치 ID 검색...';
+      suggestBox.style.display='none';
+      renderInternalRecordV23();
+    };
+  }
+  const oldRenderSuggestionsV2=renderSuggestions;
+  renderSuggestions=function(){
+    if(renderInternalSuggestionsV2())return;
+    oldRenderSuggestionsV2();
+  };
+  const oldRunSearchV2=runSearch;
+  runSearch=function(v){
+    if(currentTab==='internalRecord'){
+      internalCommittedQuery=(v||'').trim();
+      searchInput.value=internalCommittedQuery;
+      suggestBox.style.display='none';
+      renderInternalRecordV23();
+      return;
+    }
+    oldRunSearchV2(v);
+  };
+  searchBtn.onclick=()=>runSearch(searchInput.value.trim());
+
+  const observerV2=new MutationObserver(()=>setTimeout(applyTierIconBadges,0));
+  observerV2.observe(document.body,{childList:true,subtree:true});
+  const oldRenderMainV2=renderMain;
+  renderMain=function(){
+    oldRenderMainV2();
+    if(currentTab==='champion')renderChampionRanking();
+    setTimeout(applyTierIconBadges,0);
+  };
+  setTimeout(()=>{updateChampionHeader();applyTierIconBadges();},100);
+})();
+
 </script>
 </body>
 </html>
