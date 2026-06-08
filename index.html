@@ -121,7 +121,7 @@ body::-webkit-scrollbar-thumb:hover,
 <div id="mainPage" class="main-card">
 <div class="search-wrap"><div class="search-row"><input id="searchInput" class="search-box" type="text" placeholder="검색어 입력..." autocomplete="off"/><button id="searchBtn" class="search-btn">🔍</button></div><div id="suggestBox" class="suggest-box"></div></div>
 <div id="laneFilters" class="filter-row"></div>
-<table id="playerTable"><colgroup><col class="col-rank"><col class="col-name"><col class="col-score"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortPlayer('name')">닉네임</button></th><th><button class="sort-btn" onclick="sortPlayer('carryScore')">캐리점수</button></th><th><button class="sort-btn" onclick="sortPlayer('games')">판수</button></th><th><button class="sort-btn" onclick="sortPlayer('wins')">승</button></th><th><button class="sort-btn" onclick="sortPlayer('losses')">패</button></th><th><button class="sort-btn" onclick="sortPlayer('winRate')">승률</button></th><th><button class="sort-btn" onclick="sortPlayer('kp')">킬관여율</button></th><th><button class="sort-btn" onclick="sortPlayer('participation')">참여율</button></th></tr></thead><tbody id="playerRanking"></tbody></table>
+<table id="playerTable"><colgroup><col class="col-rank"><col class="col-name"><col class="col-score"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortPlayer('name')">닉네임</button></th><th><button class="sort-btn" onclick="sortPlayer('carryScore')" title="50점 = 1인분 기준">캐리점수</button></th><th><button class="sort-btn" onclick="sortPlayer('games')">판수</button></th><th><button class="sort-btn" onclick="sortPlayer('wins')">승</button></th><th><button class="sort-btn" onclick="sortPlayer('losses')">패</button></th><th><button class="sort-btn" onclick="sortPlayer('winRate')">승률</button></th><th><button class="sort-btn" onclick="sortPlayer('kp')">킬관여율</button></th><th><button class="sort-btn" onclick="sortPlayer('participation')">참여율</button></th></tr></thead><tbody id="playerRanking"></tbody></table>
 <table id="championTable" class="hide"><colgroup><col class="col-rank"><col class="col-champ"><col class="col-score"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortChampion('name')">챔피언</button></th><th><button class="sort-btn" onclick="sortChampion('score')">꿀챔점수</button></th><th><button class="sort-btn" onclick="sortChampion('games')">판수</button></th><th><button class="sort-btn" onclick="sortChampion('wins')">승</button></th><th><button class="sort-btn" onclick="sortChampion('losses')">패</button></th><th><button class="sort-btn" onclick="sortChampion('winRate')">승률</button></th><th><button class="sort-btn" onclick="sortChampion('pickRate')">픽률</button></th><th><button class="sort-btn" onclick="sortChampion('banRate')">밴율</button></th><th><button class="sort-btn" onclick="sortChampion('kp')">킬관여율</button></th></tr></thead><tbody id="championRanking"></tbody></table>
 </div>
 <div id="detailPage" class="detail-page"><button class="back-btn" onclick="goBack()">← 뒤로가기</button><div id="detailContent"></div></div>
@@ -145,7 +145,7 @@ window.openPlayerDetail=openPlayerDetail;window.openChampionDetail=openChampionD
 function safe(v){return String(v??"").replaceAll("\\","\\\\").replaceAll("'","\\'").replaceAll('"',"&quot;")}function htmlSafe(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;")}function num(v){return Number(v)||0}function pct(v){return isFinite(v)?`${v.toFixed(1)}%`:"0.0%"}function rateClass(r){if(r>=60)return"rate-high";if(r>=50)return"rate-mid";return"rate-low"}function getKda(k,d,a){return d===0?k+a:(k+a)/d}function kp(row){const t=num(row.team_kills);if(t<=0)return null;return(num(row.kills)+num(row.assists))/t*100}function average(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}function rankText(r){return r===1?"🥇":r===2?"🥈":r===3?"🥉":r}function compareName(a,b){return String(a).localeCompare(String(b),"ko")}function effectiveLane(){return activeSearch?"ALL":currentLane}function getParticipationGroup(p){if(p>=30)return 0;if(p>=10)return 1;return 2}
 async function loadChampionMeta(){try{const vr=await fetch("https://ddragon.leagueoflegends.com/api/versions.json"),versions=await vr.json();latestVersion=versions[0];const cr=await fetch(`https://ddragon.leagueoflegends.com/cdn/${latestVersion}/data/ko_KR/champion.json`),cj=await cr.json();championNameToId={};Object.values(cj.data).forEach(c=>championNameToId[c.name]=c.id)}catch(e){console.error(e)}}function champImg(n){const id=championNameToId[n];return id?`https://ddragon.leagueoflegends.com/cdn/${latestVersion}/img/champion/${id}.png`:""}function laneIcon(l){return LANE_ICON_URLS[l]?`<img class="lane-icon" src="${LANE_ICON_URLS[l]}" onerror="this.style.display='none'"/>`:""}function lanePill(l){return`<span class="lane-pill">${laneIcon(l)} ${LANE_LABELS[l]||l}</span>`}
 function tierBadge(t){const c={OP:"tier-op",S:"tier-s",A:"tier-a",B:"tier-b",C:"tier-c"}[t]||"tier-c";return`<span class="tier-badge ${c}"><span>${t}</span></span>`}function tierColor(t){return{OP:"#ef4444",S:"#fb923c",A:"#fde047",B:"#4ade80",C:"#60a5fa"}[t]||"#60a5fa"}function bestTierFromList(ts){const o={OP:1,S:2,A:3,B:4,C:5},u=[...new Set((ts||[]).filter(Boolean))];u.sort((a,b)=>(o[a]||99)-(o[b]||99));return u[0]||"C"}function comboTierBadge(ts){if(!ts||!ts.length)return tierBadge("C");const u=[...new Set(ts.filter(Boolean))],b=bestTierFromList(u),e=Math.max(u.length-1,0);return`<span style="display:inline-flex;align-items:center;justify-content:center;gap:4px;">${tierBadge(b)}${e>0?`<span class="tier-plus">+${e}</span>`:""}</span>`}function comboPortraitStyle(ts){const f=(ts||[]).filter(Boolean);if(f.length<=1)return"background:transparent;";let cur=0;return`background:conic-gradient(${f.map(t=>{const s=cur;cur+=100/f.length;return`${tierColor(t)} ${s}% ${cur}%`}).join(",")});`}
-function playerCarryScoreFromStats(s){const kdaScore=Math.min(Number(s.kda)||0,8)*8;const kpScore=Math.min(Number(s.kp)||0,100)*.55;const wrScore=Math.min(Number(s.winRate)||0,100)*.22;const volumeScore=Math.min(Number(s.games)||0,30)*.35;return kdaScore+kpScore+wrScore+volumeScore}function championScore(c){return c.winRate*.48+c.pickRate*1.7+c.banRate*1.05+c.kp*.12+Math.min(c.games,30)*.85}function assignChampionTiers(list){const r=[...list].filter(c=>c.games>=1).sort((a,b)=>b.score-a.score),total=r.length||1;r.forEach((c,i)=>{const p=(i+1)/total;c.tier=p<=.10?"OP":p<=.25?"S":p<=.50?"A":p<=.75?"B":"C"});return r}
+function playerCarryScoreFromStats(s){const kda=Number(s.kda)||0,kpValue=Number(s.kp)||0,wr=Number(s.winRate)||0,games=Number(s.games)||0;const raw=50+(kda-2.5)*7.5+(kpValue-50)*.32+(wr-50)*.22+Math.min(games,30)*.08;return Math.max(0,Math.min(100,raw))}function championScore(c){return c.winRate*.48+c.pickRate*1.7+c.banRate*1.05+c.kp*.12+Math.min(c.games,30)*.85}function assignChampionTiers(list){const r=[...list].filter(c=>c.games>=1).sort((a,b)=>b.score-a.score),total=r.length||1;r.forEach((c,i)=>{const p=(i+1)/total;c.tier=p<=.10?"OP":p<=.25?"S":p<=.50?"A":p<=.75?"B":"C"});return r}
 async function loadData(){try{await loadChampionMeta();const{data:pData,error:pError}=await supabase.from("players").select("discord_id,lol_name,wins,losses,profile_image_url,profile_updated_at");const{data:rData,error:rError}=await supabase.from("match_players").select("id,match_id,created_at,lol_name,champion_name,lane,kills,deaths,assists,team_kills,win");const{data:bData,error:bError}=await supabase.from("match_bans").select("id,match_id,champion_name,team_id,created_at");const{data:mData,error:mError,count}=await supabase.from("matches").select("*",{count:"exact"});if(pError)throw pError;if(rError)throw rError;if(bError)throw bError;if(mError)throw mError;players=pData||[];rows=rData||[];bans=bData||[];matches=mData||[];totalGames=count||matches.length||0;document.getElementById("summary").innerText=`총 판수: ${totalGames}판 ㅣ 멤버 수: ${players.length}명`;renderLaneFilters();renderMain()}catch(e){console.error(e);document.getElementById("summary").innerText="데이터 로드 실패: "+(e.message||e)}}
 function renderLaneFilters(){const box=document.getElementById("laneFilters");box.innerHTML=["ALL",...LANE_ORDER].map(l=>`<button class="lane-filter ${currentLane===l?"active":""}" onclick="setLane('${l}')">${l==="ALL"?"":laneIcon(l)}<span>${LANE_LABELS[l]}</span></button>`).join("")}window.setLane=l=>{currentLane=l;activeSearch="";searchInput.value="";renderLaneFilters();renderMain()};
 function renderSuggestions(){const q=searchInput.value.trim().toLowerCase();if(!q){suggestBox.style.display="none";suggestBox.innerHTML="";return}let list=currentTab==="player"?players.map(p=>p.lol_name).filter(n=>(n||"").toLowerCase().includes(q)):[...new Set(rows.map(r=>r.champion_name).filter(Boolean))].filter(n=>n.toLowerCase().includes(q));list=list.slice(0,8);if(!list.length){suggestBox.style.display="none";return}suggestBox.innerHTML=list.map(i=>`<div class="suggest-item" onclick="runSearch('${safe(i)}')">${htmlSafe(i)}</div>`).join("");suggestBox.style.display="block"}function runSearch(v){activeSearch=v.trim();searchInput.value=activeSearch;suggestBox.style.display="none";renderMain()}
@@ -176,7 +176,7 @@ function renderRecentSuggestions(playerName){const input=document.getElementById
 function recentControls(playerName){return`<div class="recent-control-wrap"><div class="recent-search-wrap"><div class="recent-search-row"><input id="recentSearchInput" class="recent-search-box" type="text" placeholder="챔피언 이름 검색..." autocomplete="off" value="${htmlSafe(recentChampionSearch)}" oninput="renderRecentSuggestions('${safe(playerName)}')" onkeydown="if(event.key==='Enter')runRecentSearch('${safe(playerName)}',this.value)"/><button class="recent-search-btn" type="button" onclick="runRecentSearch('${safe(playerName)}',document.getElementById('recentSearchInput').value)">🔍</button></div><div id="recentSuggestBox" class="recent-suggest-box"></div></div><div class="recent-filter-row">${["ALL",...LANE_ORDER].map(l=>`<button class="recent-lane-filter ${recentLane===l?"active":""}" type="button" onclick="setRecentLane('${l}','${safe(playerName)}')">${l==="ALL"?"":laneIcon(l)}<span>${LANE_LABELS[l]}</span></button>`).join("")}</div></div><div id="recentMatchArea"></div>`}
 function championRecentControls(championName){return`<div class="recent-control-wrap"><div class="recent-search-wrap"><div class="recent-search-row"><input id="recentSearchInput" class="recent-search-box" type="text" placeholder="플레이어 이름 검색..." autocomplete="off" value="${htmlSafe(recentChampionSearch)}" onkeydown="if(event.key==='Enter')runRecentSearch('${safe(championName)}',this.value)"/><button class="recent-search-btn" type="button" onclick="runRecentSearch('${safe(championName)}',document.getElementById('recentSearchInput').value)">🔍</button></div></div><div class="recent-filter-row">${["ALL",...LANE_ORDER].map(l=>`<button class="recent-lane-filter ${recentLane===l?"active":""}" type="button" onclick="setChampionRecentLane('${l}','${safe(championName)}')">${l==="ALL"?"":laneIcon(l)}<span>${LANE_LABELS[l]}</span></button>`).join("")}</div></div><div id="championRecentMatchArea"></div>`}
 function setChampionRecentLane(lane,championName){recentLane=lane;const sec=document.getElementById("championRecentMatchSection");if(sec){const c=sec.querySelector(".collapsible-content");if(c)c.innerHTML=championRecentControls(championName)}renderChampionRecentMatchArea(championName)}function renderRecentMatchArea(playerName){const a=document.getElementById("recentMatchArea");if(a)a.innerHTML=playerRecentMatchRows(playerName)}function renderChampionRecentMatchArea(championName){const a=document.getElementById("championRecentMatchArea");if(a)a.innerHTML=championRecentMatchRows(championName)}
-function findOpponent(row){const same=rows.filter(r=>r.match_id===row.match_id&&r.lol_name!==row.lol_name);let o=same.find(r=>r.lane===row.lane&&r.win!==row.win);if(!o)o=same.find(r=>r.lane===row.lane);return o||null}function recentMatchScore(r){const k=num(r.kills),d=num(r.deaths),a=num(r.assists),kdaValue=getKda(k,d,a),kpValue=kp(r)||0,resultBonus=r.win?12:0;return k*3+a*2-d*2+kdaValue*4+kpValue*.25+resultBonus}
+function findOpponent(row){const same=rows.filter(r=>r.match_id===row.match_id&&r.lol_name!==row.lol_name);let o=same.find(r=>r.lane===row.lane&&r.win!==row.win);if(!o)o=same.find(r=>r.lane===row.lane);return o||null}function recentMatchScore(r){const k=num(r.kills),d=num(r.deaths),a=num(r.assists),kdaValue=getKda(k,d,a),kpValue=kp(r)||0;const raw=50+(kdaValue-2.5)*7.5+(kpValue-50)*.35+(r.win?5:-3);return Math.max(0,Math.min(100,raw))}
 function rebuiltScoreClass(v){v=Number(v)||0;if(v>=90)return"rebuilt-score-high";if(v>=80)return"rebuilt-score-good";if(v>=70)return"rebuilt-score-mid";if(v>=60)return"rebuilt-score-low";return"rebuilt-score-bad"}
 function rebuiltRecentChampionCell(row,star=false,showPlayer=false){
   if(!row)return"-";
@@ -7369,6 +7369,76 @@ var honeyPortrait = function(name,lane='',big=false){
 
   setTimeout(wrapTablesForScroll,0);
   setTimeout(wrapTablesForScroll,400);
+})();
+
+
+/* ===== v44 remove all slide animations ===== */
+(function(){
+
+  const style=document.createElement('style');
+  style.innerHTML=`
+    .slide-page,
+    .slide-enter,
+    .slide-exit,
+    .detail-page,
+    .sub-page,
+    .overlay-page{
+      animation:none !important;
+      transition:none !important;
+      transform:none !important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // 모든 페이지 전환 즉시 표시
+  const originalShowDetail = window.showDetail || (typeof showDetail==="function" ? showDetail : null);
+
+  if(typeof originalShowDetail==="function"){
+    window.showDetail=function(html){
+      const detail=document.getElementById("detailContent");
+      if(detail) detail.innerHTML=html;
+
+      const main=document.getElementById("mainPage");
+      const detailPage=document.getElementById("detailPage");
+
+      if(main) main.style.display="none";
+      if(detailPage) detailPage.style.display="block";
+
+      const tabs=document.querySelector(".top-tabs");
+      if(tabs) tabs.style.display="none";
+
+      const summary=document.getElementById("summary");
+      if(summary) summary.style.display="none";
+
+      window.scrollTo(0,0);
+
+      if(typeof initFloatingTitle==="function"){
+        setTimeout(initFloatingTitle,0);
+      }
+    };
+
+    try{showDetail=window.showDetail}catch(e){}
+  }
+
+  // 전체보기 관련 페이지들도 즉시 전환
+  [
+    "openAllPlayedChampionsPage",
+    "openAllPlayedChampionsPageV33",
+    "openAllChampionsPage",
+    "openPlayedChampionPage"
+  ].forEach(name=>{
+    const fn=window[name];
+    if(typeof fn==="function" && !fn.__v44Wrapped){
+      const wrapped=function(...args){
+        document.body.classList.remove("slide-enter","slide-exit");
+        return fn.apply(this,args);
+      };
+      wrapped.__v44Wrapped=true;
+      window[name]=wrapped;
+      try{eval(name+"=window[name]")}catch(e){}
+    }
+  });
+
 })();
 
 </script>
