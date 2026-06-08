@@ -5818,6 +5818,131 @@ loadData();setInterval(loadData,30000);
   [0,100,300,800,1500].forEach(ms=>setTimeout(()=>{try{renderMain();decorateHoneyPortraits();}catch(e){}},ms));
 })();
 
+
+
+/* ===== 2026-06-08 v24 패치: 탭별 검색창 문구 / 내전기록 보조검색창 제거 / 내전기록 꿀챔딱지 적용 ===== */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    #internalRecordMainV23 .internal-record-search-wrap-v22{display:none!important;}
+    .internal-match-card-v24{background:rgba(15,23,42,.92);border:1px solid rgba(96,165,250,.26);border-radius:22px;padding:16px;}
+    .internal-match-head-v24{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;color:#bfdbfe;font-weight:1000;}
+    .internal-match-id-v24{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .internal-match-date-v24{color:#94a3b8;font-size:12px;white-space:nowrap;}
+    .internal-match-line-v24{display:grid;grid-template-columns:minmax(0,1fr) 38px minmax(0,1fr);gap:12px;align-items:center;background:rgba(30,41,59,.78);border:1px solid rgba(148,163,184,.18);border-radius:14px;padding:8px 10px;margin-top:8px;}
+    .internal-match-center-v24{display:flex;align-items:center;justify-content:center;opacity:.95;}
+    .participant-card-v20 .honey-portrait{width:46px;height:46px;}
+    .participant-card-v20 .honey-portrait .champ-icon{width:42px;height:42px;border-radius:10px;}
+    .opponent-champ-cell-v20 .honey-portrait,.champ-cell .honey-portrait{flex-shrink:0;}
+    @media(max-width:760px){.internal-match-line-v24{grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);gap:8px;padding:7px}.participant-card-v20 .honey-portrait{width:34px;height:34px}.participant-card-v20 .honey-portrait .champ-icon{width:30px;height:30px;border-radius:8px}}
+  `;
+  document.head.appendChild(style);
+
+  function setMainSearchPlaceholder(){
+    if(!searchInput)return;
+    if(currentTab==='player')searchInput.placeholder='플레이어 이름을 입력해주세요';
+    else if(currentTab==='champion')searchInput.placeholder='챔피언 이름을 입력해주세요';
+    else if(currentTab==='internalRecord')searchInput.placeholder='게임 ID를 입력해주세요';
+    else searchInput.placeholder='검색어 입력...';
+  }
+  window.setMainSearchPlaceholder=setMainSearchPlaceholder;
+
+  const oldPlayerClickV24=playerTab.onclick;
+  const oldChampionClickV24=championTab.onclick;
+  playerTab.onclick=()=>{oldPlayerClickV24();currentTab='player';setMainSearchPlaceholder();};
+  championTab.onclick=()=>{oldChampionClickV24();currentTab='champion';setMainSearchPlaceholder();};
+
+  function laneRankV24(l){return LANE_ORDER.indexOf(l)===-1?99:LANE_ORDER.indexOf(l);}
+  function matchGroupsV24(){
+    const map=new Map();
+    rows.forEach(r=>{if(!map.has(r.match_id))map.set(r.match_id,[]);map.get(r.match_id).push(r);});
+    return [...map.entries()].map(([id,arr])=>({id,arr,created:arr.map(x=>new Date(x.created_at||0).getTime()).filter(Boolean).sort((a,b)=>b-a)[0]||0})).sort((a,b)=>b.created-a.created);
+  }
+  function statTextV24(row){
+    if(!row)return '-';
+    const k=num(row.kills),d=num(row.deaths),a=num(row.assists),kdaValue=getKda(k,d,a),kpv=kp(row),score=recentMatchScore(row);
+    return `${k}/${d}/${a} · KDA ${kdaValue.toFixed(2)} · ${kpv===null?'-':pct(kpv)} · ${score.toFixed(1)}점`;
+  }
+  function honeyIconV24(row){
+    if(!row||!row.champion_name)return `<div class="participant-icon-v20"></div>`;
+    if(typeof window.honeyPortrait==='function')return window.honeyPortrait(row.champion_name,row.lane,false);
+    return `<img class="participant-icon-v20 champ-icon" src="${champImg(row.champion_name)}" onerror="this.style.display='none'"/>`;
+  }
+  function participantCardV24(row,enemy=false,mainName=''){
+    if(!row)return `<div class="participant-card-v20 ${enemy?'enemy':''} participant-empty-v20"><div class="participant-icon-v20"></div><div class="participant-main-v20"><span class="participant-name-v20">-</span><span class="participant-champ-v20">-</span></div><div class="participant-stat-v20">-</div></div>`;
+    const star=String(row.lol_name||'')===String(mainName||'')?`<span class="participant-you-star-v22">★</span>`:'';
+    return `<div class="participant-card-v20 ${enemy?'enemy':''}">${honeyIconV24(row)}<div class="participant-main-v20"><span class="participant-name-v20" title="${htmlSafe(row.lol_name||'-')}">${star}${htmlSafe(row.lol_name||'-')}</span><span class="participant-champ-v20" title="${htmlSafe(row.champion_name||'-')}">${htmlSafe(row.champion_name||'-')}</span></div><div class="participant-stat-v20">${statTextV24(row)}</div></div>`;
+  }
+  function internalLineV24(mine,enemy,lane){return `<div class="internal-match-line-v24"><div>${participantCardV24(mine,false,'')}</div><div class="internal-match-center-v24">${laneIcon(lane)||''}</div><div>${participantCardV24(enemy,true,'')}</div></div>`;}
+  function internalCardV24(match){
+    const teamA=match.arr.filter(x=>x.win===true).sort((a,b)=>laneRankV24(a.lane)-laneRankV24(b.lane));
+    const teamB=match.arr.filter(x=>x.win!==true).sort((a,b)=>laneRankV24(a.lane)-laneRankV24(b.lane));
+    const date=match.created?new Date(match.created).toLocaleString('ko-KR'):'';
+    return `<div class="internal-match-card-v24"><div class="internal-match-head-v24"><div class="internal-match-id-v24">Game ID: ${htmlSafe(match.id)}</div><div class="internal-match-date-v24">${htmlSafe(date)}</div></div>${LANE_ORDER.map(l=>internalLineV24(teamA.find(x=>x.lane===l),teamB.find(x=>x.lane===l),l)).join('')}</div>`;
+  }
+  function ensureInternalV24(){
+    document.querySelectorAll('#matchTab,#internalRecordTabV22,#internalRecordTabV23').forEach(x=>x.remove());
+    const tabs=document.querySelector('.top-tabs');
+    if(tabs){const tab=document.createElement('button');tab.id='internalRecordTabV23';tab.className='tab';tab.textContent='내전 기록';tabs.appendChild(tab);tab.onclick=showInternalRecordV24;}
+    let page=document.getElementById('internalRecordMainV23');
+    if(!page){page=document.createElement('div');page.id='internalRecordMainV23';document.getElementById('mainPage').appendChild(page);}
+    page.innerHTML=`<div id="internalRecordListV23" class="internal-record-list-v23"></div>`;
+  }
+  window.renderInternalRecordV23=function(){
+    const q=currentTab==='internalRecord'?((searchInput?.value||'').trim().toLowerCase()):'';
+    const box=document.getElementById('internalRecordListV23');if(!box)return;
+    const list=matchGroupsV24().filter(m=>!q||String(m.id||'').toLowerCase().includes(q));
+    box.innerHTML=list.length?list.map(internalCardV24).join(''):`<div class="section">검색 결과가 없습니다.</div>`;
+  };
+  function showInternalRecordV24(){
+    ensureInternalV24();
+    currentTab='internalRecord';
+    activeSearch='';
+    document.querySelectorAll('.top-tabs .tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('internalRecordTabV23')?.classList.add('active');
+    document.getElementById('playerTable')?.classList.add('hide');
+    document.getElementById('championTable')?.classList.add('hide');
+    const main=document.getElementById('mainPage'); if(main)main.style.display='block';
+    const filters=document.getElementById('laneFilters'); if(filters)filters.style.display='none';
+    const page=document.getElementById('internalRecordMainV23'); if(page)page.style.display='block';
+    if(searchInput){searchInput.value='';setMainSearchPlaceholder();}
+    if(suggestBox){suggestBox.style.display='none';suggestBox.innerHTML='';}
+    window.renderInternalRecordV23();
+  }
+  window.showInternalRecordV23=showInternalRecordV24;
+  window.showInternalRecordV24=showInternalRecordV24;
+
+  searchInput?.addEventListener('input',function(e){
+    if(currentTab!=='internalRecord')return;
+    activeSearch='';
+    if(suggestBox){suggestBox.style.display='none';suggestBox.innerHTML='';}
+    window.renderInternalRecordV23();
+  },true);
+  searchInput?.addEventListener('keydown',function(e){
+    if(currentTab==='internalRecord'&&e.key==='Enter'){
+      e.preventDefault();e.stopImmediatePropagation();window.renderInternalRecordV23();
+    }
+  },true);
+  searchBtn.onclick=()=>{if(currentTab==='internalRecord')window.renderInternalRecordV23();else runSearch(searchInput.value.trim());};
+
+  function decorateParticipantsV24(root=document){
+    root.querySelectorAll('.participant-card-v20:not([data-honey-v24])').forEach(card=>{
+      const champ=(card.querySelector('.participant-champ-v20')?.textContent||'').trim();
+      if(!champ||champ==='-'){card.dataset.honeyV24='1';return;}
+      const old=card.querySelector('img.champ-icon,.participant-icon-v20:not(.honey-portrait)');
+      if(!old||old.closest('.honey-portrait')){card.dataset.honeyV24='1';return;}
+      old.replaceWith(document.createRange().createContextualFragment(typeof window.honeyPortrait==='function'?window.honeyPortrait(champ,'',false):`<span>${htmlSafe(champ)}</span>`));
+      card.dataset.honeyV24='1';
+    });
+  }
+  const obs=new MutationObserver(()=>decorateParticipantsV24());
+  obs.observe(document.body,{childList:true,subtree:true});
+
+  ensureInternalV24();
+  setMainSearchPlaceholder();
+  [0,120,400,900].forEach(ms=>setTimeout(()=>{try{ensureInternalV24();setMainSearchPlaceholder();decorateParticipantsV24();if(currentTab==='internalRecord')window.renderInternalRecordV23();}catch(e){}},ms));
+})();
+
 </script>
 </body>
 </html>
