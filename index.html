@@ -2430,6 +2430,196 @@ window.goBack=goBack;window.initFloatingTitle=initFloatingTitle;window.toggleCol
   document.head.appendChild(style);
 })();
 
+
+/* ===== v12 최종 패치: 장인랭킹 전적 새 페이지 / 챔피언 초상화 티어 테두리 전체 적용 / 최고기록 잔선 제거 ===== */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    /* 최고기록 패널 닫혀있을 때 남던 가로선 제거 */
+    .record-detail-panel:not(.show){
+      border-color:transparent!important;
+      border-width:0!important;
+      padding:0!important;
+      margin-top:0!important;
+      box-shadow:none!important;
+      background:transparent!important;
+    }
+    .record-detail-panel.show{
+      border:1px solid rgba(96,165,250,.28)!important;
+      background:#0f172a!important;
+    }
+
+    /* 모든 챔피언 초상화 티어 테두리 공통 프레임 */
+    .champ-tier-frame{
+      display:inline-flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      border-radius:12px!important;
+      padding:2px!important;
+      flex-shrink:0!important;
+      background:transparent;
+    }
+    .champ-tier-frame.big-frame{border-radius:27px!important;padding:3px!important;}
+    .champ-tier-frame .champ-icon{border:none!important;box-shadow:none!important;}
+    .champ-tier-frame.single-tier .champ-icon.tier-red{box-shadow:0 0 18px rgba(239,68,68,.65)!important;}
+    .champ-tier-frame.single-tier .champ-icon.tier-orange{box-shadow:0 0 18px rgba(249,115,22,.6)!important;}
+    .champ-tier-frame.single-tier .champ-icon.tier-yellow{box-shadow:0 0 18px rgba(250,204,21,.55)!important;}
+    .champ-tier-frame.single-tier .champ-icon.tier-green{box-shadow:0 0 18px rgba(34,197,94,.55)!important;}
+    .champ-tier-frame.single-tier .champ-icon.tier-blue{box-shadow:0 0 18px rgba(59,130,246,.55)!important;}
+    .champ-icon.tier-red{border-color:#ff334e!important;box-shadow:0 0 18px rgba(239,68,68,.65)!important;}
+    .champ-icon.tier-orange{border-color:#ff8a1c!important;box-shadow:0 0 18px rgba(249,115,22,.6)!important;}
+    .champ-icon.tier-yellow{border-color:#ffe14d!important;box-shadow:0 0 18px rgba(250,204,21,.55)!important;}
+    .champ-icon.tier-green{border-color:#31e981!important;box-shadow:0 0 18px rgba(34,197,94,.55)!important;}
+    .champ-icon.tier-blue{border-color:#60a5fa!important;box-shadow:0 0 18px rgba(59,130,246,.55)!important;}
+  `;
+  document.head.appendChild(style);
+
+  function parseOnclickLane(tr){
+    const oc=tr?.getAttribute?.('onclick')||'';
+    const m=oc.match(/openRecordSidePage\([^,]+,[^,]+,'([^']*)'/)||oc.match(/jumpFromMaster\([^,]+,[^,]+,'([^']*)'/)||oc.match(/jumpFromMost\([^,]+,[^,]+,'([^']*)'/);
+    return m?m[1]:'';
+  }
+  function getChampionNameFromImg(img){
+    if(img.classList.contains('big'))return currentDetailName||'';
+    const cell=img.closest('.champ-cell');
+    const title=cell?.getAttribute('title')||'';
+    if(title)return title.split('/')[0].trim();
+    const nameEl=cell?.querySelector('.champ-name');
+    if(nameEl)return nameEl.textContent.trim();
+    const row=img.closest('tr');
+    const title2=row?.querySelector('.champ-cell')?.getAttribute('title')||'';
+    return title2?title2.split('/')[0].trim():'';
+  }
+  function getLaneForImg(img){
+    const tr=img.closest('tr');
+    const fromClick=parseOnclickLane(tr);
+    if(fromClick)return fromClick;
+    const laneText=(img.closest('tr')?.textContent||'');
+    // 라인을 정확히 못 찾으면 전체 티어 비율을 사용한다.
+    return '';
+  }
+  function tiersForChampion(name,lane){
+    if(!name)return [];
+    let list=[];
+    try{
+      list=getAllChampionComboList().filter(c=>c.name===name && (!lane || c.displayLane===lane)).map(c=>c.tier).filter(Boolean);
+      if(!list.length && lane){
+        const s=calcChampionStats(name,lane);
+        if(s&&s.games>0){s.score=championScore(s);list=[s.tier||bestTierFromList(getAllChampionComboList().filter(c=>c.name===name).map(c=>c.tier))];}
+      }
+      if(!list.length)list=getAllChampionComboList().filter(c=>c.name===name).map(c=>c.tier).filter(Boolean);
+    }catch(e){list=[];}
+    return [...new Set(list)];
+  }
+  function ensureFrame(img,big=false){
+    let frame=img.parentElement;
+    if(!frame || !frame.classList.contains('champ-tier-frame')){
+      // 기존 combo-portrait-wrap은 그대로 프레임으로 사용 가능
+      if(frame && frame.classList.contains('combo-portrait-wrap')){
+        frame.classList.add('champ-tier-frame');
+      }else{
+        const span=document.createElement('span');
+        span.className='champ-tier-frame';
+        img.parentNode.insertBefore(span,img);
+        span.appendChild(img);
+        frame=span;
+      }
+    }
+    if(big)frame.classList.add('big-frame');
+    return frame;
+  }
+  function applyOneChampionFrame(img){
+    if(!img || img.dataset.tierFrameDone==='1')return;
+    const name=getChampionNameFromImg(img);
+    if(!name)return;
+    const lane=getLaneForImg(img);
+    const tiers=tiersForChampion(name,lane);
+    if(!tiers.length)return;
+    const big=img.classList.contains('big');
+    const frame=ensureFrame(img,big);
+    frame.classList.remove('single-tier');
+    ['tier-red','tier-orange','tier-yellow','tier-green','tier-blue'].forEach(c=>img.classList.remove(c));
+    if(tiers.length===1){
+      const cls=TIER_CLASS[tiers[0]]||'tier-blue';
+      img.classList.add(cls);
+      frame.style.background='transparent';
+      frame.classList.add('single-tier');
+    }else{
+      frame.style.background=comboPortraitStyle(tiers).replace(/^background:/,'').replace(/;$/,'')||'transparent';
+      img.style.border='none';
+    }
+    img.dataset.tierFrameDone='1';
+  }
+  function applyChampionPortraitFrames(root=document){
+    root.querySelectorAll('img.champ-icon').forEach(img=>{
+      img.dataset.tierFrameDone='';
+      applyOneChampionFrame(img);
+    });
+  }
+
+  // 장인랭킹 클릭도 라인별/모스트와 같은 새 전적 페이지 시스템으로 통일
+  renderMasterRankingArea=function(championName){
+    const area=document.getElementById('masterRankingArea');
+    if(!area)return;
+    const list=getMasterStats(championName,masterLane);
+    area.innerHTML=`<div class="master-filter-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">${['ALL',...LANE_ORDER].map(l=>`<button class="master-filter ${masterLane===l?'active':''}" onclick="setMasterLane('${l}','${safe(championName)}')">${l==='ALL'?'':laneIcon(l)} ${LANE_LABELS[l]}</button>`).join('')}</div><table class="detail-table"><colgroup><col class="col-rank"><col class="col-name"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-score"></colgroup><thead><tr><th>순위</th><th><button class="sort-btn" onclick="sortMaster('name','${safe(championName)}')">플레이어</button></th><th><button class="sort-btn" onclick="sortMaster('games','${safe(championName)}')">판수</button></th><th><button class="sort-btn" onclick="sortMaster('winRate','${safe(championName)}')">승률</button></th><th><button class="sort-btn" onclick="sortMaster('avgKills','${safe(championName)}')">평균 킬</button></th><th><button class="sort-btn" onclick="sortMaster('avgDeaths','${safe(championName)}')">평균 데스</button></th><th><button class="sort-btn" onclick="sortMaster('avgAssists','${safe(championName)}')">평균 어시</button></th><th><button class="sort-btn" onclick="sortMaster('kda','${safe(championName)}')">KDA</button></th><th><button class="sort-btn" onclick="sortMaster('kp','${safe(championName)}')">킬관여율</button></th><th><button class="sort-btn" onclick="sortMaster('score','${safe(championName)}')">점수</button></th></tr></thead><tbody>${list.map((p,i)=>`<tr class="clickable-row" onclick="openRecordSidePage('champion','${safe(championName)}','${safe(p.lane)}','${safe(p.name)}')"><td>${rankText(i+1)}</td><td class="nickname" title="${htmlSafe(p.name)}"><div class="player-name-cell"><span class="champ-lane-icon">${laneIcon(p.lane)}</span><span>${htmlSafe(p.name)}</span></div></td><td>${p.games}</td><td class="${rateClass(p.winRate)}">${pct(p.winRate)}</td><td>${p.avgKills.toFixed(1)}</td><td>${p.avgDeaths.toFixed(1)}</td><td>${p.avgAssists.toFixed(1)}</td><td>${p.kda.toFixed(2)}</td><td>${pct(p.kp)}</td><td>${p.score.toFixed(1)}</td></tr>`).join('')}</tbody></table>`;
+  };
+
+  // 최고기록: 같은 카드 다시 누르면 닫기 + 닫힘 상태 잔선 제거 유지
+  let openedBestRecordKey='';
+  showBestRecord=function(kind,label,rowId){
+    const p=document.getElementById('recordDetailPanel');
+    if(!p)return;
+    const key=`${kind}:${label}:${rowId}`;
+    if(openedBestRecordKey===key && p.classList.contains('show')){
+      closeRecordPanel();
+      openedBestRecordKey='';
+      return;
+    }
+    const r=rows.find(x=>String(x.id)===String(rowId));
+    if(!r)return;
+    openedBestRecordKey=key;
+    p.innerHTML=`<div class="record-detail-head"><span>${label} 전적</span><button class="record-close-btn" type="button" onclick="closeRecordPanel()">닫기</button></div><div class="smart-scroll-area best-record-area">${recentTableRows([r],kind)}</div>`;
+    p.classList.add('show');
+    applyChampionPortraitFrames(p);
+    setTimeout(()=>{
+      const rect=p.getBoundingClientRect();
+      const overflow=rect.bottom-(window.innerHeight||document.documentElement.clientHeight)+18;
+      if(overflow>0){
+        const d=document.getElementById('detailPage');
+        if(d&&d.style.display!=='none')d.scrollBy({top:overflow,behavior:'smooth'});
+        else window.scrollBy({top:overflow,behavior:'smooth'});
+      }
+    },80);
+  };
+  closeRecordPanel=function(){
+    openedBestRecordKey='';
+    const p=document.getElementById('recordDetailPanel');
+    if(p){p.classList.remove('show');setTimeout(()=>{if(!p.classList.contains('show'))p.innerHTML='';},260);}
+  };
+
+  // 렌더 후 챔피언 초상화 테두리 재적용
+  const _renderChampionRanking=renderChampionRanking;
+  renderChampionRanking=function(){_renderChampionRanking();setTimeout(()=>applyChampionPortraitFrames(document),0);};
+  const _renderRecentMatchArea=renderRecentMatchArea;
+  renderRecentMatchArea=function(playerName){_renderRecentMatchArea(playerName);setTimeout(()=>applyChampionPortraitFrames(document),0);};
+  const _renderChampionRecentMatchArea=renderChampionRecentMatchArea;
+  renderChampionRecentMatchArea=function(championName){_renderChampionRecentMatchArea(championName);setTimeout(()=>applyChampionPortraitFrames(document),0);};
+  const _renderMostChampionArea=renderMostChampionArea;
+  renderMostChampionArea=function(playerName){_renderMostChampionArea(playerName);setTimeout(()=>applyChampionPortraitFrames(document),0);};
+  const _showDetail=showDetail;
+  showDetail=function(html){_showDetail(html);setTimeout(()=>applyChampionPortraitFrames(document),650);};
+  const _setSideV10=window.setSideV10;
+  // setSideV10이 지역함수라 직접 못 잡는 경우도 있으니 DOM 변화 후 전체 적용
+  const observer=new MutationObserver(()=>{clearTimeout(observer._t);observer._t=setTimeout(()=>applyChampionPortraitFrames(document),60);});
+  observer.observe(document.body,{childList:true,subtree:true});
+
+  window.renderMasterRankingArea=renderMasterRankingArea;
+  window.showBestRecord=showBestRecord;
+  window.closeRecordPanel=closeRecordPanel;
+  window.applyChampionPortraitFrames=applyChampionPortraitFrames;
+})();
+
 loadData();setInterval(loadData,30000);
 </script>
 </body>
