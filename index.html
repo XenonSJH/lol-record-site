@@ -31,10 +31,13 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
 .player-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
 .player-card{background:#1E293B;border-radius:20px;padding:20px;transition:.2s;cursor:pointer;border:1px solid #334155}
 .player-card:hover{transform:translateY(-4px);border-color:#8B5CF6}
-.profile{width:70px;height:70px;border-radius:50%;background:#334155;margin-bottom:15px}
-.big-profile{width:120px;height:120px;border-radius:50%;background:#334155;margin-bottom:20px}
+.profile,.big-profile{border-radius:50%;background:#334155;object-fit:cover;display:block}
+.profile{width:70px;height:70px;margin-bottom:15px}
+.big-profile{width:120px;height:120px;margin-bottom:20px}
 .player-name{font-size:20px;font-weight:700;margin-bottom:10px}
 .stat{color:#CBD5E1;margin-bottom:4px}
+.tier-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:5px 10px;font-size:13px;font-weight:900;margin-bottom:8px;background:#312E81;color:#C4B5FD;border:1px solid #8B5CF6}
+.tier-placement{background:#581C87;color:#E9D5FF;border-color:#A855F7}
 .detail-layout{display:grid;grid-template-columns:360px 1fr;gap:24px;margin-top:20px}
 .empty-box{background:#111827;border:1px dashed #475569;color:#94A3B8;border-radius:16px;padding:30px;text-align:center}
 .loading{text-align:center;padding:40px}
@@ -160,7 +163,7 @@ function refreshCurrentPage(){
 async function loadPlayers(){
     if(!db) return;
 
-    const {data,error} = await db.from('bc_players').select('*').order('carry_score',{ascending:false});
+    const {data,error} = await db.from('bc_players').select('*').order('lp',{ascending:false});
     if(error){console.error(error);return;}
 
     playersCache = data;
@@ -412,9 +415,51 @@ function getWinrate(player){
     return player.total_games ? ((player.wins / player.total_games) * 100).toFixed(1) : "0.0";
 }
 
+function getPlayerLP(player){
+    return Number(player.lp || 0);
+}
+
+function getTier(player){
+    if((player.total_games || 0) < 5){
+        return "배치중!";
+    }
+
+    const lp = getPlayerLP(player);
+
+    if(lp >= 2400) return "다이아몬드";
+    if(lp >= 2000) return "에메랄드";
+    if(lp >= 1600) return "플래티넘";
+    if(lp >= 1200) return "골드";
+    if(lp >= 800) return "실버";
+    if(lp >= 400) return "브론즈";
+    return "아이언";
+}
+
+function getTierBadge(player){
+    const tier = getTier(player);
+    const placementClass = tier === "배치중!" ? " tier-placement" : "";
+    return `<div class="tier-badge${placementClass}">🏆 ${tier}</div>`;
+}
+
+function getProfileHtml(player, size="normal"){
+    const cls = size === "big" ? "big-profile" : "profile";
+    const url = player.profile_image;
+
+    if(url){
+        return `<img class="${cls}" src="${escapeAttribute(url)}" onerror="this.outerHTML='<div class=&quot;${cls}&quot;></div>'">`;
+    }
+
+    return `<div class="${cls}"></div>`;
+}
+
 function getWinPointChange(player,result){
     const totalGames = player.total_games || 0;
     const wins = player.wins || 0;
+
+    if(totalGames < 5){
+        return result === "win" ? 250 : 40;
+    }
+
     const winrate = totalGames > 0 ? (wins / totalGames) * 100 : 50;
 
     if(result === "lose") return -15;
@@ -437,10 +482,12 @@ function renderTopPlayers(data){
     top.forEach((player,index)=>{
         container.innerHTML += `
             <div class="player-card" onclick="openPlayer(${player.id})">
+                ${getProfileHtml(player)}
                 <div class="player-name">#${index + 1} ${escapeHtml(player.nickname)}</div>
+                ${getTierBadge(player)}
                 <div class="stat">🏆 승률 ${getWinrate(player)}%</div>
                 <div class="stat">⚔️ ${player.total_games}전</div>
-                <div class="stat">⭐ 승점 ${player.carry_score}</div>
+                <div class="stat">⭐ ${getPlayerLP(player)} LP</div>
             </div>
         `;
     });
@@ -453,12 +500,13 @@ function renderPlayers(data){
     data.forEach(player=>{
         container.innerHTML += `
             <div class="player-card" onclick="openPlayer(${player.id})">
-                <div class="profile"></div>
+                ${getProfileHtml(player)}
                 <div class="player-name">${escapeHtml(player.nickname)}</div>
+                ${getTierBadge(player)}
                 <div class="stat">⚔️ ${player.total_games}전</div>
                 <div class="stat">🏆 ${player.wins}승 ${player.losses}패</div>
                 <div class="stat">📈 승률 ${getWinrate(player)}%</div>
-                <div class="stat">⭐ 승점 ${player.carry_score}</div>
+                <div class="stat">⭐ ${getPlayerLP(player)} LP</div>
             </div>
         `;
     });
@@ -471,12 +519,13 @@ async function openPlayer(id){
     document.getElementById("playerDetailContent").innerHTML = `
         <div class="detail-layout">
             <div class="card">
-                <div class="big-profile"></div>
+                ${getProfileHtml(player,"big")}
                 <h1>${escapeHtml(player.nickname)}</h1><br>
+                ${getTierBadge(player)}
                 <p class="stat">⚔️ ${player.total_games}전</p>
                 <p class="stat">🏆 ${player.wins}승 ${player.losses}패</p>
                 <p class="stat">📈 승률 ${getWinrate(player)}%</p>
-                <p class="stat">⭐ 승점 ${player.carry_score}</p>
+                <p class="stat">⭐ ${getPlayerLP(player)} LP</p>
             </div>
             <div>
                 <div class="card"><h2>모스트 챔피언</h2><br><div class="detail-loading">전적 데이터를 불러오는 중...</div></div>
@@ -516,15 +565,16 @@ function renderPlayerDetail(player,records){
     document.getElementById("playerDetailContent").innerHTML = `
         <div class="detail-layout">
             <div class="card">
-                <div class="big-profile"></div>
+                ${getProfileHtml(player,"big")}
                 <h1>${escapeHtml(player.nickname)}</h1><br>
+                ${getTierBadge(player)}
                 <p class="stat">⚔️ ${player.total_games}전</p>
                 <p class="stat">🏆 ${player.wins}승 ${player.losses}패</p>
                 <p class="stat">📈 승률 ${getWinrate(player)}%</p>
-                <p class="stat">⭐ 승점 ${player.carry_score}</p>
+                <p class="stat">⭐ ${getPlayerLP(player)} LP</p>
                 <br>
-                <p class="stat">승리 시 예상 승점: +${getWinPointChange(player,"win")}</p>
-                <p class="stat">패배 시 예상 승점: -15</p>
+                <p class="stat">승리 시 예상 LP: +${getWinPointChange(player,"win")}</p>
+                <p class="stat">패배 시 예상 LP: ${getWinPointChange(player,"lose")}</p>
             </div>
             <div>
                 <div class="card"><h2>모스트 챔피언</h2><br>${mostChampionsHtml}</div>
@@ -598,7 +648,7 @@ function buildRecentMatches(player,records){
                         <div>${record.kills || 0} / ${record.deaths || 0} / ${record.assists || 0}</div>
                         <div>KP ${kp}%</div>
                         <div>점수 ${score}</div>
-                        <div class="${pointClass}">${pointText}점</div>
+                        <div class="${pointClass}">${pointText} LP</div>
                     </div>
                 `;
             }).join('')}
@@ -610,12 +660,13 @@ function renderPlayerDetailError(player){
     document.getElementById("playerDetailContent").innerHTML = `
         <div class="detail-layout">
             <div class="card">
-                <div class="big-profile"></div>
+                ${getProfileHtml(player,"big")}
                 <h1>${escapeHtml(player.nickname)}</h1><br>
+                ${getTierBadge(player)}
                 <p class="stat">⚔️ ${player.total_games}전</p>
                 <p class="stat">🏆 ${player.wins}승 ${player.losses}패</p>
                 <p class="stat">📈 승률 ${getWinrate(player)}%</p>
-                <p class="stat">⭐ 승점 ${player.carry_score}</p>
+                <p class="stat">⭐ ${getPlayerLP(player)} LP</p>
             </div>
             <div><div class="card"><h2>상세 정보</h2><br><div class="empty-box">전적 데이터를 불러오지 못했습니다.</div></div></div>
         </div>
@@ -645,6 +696,10 @@ function escapeHtml(value){
         .replaceAll(">","&gt;")
         .replaceAll('"',"&quot;")
         .replaceAll("'","&#039;");
+}
+
+function escapeAttribute(value){
+    return escapeHtml(value).replaceAll("`","&#096;");
 }
 
 loadPlayers();
