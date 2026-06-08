@@ -6912,6 +6912,202 @@ var honeyPortrait = function(name,lane='',big=false){
   setTimeout(()=>{const sec=document.getElementById('mostChampionSection'); if(sec)wireMostButton(sec.dataset.smartName||currentDetailName);},300);
 })();
 
+
+
+/* ===== v33 요청 반영: 전체보기 버튼 1개/버튼만 클릭 + 전체 플레이 챔피언 문구 정리 + 최근전적 5판 미리보기 ===== */
+(function(){
+  const style=document.createElement('style');
+  style.textContent=`
+    #mostChampionSection .section-title .most-all-open-btn{display:none!important;}
+    #mostChampionSection .collapsible-header{cursor:default!important;}
+    #mostChampionSection .collapse-toggle.most-all-open-btn,
+    #mostChampionSection .collapse-toggle{cursor:pointer!important;}
+    .recent-preview-head-v33{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+    .recent-preview-full-btn-v33{border:1px solid rgba(96,165,250,.45);background:#2563eb;color:white;border-radius:999px;padding:9px 14px;font-weight:1000;cursor:pointer;white-space:nowrap;}
+    .recent-preview-full-btn-v33:hover{filter:brightness(1.15);}
+    .all-played-page .all-played-info{display:none!important;}
+    .all-played-page .hero-sub .lane-pill:nth-child(n+2){display:none!important;}
+  `;
+  document.head.appendChild(style);
+
+  function callRecordFull(mode,name){
+    const fn=window.openRecordFullV23||window.openRecordFullV22||window.openRecordFullV20||window.openRecordSidePage||window.safeOpenRecordV19;
+    if(typeof fn==='function')fn(mode,name,'ALL','');
+  }
+
+  function recentPreviewData(mode,name){
+    let d=mode==='champion'?rows.filter(r=>r.champion_name===name):rows.filter(r=>r.lol_name===name);
+    return d.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
+  }
+
+  function recentPreviewHtml(mode,name){
+    const title=mode==='champion'?'최근 전적 5판':'최근 전적 5판';
+    const data=recentPreviewData(mode,name);
+    return `<div class="section recent-preview-section-v33">
+      <div class="recent-preview-head-v33">
+        <div class="section-title" style="margin-bottom:0;">${title}</div>
+        <button class="recent-preview-full-btn-v33" type="button" onclick="openRecentFullV33('${mode}','${safe(name)}')">전체보기</button>
+      </div>
+      ${recentTableRows(data,mode)}
+    </div>`;
+  }
+
+  function insertRecentPreview(mode,name){
+    const detail=document.getElementById('detailContent');
+    if(!detail)return;
+    detail.querySelectorAll('.recent-preview-section-v33').forEach(x=>x.remove());
+    const html=recentPreviewHtml(mode,name);
+    if(mode==='player'){
+      const target=document.getElementById('mostChampionSection');
+      if(target)target.insertAdjacentHTML('afterend',html);
+      else detail.insertAdjacentHTML('beforeend',html);
+    }else{
+      const target=document.querySelector('#masterRankingArea')?.closest('.section');
+      if(target)target.insertAdjacentHTML('afterend',html);
+      else detail.insertAdjacentHTML('beforeend',html);
+    }
+  }
+
+  function fixMostButton(name){
+    const sec=document.getElementById('mostChampionSection');
+    if(!sec)return;
+    sec.dataset.smartName=name;
+    sec.querySelectorAll('.section-title .most-all-open-btn').forEach(x=>x.remove());
+    const header=sec.querySelector('.collapsible-header');
+    if(header){
+      header.onclick=function(e){
+        if(e.target.closest('.collapse-toggle,.most-all-open-btn'))return;
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      };
+    }
+    const btn=sec.querySelector('.collapse-toggle');
+    if(btn){
+      btn.classList.add('most-all-open-btn');
+      btn.textContent='전체보기';
+      btn.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        openAllPlayedChampionsPageV33(name);
+        return false;
+      };
+    }
+  }
+
+  window.addEventListener('click',function(e){
+    const header=e.target.closest('#mostChampionSection .collapsible-header');
+    if(header && !e.target.closest('.collapse-toggle,.most-all-open-btn')){
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      return false;
+    }
+  },true);
+
+  function getMostRowsForAllPlayed(playerName){
+    const oldLane=mostLane, oldSort=mostSort, oldAsc=mostAsc;
+    mostLane='ALL'; mostSort='score'; mostAsc=false;
+    let list=[];
+    try{list=getPlayerMostStats(playerName)||[]}catch(e){console.error(e);list=[]}
+    mostLane=oldLane; mostSort=oldSort; mostAsc=oldAsc;
+    return list;
+  }
+
+  const allStateV33={player:'',lane:'ALL',input:'',search:'',sort:'score',asc:false};
+  const stackV33=[];
+  function filterAllV33(){
+    let out=getMostRowsForAllPlayed(allStateV33.player);
+    if(allStateV33.lane!=='ALL')out=out.filter(x=>x.lane===allStateV33.lane);
+    if(allStateV33.search){const q=allStateV33.search.toLowerCase();out=out.filter(x=>(x.champion||'').toLowerCase().includes(q));}
+    out.sort((a,b)=>{
+      let r=0;
+      if(allStateV33.sort==='name')r=compareName(a.champion,b.champion);
+      else if(allStateV33.sort==='games')r=Number(a.games||0)-Number(b.games||0);
+      else if(allStateV33.sort==='wins')r=Number(a.wins||0)-Number(b.wins||0);
+      else if(allStateV33.sort==='losses')r=Number(a.losses||0)-Number(b.losses||0);
+      else if(allStateV33.sort==='winRate')r=Number(a.winRate||0)-Number(b.winRate||0);
+      else if(allStateV33.sort==='avgKills')r=Number(a.avgKills||0)-Number(b.avgKills||0);
+      else if(allStateV33.sort==='avgDeaths')r=Number(a.avgDeaths||0)-Number(b.avgDeaths||0);
+      else if(allStateV33.sort==='avgAssists')r=Number(a.avgAssists||0)-Number(b.avgAssists||0);
+      else if(allStateV33.sort==='kda')r=Number(a.kda||0)-Number(b.kda||0);
+      else if(allStateV33.sort==='kp')r=Number(a.kp||0)-Number(b.kp||0);
+      else r=Number(a.score||0)-Number(b.score||0);
+      if(r===0)r=Number(b.games||0)-Number(a.games||0)||compareName(a.champion,b.champion);
+      return allStateV33.asc?r:-r;
+    });
+    return out;
+  }
+  function allControlsV33(){
+    return `<div class="all-played-controls">
+      <div class="all-played-search-wrap"><div class="all-played-search-row">
+        <input id="allPlayedSearchInputV33" class="all-played-search" type="text" placeholder="챔피언 이름을 입력해주세요" autocomplete="off" value="${htmlSafe(allStateV33.input)}" oninput="allPlayedSuggestionsV33()" onkeydown="if(event.key==='Enter')allPlayedApplySearchV33(this.value)"/>
+        <button class="all-played-search-btn" type="button" onclick="allPlayedApplySearchV33(document.getElementById('allPlayedSearchInputV33').value)">🔍</button>
+      </div><div id="allPlayedSuggestV33" class="all-played-suggest"></div></div>
+      <div class="all-played-lanes">${['ALL',...LANE_ORDER].map(l=>`<button class="master-filter ${allStateV33.lane===l?'active':''}" type="button" onclick="allPlayedSetLaneV33('${l}')">${l==='ALL'?'':laneIcon(l)}<span>${LANE_LABELS[l]}</span></button>`).join('')}</div>
+    </div>`;
+  }
+  function allTableV33(){
+    const list=filterAllV33();
+    if(!list.length)return `<div class="recent-empty">조건에 맞는 챔피언 기록이 없습니다.</div>`;
+    return `<table class="detail-table"><colgroup><col class="col-rank"><col class="col-champ"><col class="col-score"><col class="col-small"><col class="col-small"><col class="col-small"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"><col class="col-rate"></colgroup>
+      <thead><tr><th>순위</th><th><button class="sort-btn" type="button" onclick="allPlayedSortV33('name')">챔피언</button></th><th><button class="sort-btn" type="button" onclick="allPlayedSortV33('score')">캐리점수</button></th><th><button class="sort-btn" type="button" onclick="allPlayedSortV33('games')">판수</button></th><th><button class="sort-btn" type="button" onclick="allPlayedSortV33('wins')">승</button></th><th><button class="sort-btn" type="button" onclick="allPlayedSortV33('losses')">패</button></th><th><button class="sort-btn" type="button" onclick="allPlayedSortV33('winRate')">승률</button></th><th><button class="sort-btn" type="button" onclick="allPlayedSortV33('avgKills')">평균 킬</button></th><th><button class="sort-btn" type="button" onclick="allPlayedSortV33('avgDeaths')">평균 데스</button></th><th><button class="sort-btn" type="button" onclick="allPlayedSortV33('avgAssists')">평균 어시</button></th><th><button class="sort-btn" type="button" onclick="allPlayedSortV33('kda')">평균 KDA</button></th><th><button class="sort-btn" type="button" onclick="allPlayedSortV33('kp')">평균 킬관여율</button></th></tr></thead>
+      <tbody>${list.map((c,i)=>`<tr><td>${rankText(i+1)}</td><td class="champ-td"><div class="champ-cell" title="${htmlSafe(c.champion)}">${typeof honeyPortrait==='function'?honeyPortrait(c.champion,c.lane,false):`<img class="champ-icon" src="${champImg(c.champion)}" onerror="this.style.display='none'"/>`}<span class="champ-lane-icon">${laneIcon(c.lane)}</span><span class="champ-name">${htmlSafe(c.champion)}</span></div></td><td class="all-played-score">${Number(c.score||0).toFixed(1)}</td><td>${c.games}</td><td class="win">${c.wins}</td><td class="loss">${c.losses}</td><td class="${rateClass(c.winRate)}">${pct(c.winRate)}</td><td>${Number(c.avgKills||0).toFixed(1)}</td><td>${Number(c.avgDeaths||0).toFixed(1)}</td><td>${Number(c.avgAssists||0).toFixed(1)}</td><td>${Number(c.kda||0).toFixed(2)}</td><td>${pct(c.kp)}</td></tr>`).join('')}</tbody></table>`;
+  }
+  function renderAllBodyV33(){const a=document.getElementById('allPlayedBodyV33');if(a)a.innerHTML=allControlsV33()+allTableV33();}
+  function openAllPlayedChampionsPageV33(playerName){
+    const detail=document.getElementById('detailContent');
+    if(detail)stackV33.push({html:detail.innerHTML,title:currentDetailName,scroll:(document.getElementById('detailPage')||document.documentElement).scrollTop||window.scrollY});
+    allStateV33.player=playerName;allStateV33.lane='ALL';allStateV33.input='';allStateV33.search='';allStateV33.sort='score';allStateV33.asc=false;
+    currentDetailName=`플레이한 챔피언 전체보기 - ${playerName}`;
+    showDetail(`<div class="all-played-page"><div class="detail-hero"><div style="min-width:0;"><div class="hero-title">플레이한 챔피언 전체보기 - ${htmlSafe(playerName)}</div><div class="hero-sub">${lanePill('ALL')}</div></div></div><div class="section"><div id="allPlayedBodyV33"></div></div></div>`);
+    renderAllBodyV33();
+  }
+  function allPlayedSuggestionsV33(){const box=document.getElementById('allPlayedSuggestV33'),input=document.getElementById('allPlayedSearchInputV33');if(!box||!input)return;allStateV33.input=input.value;const q=input.value.trim().toLowerCase();if(!q){box.style.display='none';box.innerHTML='';return;}const list=[...new Set(getMostRowsForAllPlayed(allStateV33.player).map(x=>x.champion).filter(Boolean))].filter(n=>n.toLowerCase().includes(q)).slice(0,8);if(!list.length){box.style.display='none';box.innerHTML='';return;}box.innerHTML=list.map(n=>`<div class="suggest-item" onclick="allPlayedChooseV33('${safe(n)}')">${htmlSafe(n)}</div>`).join('');box.style.display='block';}
+  function allPlayedApplySearchV33(v){allStateV33.search=(v||'').trim();allStateV33.input=allStateV33.search;const box=document.getElementById('allPlayedSuggestV33');if(box){box.style.display='none';box.innerHTML='';}renderAllBodyV33();}
+  function allPlayedChooseV33(v){const input=document.getElementById('allPlayedSearchInputV33');if(input)input.value=v;allPlayedApplySearchV33(v);}
+  function allPlayedSetLaneV33(lane){allStateV33.lane=lane;renderAllBodyV33();}
+  function allPlayedSortV33(type){if(allStateV33.sort===type)allStateV33.asc=!allStateV33.asc;else{allStateV33.sort=type;allStateV33.asc=type==='name';}renderAllBodyV33();}
+
+  const prevGoBack=window.goBack;
+  window.goBack=function(){
+    if(stackV33.length){
+      const prev=stackV33.pop();
+      const detail=document.getElementById('detailContent');
+      if(detail)detail.innerHTML=prev.html;
+      currentDetailName=prev.title||currentDetailName;
+      setTimeout(()=>{initFloatingTitle();const n=document.getElementById('mostChampionSection')?.dataset.smartName||currentDetailName;fixMostButton(n);},0);
+      return;
+    }
+    prevGoBack();
+  };
+  goBack=window.goBack;
+
+  const prevOpenPlayer=window.openPlayerDetail;
+  window.openPlayerDetail=function(playerName){
+    prevOpenPlayer(playerName);
+    setTimeout(()=>{fixMostButton(playerName);insertRecentPreview('player',playerName);},0);
+    setTimeout(()=>{fixMostButton(playerName);insertRecentPreview('player',playerName);},160);
+  };
+  openPlayerDetail=window.openPlayerDetail;
+
+  const prevOpenChampion=window.openChampionDetail;
+  window.openChampionDetail=function(championName){
+    prevOpenChampion(championName);
+    setTimeout(()=>insertRecentPreview('champion',championName),0);
+    setTimeout(()=>insertRecentPreview('champion',championName),160);
+  };
+  openChampionDetail=window.openChampionDetail;
+
+  window.openRecentFullV33=callRecordFull;
+  window.openAllPlayedChampionsPage=window.openAllPlayedChampionsPageV33=openAllPlayedChampionsPageV33;
+  window.allPlayedSuggestionsV33=allPlayedSuggestionsV33;
+  window.allPlayedApplySearchV33=allPlayedApplySearchV33;
+  window.allPlayedChooseV33=allPlayedChooseV33;
+  window.allPlayedSetLaneV33=allPlayedSetLaneV33;
+  window.allPlayedSortV33=allPlayedSortV33;
+})();
+
 </script>
 </body>
 </html>
