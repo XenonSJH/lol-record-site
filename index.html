@@ -686,8 +686,9 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 
 #playerDetail .detail-layout,
 #championDetail .detail-layout{
-    grid-template-columns:minmax(320px,360px) minmax(0,1fr)!important;
+    grid-template-columns:minmax(260px,300px) minmax(0,1fr)!important;
     align-items:start;
+    gap:20px!important;
 }
 
 #playerDetail .detail-layout>div,
@@ -697,6 +698,11 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 #matchDetail .card,
 #matchDetail .team-card{
     min-width:0;
+}
+
+#playerDetail .detail-layout>div:first-child.card,
+#championDetail .champion-detail-card{
+    padding:20px!important;
 }
 
 .player-most-list{
@@ -781,6 +787,58 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 #matchDetail .record-row{
     grid-template-columns:52px minmax(72px,1fr) 82px 54px 66px 64px!important;
     gap:7px!important;
+}
+.record-ui-grid{
+    display:grid;
+    grid-template-columns:minmax(320px,420px) minmax(0,1fr);
+    gap:20px;
+    align-items:start;
+}
+.record-form{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+.record-form textarea{
+    min-height:220px;
+    resize:vertical;
+    line-height:1.5;
+}
+.record-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+.record-preview{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+.record-preview-section{
+    background:var(--bc-card2,#111827);
+    border:1px solid var(--bc-border,#334155);
+    border-radius:16px;
+    padding:16px;
+}
+.record-preview-title{
+    color:#EDE9FE;
+    font-size:18px;
+    font-weight:1000;
+    margin-bottom:10px;
+}
+.record-preview-lines{
+    color:#E2E8F0;
+    line-height:1.7;
+    white-space:pre-wrap;
+    font-weight:800;
+}
+.record-hint{
+    color:#CBD5E1;
+    font-size:13px;
+    line-height:1.5;
+}
+@media(max-width:900px){
+    .record-ui-grid{grid-template-columns:1fr}
 }
 
 @media(max-width:900px){
@@ -890,10 +948,32 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 </div>
 <div id="recordDisabled" class="page">
     <h2 style="margin-bottom:20px;">🎯 전적등록</h2>
-    <div class="card">
-        <h2>🚧 준비 중</h2><br>
-        <p class="stat">사이트 전적등록 기능은 앱 버전에서 지원 예정입니다.</p>
-        <p class="stat">현재는 기존 전적등록기 또는 LCU 자동등록을 사용해주세요.</p>
+    <div class="record-ui-grid">
+        <div class="card">
+            <h2>전적 입력</h2>
+            <br>
+            <div class="record-form">
+                <select class="search-input" id="recordWinnerInput" onchange="updateRecordPreview()">
+                    <option value="">승리팀 선택</option>
+                    <option value="BLUE">BLUE 승리</option>
+                    <option value="RED">RED 승리</option>
+                </select>
+                <textarea class="search-input" id="recordBlueTeamInput" placeholder="블루팀 조합 입력&#10;예: TOP 가렌 - Xenon&#10;JUG 리 신 - Player2" oninput="updateRecordPreview()"></textarea>
+                <textarea class="search-input" id="recordRedTeamInput" placeholder="레드팀 조합 입력&#10;예: TOP 말파이트 - Player6&#10;JUG 바이 - Player7" oninput="updateRecordPreview()"></textarea>
+                <input class="search-input" id="recordBlueBanInput" placeholder="블루팀 밴 입력 예: 야스오, 요네, 제드" oninput="updateRecordPreview()">
+                <input class="search-input" id="recordRedBanInput" placeholder="레드팀 밴 입력 예: 티모, 유미, 샤코" oninput="updateRecordPreview()">
+                <div class="record-actions">
+                    <button class="sort-btn active" onclick="fakeRecordSubmit()">전적 등록</button>
+                    <button class="sort-btn" onclick="cancelRecordForm()">등록 취소</button>
+                </div>
+                <p class="record-hint" id="recordFormMessage">지금은 UI 미리보기만 지원합니다. 실제 저장은 연결되어 있지 않습니다.</p>
+            </div>
+        </div>
+        <div class="card">
+            <h2>등록 미리보기</h2>
+            <br>
+            <div class="record-preview" id="recordPreviewBox"></div>
+        </div>
     </div>
 </div>
 <div id="bandleBot" class="page">
@@ -1110,6 +1190,7 @@ function showPage(id,btn=null,push=true){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById(id)?.classList.add('active');
     setActiveMenu(id,btn);
+    if(id==='recordDisabled')setTimeout(updateRecordPreview,0);
     if(push&&!suppressNav){navStack=navStack.slice(0,navIndex+1);navStack.push(id);navIndex=navStack.length-1;updateNavButtons()}
 }
 function setActiveMenu(id,btn=null){
@@ -1696,6 +1777,46 @@ function detailRecentRow(r,p=null,showPlayer=false){
         <div class="plain-stat sub">킬관여율 ${r.kp??0}%</div>
         <div class="${cls}">${pc>=0?`+${pc}`:pc} LP</div>
     </div>`;
+}
+
+function recordPreviewSection(title,body){
+    return `<div class="record-preview-section"><div class="record-preview-title">${escapeHtml(title)}</div><div class="record-preview-lines">${escapeHtml(body||'입력 없음')}</div></div>`;
+}
+
+function splitRecordList(value){
+    return String(value||'').split(/\n|,/).map(v=>v.trim()).filter(Boolean).join('\n');
+}
+
+function updateRecordPreview(){
+    const box=document.getElementById('recordPreviewBox');
+    if(!box)return;
+    const winner=document.getElementById('recordWinnerInput')?.value||'';
+    const blueTeam=splitRecordList(document.getElementById('recordBlueTeamInput')?.value);
+    const redTeam=splitRecordList(document.getElementById('recordRedTeamInput')?.value);
+    const blueBan=splitRecordList(document.getElementById('recordBlueBanInput')?.value);
+    const redBan=splitRecordList(document.getElementById('recordRedBanInput')?.value);
+
+    box.innerHTML=[
+        recordPreviewSection('승리팀',winner?`${winner} 승리`:'승리팀 선택 안 됨'),
+        recordPreviewSection('블루팀 조합',blueTeam),
+        recordPreviewSection('레드팀 조합',redTeam),
+        recordPreviewSection('블루팀 밴',blueBan),
+        recordPreviewSection('레드팀 밴',redBan)
+    ].join('');
+}
+
+function fakeRecordSubmit(){
+    updateRecordPreview();
+    flashMessage('recordFormMessage','UI 미리보기만 완료되었습니다. 실제 저장은 아직 연결되어 있지 않습니다.');
+}
+
+function cancelRecordForm(){
+    ['recordWinnerInput','recordBlueTeamInput','recordRedTeamInput','recordBlueBanInput','recordRedBanInput'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el)el.value='';
+    });
+    updateRecordPreview();
+    flashMessage('recordFormMessage','등록 입력을 취소했습니다.');
 }
 
 async function openBandleBot(btn){
