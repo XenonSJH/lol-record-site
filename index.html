@@ -306,6 +306,12 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
 .account-status{font-size:14px;color:var(--bc-sub);font-weight:800}.intro-box{margin-top:14px;background:#111827;border:1px solid var(--bc-border);border-radius:14px;padding:12px;color:var(--bc-sub);line-height:1.55;white-space:pre-wrap}
 @media(max-width:1000px){.account-panel{grid-template-columns:1fr}.theme-grid{grid-template-columns:1fr}.range-row{grid-template-columns:1fr}}
 
+
+.account-status-card{margin-bottom:20px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.account-layout-fixed{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-areas:"basic theme" "login size"}
+.account-basic-card{grid-area:basic}.account-theme-card{grid-area:theme}.account-login-card{grid-area:login}.account-size-card{grid-area:size}
+@media(max-width:1000px){.account-layout-fixed{grid-template-columns:1fr!important;grid-template-areas:"basic" "theme" "login" "size"}}
+
 </style>
 </head>
 <body>
@@ -338,9 +344,7 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
         <div class="card"><div class="card-title">플레이어</div><div class="card-value" id="playerCount">0</div></div>
         <div class="card"><div class="card-title">총 경기</div><div class="card-value" id="totalGameCount">-</div></div>
         <div class="card"><div class="card-title">이번주 경기</div><div class="card-value" id="weeklyGameCount">-</div></div>
-        <div class="card-title">현재 시즌</div>
-        <div class="card-value" id="currentSeasonName">시즌 1</div>
-        <div class="stat" id="currentSeasonPeriod">기간 미설정</div>
+        <div class="card"><div class="card-title">현재 시즌</div><div class="card-value" id="currentSeasonName">시즌 1</div><div class="stat" id="currentSeasonPeriod">기간 미설정</div><div class="stat" id="seasonRemain">시즌 종료 D-?</div></div>
     </div>
     <div class="section">
         <h2>🏆 TOP 플레이어</h2>
@@ -427,15 +431,15 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
         </div>
     </div>
     <div id="accountLoggedIn" style="display:none;">
-        <div class="account-card" style="margin-bottom:20px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
+        <div class="account-card account-status-card">
             <div>
                 <h2 id="accountTitle">로그인됨</h2>
                 <p class="account-status" id="accountSub"></p>
             </div>
             <button class="sort-btn" onclick="logoutAccount()">로그아웃</button>
         </div>
-        <div class="account-panel">
-            <div class="account-card">
+        <div class="account-panel account-layout-fixed">
+            <div class="account-card account-basic-card">
                 <h2>기본 정보</h2><br>
                 <div class="form-grid">
                     <label class="form-label">연결 플레이어 닉네임</label>
@@ -448,24 +452,14 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
                     <p class="account-status" id="profileSaveMessage"></p>
                 </div>
             </div>
-            <div class="account-card">
+            <div class="account-card account-theme-card">
                 <h2>UI 색깔</h2><br>
                 <div class="theme-grid" id="themeGrid"></div>
                 <br>
-                <button class="sort-btn active" onclick="saveUiSettings()">UI 설정 저장</button>
+                <button class="sort-btn active" onclick="saveUiSettings()">UI 색깔 저장</button>
                 <p class="account-status" id="uiSaveMessage"></p>
             </div>
-            <div class="account-card">
-                <h2>UI 크기 조절</h2><br>
-                <div class="form-grid">
-                    <div class="range-row"><span>챔피언 UI 높이</span><input type="range" min="92" max="180" id="sizeChampion" oninput="previewUiSettings()"><b id="sizeChampionValue"></b></div>
-                    <div class="range-row"><span>플레이어 UI 높이</span><input type="range" min="92" max="180" id="sizePlayer" oninput="previewUiSettings()"><b id="sizePlayerValue"></b></div>
-                    <div class="range-row"><span>모스트 챔피언</span><input type="range" min="58" max="120" id="sizeMost" oninput="previewUiSettings()"><b id="sizeMostValue"></b></div>
-                    <div class="range-row"><span>최근 전적</span><input type="range" min="66" max="140" id="sizeRecent" oninput="previewUiSettings()"><b id="sizeRecentValue"></b></div>
-                    <div class="range-row"><span>내전 기록</span><input type="range" min="260" max="520" id="sizeMatch" oninput="previewUiSettings()"><b id="sizeMatchValue"></b></div>
-                </div>
-            </div>
-            <div class="account-card">
+            <div class="account-card account-login-card">
                 <h2>아이디 / 비밀번호 변경</h2><br>
                 <div class="form-grid">
                     <label class="form-label">새 아이디</label>
@@ -476,6 +470,17 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
                     <input class="search-input" id="changePassword" type="password" placeholder="비우면 유지">
                     <button class="sort-btn active" onclick="changeAccountLogin()">계정 정보 변경</button>
                     <p class="account-status" id="accountChangeMessage"></p>
+                </div>
+            </div>
+            <div class="account-card account-size-card">
+                <h2>UI 크기 조절</h2><br>
+                <div class="form-grid">
+                    <div class="range-row"><span>챔피언 UI 높이</span><input type="range" min="92" max="180" id="sizeChampion" oninput="previewUiSettings()"><b id="sizeChampionValue"></b></div>
+                    <div class="range-row"><span>플레이어 UI 높이</span><input type="range" min="92" max="180" id="sizePlayer" oninput="previewUiSettings()"><b id="sizePlayerValue"></b></div>
+                    <div class="range-row"><span>모스트 챔피언</span><input type="range" min="58" max="120" id="sizeMost" oninput="previewUiSettings()"><b id="sizeMostValue"></b></div>
+                    <div class="range-row"><span>최근 전적</span><input type="range" min="66" max="140" id="sizeRecent" oninput="previewUiSettings()"><b id="sizeRecentValue"></b></div>
+                    <div class="range-row"><span>내전 기록</span><input type="range" min="260" max="520" id="sizeMatch" oninput="previewUiSettings()"><b id="sizeMatchValue"></b></div>
+                    <button class="sort-btn active" onclick="saveUiSettings()">UI 크기 저장</button>
                 </div>
             </div>
         </div>
@@ -526,6 +531,7 @@ let db=null, playersCache=[], matchesCache=[], championRecordsCache=[], champion
 let playerSortKey="lp", championSortKey="honey", championLaneKey="ALL";
 let navStack=["home"], navIndex=0, suppressNav=false;
 let championIconMap={}, championJsonLoaded=false;
+let currentAccount=null, currentTheme="purple";
 
 const ADMIN_PASSWORD = "1234";
 let adminMenuButton = null;
@@ -542,7 +548,7 @@ function showPage(id,btn=null,push=true){
 }
 function setActiveMenu(id,btn=null){
     document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
-    const map={home:'home',players:'players',playerDetail:'players',champions:'champions',championDetail:'champions',matches:'matches',matchDetail:'matches',recordDisabled:'recordDisabled'};
+    const map={home:'home',players:'players',playerDetail:'players',champions:'champions',championDetail:'champions',matches:'matches',matchDetail:'matches',recordDisabled:'recordDisabled',account:'account'};
     const key=map[id];
     const target=btn || document.querySelector(`.menu button[data-page="${key}"]`);
     if(target) target.classList.add('active');
@@ -944,9 +950,9 @@ async function signupAccount(){const username=document.getElementById('signupUse
 async function loginAccount(){const username=document.getElementById('loginUsername').value.trim();const password=document.getElementById('loginPassword').value;const msg=document.getElementById('loginMessage');const {data,error}=await db.from('bc_accounts').select('*').eq('username',username).maybeSingle();if(error||!data){msg.innerText='계정을 찾지 못함';return}const h=await hashPassword(password,data.password_salt);if(h!==data.password_hash){msg.innerText='비밀번호가 틀림';return}currentAccount=data;sessionStorage.setItem('bandleAccountId',data.id);applyUiSettings(data.settings);renderAccountPage();msg.innerText='로그인 완료'}
 function logoutAccount(){currentAccount=null;sessionStorage.removeItem('bandleAccountId');renderAccountPage()}
 async function restoreAccount(){const id=sessionStorage.getItem('bandleAccountId');if(!id||!db)return;const {data}=await db.from('bc_accounts').select('*').eq('id',id).maybeSingle();if(data){currentAccount=data;applyUiSettings(data.settings||{});}}
-async function saveProfileSettings(){if(!currentAccount)return;const nickname=document.getElementById('settingNickname').value.trim();const profile_image=document.getElementById('settingProfileImage').value.trim();const intro=document.getElementById('settingIntro').value.trim();const settings={...getAccountSettings(),profile_image,intro};const {data,error}=await db.from('bc_accounts').update({nickname,settings,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);document.getElementById('profileSaveMessage').innerText='저장 실패';return}currentAccount=data;if(nickname){await db.from('bc_players').update({profile_image:profile_image||null,intro:intro||null}).eq('nickname',nickname)}document.getElementById('profileSaveMessage').innerText='프로필 저장 완료';await loadPlayers();renderAccountPage()}
-async function saveUiSettings(){if(!currentAccount)return;const st={...getAccountSettings(),theme:currentTheme};['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)st[id]=Number(el.value)});const {data,error}=await db.from('bc_accounts').update({settings:st,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);document.getElementById('uiSaveMessage').innerText='저장 실패';return}currentAccount=data;applyUiSettings(st);document.getElementById('uiSaveMessage').innerText='UI 설정 저장 완료'}
-async function changeAccountLogin(){if(!currentAccount)return;const newUsername=document.getElementById('changeUsername').value.trim();const currentPw=document.getElementById('currentPassword').value;const newPw=document.getElementById('changePassword').value;const msg=document.getElementById('accountChangeMessage');const check=await hashPassword(currentPw,currentAccount.password_salt);if(check!==currentAccount.password_hash){msg.innerText='현재 비밀번호가 틀림';return}const update={updated_at:new Date().toISOString()};if(newUsername)update.username=newUsername;if(newPw){const salt=makeSalt();update.password_salt=salt;update.password_hash=await hashPassword(newPw,salt)}const {data,error}=await db.from('bc_accounts').update(update).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);msg.innerText='변경 실패';return}currentAccount=data;msg.innerText='계정 정보 변경 완료';renderAccountPage()}
+async function saveProfileSettings(){if(!currentAccount)return;const nickname=document.getElementById('settingNickname').value.trim();const profile_image=document.getElementById('settingProfileImage').value.trim();const intro=document.getElementById('settingIntro').value.trim();const settings={...getAccountSettings(),profile_image,intro};const {data,error}=await db.from('bc_accounts').update({nickname,settings,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);document.getElementById('profileSaveMessage').innerText='저장 실패';return}currentAccount=data;if(nickname){await db.from('bc_players').update({profile_image:profile_image||null,intro:intro||null}).eq('nickname',nickname)}document.getElementById('profileSaveMessage').innerText='';await loadPlayers();renderAccountPage()}
+async function saveUiSettings(){if(!currentAccount)return;const st={...getAccountSettings(),theme:currentTheme};['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)st[id]=Number(el.value)});const {data,error}=await db.from('bc_accounts').update({settings:st,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);document.getElementById('uiSaveMessage').innerText='저장 실패';return}currentAccount=data;applyUiSettings(st);document.getElementById('uiSaveMessage').innerText=''}
+async function changeAccountLogin(){if(!currentAccount)return;const newUsername=document.getElementById('changeUsername').value.trim();const currentPw=document.getElementById('currentPassword').value;const newPw=document.getElementById('changePassword').value;const msg=document.getElementById('accountChangeMessage');const check=await hashPassword(currentPw,currentAccount.password_salt);if(check!==currentAccount.password_hash){msg.innerText='현재 비밀번호가 틀림';return}const update={updated_at:new Date().toISOString()};if(newUsername)update.username=newUsername;if(newPw){const salt=makeSalt();update.password_salt=salt;update.password_hash=await hashPassword(newPw,salt)}const {data,error}=await db.from('bc_accounts').update(update).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);msg.innerText='변경 실패';return}currentAccount=data;msg.innerText='';renderAccountPage()}
 function getIntroHtml(p){return p?.intro?`<div class="intro-box">${escapeHtml(p.intro)}</div>`:''}
 function openAdminLogin(btn){
     adminMenuButton = btn;
@@ -1042,26 +1048,29 @@ function applySeasonToUI(season){
 
     const currentSeasonName = document.getElementById("currentSeasonName");
     const currentSeasonPeriod = document.getElementById("currentSeasonPeriod");
+    const seasonRemain = document.getElementById("seasonRemain");
 
-    if(currentSeasonName){
-        currentSeasonName.innerText = name;
-    }
-
-    if(currentSeasonPeriod){
-        currentSeasonPeriod.innerText =
-            start && end ? `${start} ~ ${end}` : "기간 미설정";
+    if(currentSeasonName){currentSeasonName.innerText = name;}
+    if(currentSeasonPeriod){currentSeasonPeriod.innerText = start && end ? `${start} ~ ${end}` : "기간 미설정";}
+    if(seasonRemain){
+        if(end){
+            const today = new Date();
+            const endDate = new Date(end + "T23:59:59");
+            const diff = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+            seasonRemain.innerText = diff >= 0 ? `시즌 종료 D-${diff}` : "시즌 종료";
+        }else{
+            seasonRemain.innerText = "시즌 종료 D-?";
+        }
     }
 
     const nameInput = document.getElementById("seasonNameInput");
     const startInput = document.getElementById("seasonStartInput");
     const endInput = document.getElementById("seasonEndInput");
-
     if(nameInput) nameInput.value = name;
     if(startInput) startInput.value = start;
     if(endInput) endInput.value = end;
 }
-loadPlayers();
-loadSeasonSetting();
+restoreAccount().then(()=>{loadPlayers();loadSeasonSetting();});
 </script>
 </body>
 </html>
