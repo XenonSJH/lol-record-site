@@ -463,6 +463,76 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 .detail-match-row .champion-icon.small{width:42px;height:42px}
 .matches-search-wrap{margin-bottom:16px;flex-shrink:0}
 .matches-search-wrap .search-input{width:360px;max-width:100%}
+
+/* ===== 2026-06-09 polish patch ===== */
+.nav-btn{
+    width:42px!important;
+    height:42px!important;
+    padding:0!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-size:28px!important;
+    font-weight:1000!important;
+    line-height:1!important;
+}
+#playersContainer,#championsContainer,#matchesContainer{padding-top:12px!important}
+#account.page.active{overflow:auto!important;padding-bottom:36px}
+#accountLoggedIn,#accountLoggedOut{padding-bottom:22px}
+.home-top-player-card{
+    grid-template-columns:52px 82px 1fr!important;
+}
+.home-top-player-card .rank-avatar{width:76px!important;height:76px!important}
+#hallOfFame .card-title{
+    font-size:18px!important;
+    font-weight:1000!important;
+    color:#EDE9FE!important;
+    margin-bottom:16px!important;
+}
+#hallOfFame .rank-avatar{
+    margin-bottom:12px!important;
+}
+#hallOfFame .hof-name{
+    margin-top:10px!important;
+    font-size:18px!important;
+}
+.champion-detail-card{text-align:left}
+.champion-detail-portrait{
+    position:relative;
+    width:max-content;
+    margin-bottom:12px;
+}
+.champion-detail-portrait .champion-icon.big{
+    margin-bottom:0!important;
+}
+.champion-detail-tier{
+    position:absolute;
+    left:-10px;
+    top:-10px;
+    min-width:36px;
+    height:36px;
+    padding:0 9px;
+    border-radius:999px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+    font-weight:1000;
+    border:1px solid currentColor;
+    z-index:4;
+    box-shadow:0 0 14px rgba(0,0,0,.5);
+}
+.champion-detail-honey{
+    margin-top:10px;
+    font-size:22px;
+    font-weight:1000;
+    color:#FEF3C7;
+}
+.detail-layout .champion-list{gap:16px!important}
+.detail-layout .champion-row{min-height:92px!important;padding:18px 20px!important}
+.theme-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important}
+.theme-btn{padding:10px!important}
+.theme-swatch{height:30px!important}
 @media(max-width:1100px){
     .ranking-row,#championsContainer .ranking-row{grid-template-columns:54px 74px 1fr!important}
     .rank-stat-block,.rank-highlight,.rank-kda,.mini-champs{grid-column:3}
@@ -882,8 +952,8 @@ function renderHallOfFame(data){
 function homeTopPlayerCard(p,rank){
     return `
         <div class="home-top-player-card" onclick="openPlayer(${p.id})">
-            ${getRankProfileHtml(p)}
             <div class="home-rank">#${rank}</div>
+            ${getRankProfileHtml(p)}
             <div class="home-top-main">
                 <div class="home-name">${escapeHtml(p.nickname)}</div>
                 <div class="home-sub">${getPlayerLP(p)} LP · ${getTier(p)}</div>
@@ -1164,7 +1234,7 @@ function openChampionDetail(name,lane='ALL'){
     const champ=championStatsCache.find(c=>c.champion_name===name&&c.lane===lane)||championStatsCache.find(c=>c.champion_name===name&&c.lane==='ALL');if(!champ)return;
     const topMap={};champ.records.forEach(r=>{const p=playersCache.find(x=>x.id===r.player_id);const n=p?.nickname||'알 수 없음';if(!topMap[n])topMap[n]={name:n,games:0,wins:0,kills:0,deaths:0,assists:0,kp:0};const t=topMap[n];t.games++;if(r.result==='win')t.wins++;t.kills+=Number(r.kills||0);t.deaths+=Number(r.deaths||0);t.assists+=Number(r.assists||0);t.kp+=Number(r.kp||0)});
     const top=Object.values(topMap).sort((a,b)=>b.games-a.games||b.wins-a.wins).slice(0,5);
-    document.getElementById('championDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${champIcon(name,'champion-icon big',false)}<h1>${escapeHtml(name)}</h1><br><div class="tier-badge ${getChampionTierClass(getChampionTier(champ))}">${getChampionTier(champ)}</div><p class="stat">${lane==='ALL'?'전체':escapeHtml(lane)}</p><p class="stat">⚔️ ${champ.games}판</p><p class="stat">🏆 ${champ.wins}승 ${champ.games-champ.wins}패</p><p class="stat">📈 승률 ${getChampionWinrate(champ).toFixed(1)}%</p><div class="kda-line"><span>${avgKdaText(champ)}</span><span class="kda-ratio">${getChampionKdaRatio(champ).toFixed(1)}</span></div></div><div><div class="card"><h2>TOP 플레이어</h2><br><div class="champion-list">${top.map(p=>championTopPlayerRow(p)).join('')}</div></div><br><div class="card"><h2>최근 사용 경기</h2><br>${buildChampionRecentMatches(champ.records.slice(-10).reverse())}</div></div></div>`;
+    document.getElementById('championDetailContent').innerHTML=`<div class="detail-layout"><div class="card champion-detail-card"><div class="champion-detail-portrait"><span class="champion-detail-tier ${getChampionTierClass(getChampionTier(champ))}">${getChampionTier(champ)}</span>${champIcon(name,'champion-icon big',false)}<div class="champion-detail-honey">🍯 ${Number(champ.honey_score||0).toFixed(1)}</div></div><h1>${escapeHtml(name)}</h1><br><p class="stat">${lane==='ALL'?'전체':escapeHtml(lane)}</p><p class="stat">⚔️ ${champ.games}판</p><p class="stat">🏆 ${champ.wins}승 ${champ.games-champ.wins}패</p><p class="stat">📈 승률 ${getChampionWinrate(champ).toFixed(1)}%</p><div class="kda-line"><span>${avgKdaText(champ)}</span><span class="kda-ratio">${getChampionKdaRatio(champ).toFixed(1)}</span></div></div><div><div class="card"><h2>TOP 플레이어</h2><br><div class="champion-list">${top.map(p=>championTopPlayerRow(p)).join('')}</div></div><br><div class="card"><h2>최근 사용 경기</h2><br>${buildChampionRecentMatches(champ.records.slice(-10).reverse())}</div></div></div>`;
     showPage('championDetail');
 }
 
@@ -1272,12 +1342,12 @@ function getTier(p){if((p.total_games||0)<5)return '배치중!';const lp=getPlay
 function getTierIcon(t){return {'배치중!':'❓','아이언':'⛓️','브론즈':'🥉','실버':'🥈','골드':'🥇','플래티넘':'💠','에메랄드':'💎','다이아몬드':'🔷'}[t]||'🏆'}
 function getTierClass(t){return {'배치중!':'tier-placement','아이언':'tier-iron','브론즈':'tier-bronze','실버':'tier-silver','골드':'tier-gold','플래티넘':'tier-platinum','에메랄드':'tier-emerald','다이아몬드':'tier-diamond'}[t]||''}
 function getTierBadge(p){const t=getTier(p);return `<div class="tier-badge ${getTierClass(t)}">${getTierIcon(t)} ${t}</div>`}
+const DEFAULT_PROFILE_IMAGE='https://mblogthumb-phinf.pstatic.net/MjAyMDEyMjBfMjU4/MDAxNjA4NDUxOTk3Mjk2.W88f9Phe4d6mo48vpWuZQ9e9R4CvARFvZEoBW9irbXYg.UWAbicHtrZc1hrgYt38Fp79LOnbMhQ6_hcttqmEu79gg.JPEG.goodmanddo/%EC%9B%83%EA%B8%B4_%EC%B9%B4%ED%86%A1%ED%94%84%EC%82%AC_%EA%B8%B0%EB%B3%B8.jpg?type=w800';
 function getRankProfileHtml(p){
-    const u=p.profile_image;
-    if(u) return `<img class="rank-avatar round" src="${escapeAttribute(u)}" onerror="this.outerHTML='<div class=&quot;rank-avatar round&quot;></div>'">`;
-    return `<div class="rank-avatar round"></div>`;
+    const u=p.profile_image||DEFAULT_PROFILE_IMAGE;
+    return `<img class="rank-avatar round" src="${escapeAttribute(u)}" onerror="this.src='${escapeAttribute(DEFAULT_PROFILE_IMAGE)}'">`;
 }
-function getProfileHtml(p,size='normal'){const cls=size==='big'?'big-profile':'profile';const u=p.profile_image;if(u)return `<img class="${cls}" src="${escapeAttribute(u)}" onerror="this.outerHTML='<div class=&quot;${cls}&quot;></div>'">`;return `<div class="${cls}"></div>`}
+function getProfileHtml(p,size='normal'){const cls=size==='big'?'big-profile':'profile';const u=p.profile_image||DEFAULT_PROFILE_IMAGE;return `<img class="${cls}" src="${escapeAttribute(u)}" onerror="this.src='${escapeAttribute(DEFAULT_PROFILE_IMAGE)}'">`}
 function getWinPointChange(p,result){const g=p.total_games||0,w=p.wins||0;if(g<5)return result==='win'?250:40;if(result==='lose')return -15;const wr=g?w/g*100:50;let v=20;if(wr<50)v=20-Math.ceil((50-wr)/5)*2;return Math.max(v,4)}
 function formatDate(v){if(!v)return '-';return new Date(v).toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
 function escapeHtml(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
@@ -1290,6 +1360,9 @@ const UI_THEMES={
     emerald:{name:'에메랄드',bg:'#061A14',main:'#071F19',sidebar:'#09231D',card:'#102E25',card2:'#071A15',border:'#1F4D3F',accent:'#10B981',accent2:'#34D399'},
     rose:{name:'로즈 다크',bg:'#1A0B16',main:'#1F0F1B',sidebar:'#160914',card:'#2A1524',card2:'#160914',border:'#5A2A49',accent:'#E11D48',accent2:'#FB7185'},
     gold:{name:'골드 블랙',bg:'#100C05',main:'#141007',sidebar:'#0C0A05',card:'#211A0C',card2:'#141007',border:'#5A4518',accent:'#D97706',accent2:'#FBBF24'},
+    cyan:{name:'시안 네온',bg:'#06141B',main:'#071922',sidebar:'#08131D',card:'#102A34',card2:'#07151C',border:'#1D5260',accent:'#06B6D4',accent2:'#67E8F9'},
+    indigo:{name:'인디고',bg:'#0B1026',main:'#0D132B',sidebar:'#090F22',card:'#172044',card2:'#0C1228',border:'#2F3D75',accent:'#6366F1',accent2:'#A5B4FC'},
+    lime:{name:'라임 블랙',bg:'#081006',main:'#0A1408',sidebar:'#070D06',card:'#14210F',card2:'#0B1408',border:'#355327',accent:'#84CC16',accent2:'#BEF264'},
     gradient:{name:'보라 그라데이션',bg:'linear-gradient(135deg,#020617,#1E1B4B,#312E81)',main:'linear-gradient(135deg,#020617,#111827)',sidebar:'#111827',card:'linear-gradient(135deg,#1E293B,#1E1B4B)',card2:'#111827',border:'#4C1D95',accent:'#8B5CF6',accent2:'#C4B5FD'}
 };
 const DEFAULT_UI_SETTINGS={theme:'purple',sizeChampion:112,sizePlayer:112,sizeMost:68,sizeRecent:76,sizeMatch:300};
