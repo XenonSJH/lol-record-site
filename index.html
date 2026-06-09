@@ -533,9 +533,58 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 .theme-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important}
 .theme-btn{padding:10px!important}
 .theme-swatch{height:30px!important}
+.sort-dir-btn{
+    width:46px!important;
+    height:46px!important;
+    padding:0!important;
+    display:grid!important;
+    grid-template-rows:1fr 1fr;
+    overflow:hidden;
+    border-radius:12px!important;
+    border:1px solid var(--bc-border,#334155)!important;
+    background:var(--bc-card2,#111827)!important;
+    color:white!important;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:1000;
+}
+.sort-dir-btn span{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    line-height:1;
+}
+.sort-dir-btn span:first-child{border-bottom:1px solid var(--bc-border,#334155)}
+.sort-dir-btn.asc span:first-child,.sort-dir-btn.desc span:last-child{background:var(--bc-accent,#8B5CF6)}
+.player-most-list .champion-row{
+    display:grid!important;
+    grid-template-columns:minmax(230px,1.4fr) minmax(150px,.85fr) minmax(105px,.7fr) minmax(130px,.75fr) minmax(190px,1fr);
+    gap:26px!important;
+}
+.bot-grid{display:grid;grid-template-columns:1fr;gap:20px;overflow:auto;min-height:0;padding-right:8px}
+.bot-section{background:var(--bc-card,#1E293B);border:1px solid var(--bc-border,#334155);border-radius:20px;padding:22px}
+.bot-lane-block{margin-top:16px}
+.bot-lane-title{font-size:18px;font-weight:1000;color:#EDE9FE;margin-bottom:10px}
+.bot-champ-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.bot-champ-card{background:var(--bc-card2,#111827);border:1px solid var(--bc-border,#334155);border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px;min-width:0}
+.bot-champ-card .rank-avatar-wrap,.bot-champ-card .rank-avatar{width:58px;height:58px}
+.bot-champ-name{font-size:17px;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.team-input-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:14px}
+.team-input-grid .search-input{min-width:0;width:100%}
+.bot-action-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.bot-warning{color:#FCA5A5;font-weight:900;margin-top:10px}
+.team-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.team-result-card{background:var(--bc-card2,#111827);border:1px solid var(--bc-border,#334155);border-radius:18px;padding:16px}
+.team-slot{display:grid;grid-template-columns:58px 1fr 88px 88px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--bc-border,#334155)}
+.team-slot:last-child{border-bottom:none}
+.team-slot-lane{font-weight:1000;color:#EDE9FE}
+.team-slot-name{font-weight:1000;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.team-slot-sub{color:#CBD5E1;font-size:13px;font-weight:800}
 @media(max-width:1100px){
     .ranking-row,#championsContainer .ranking-row{grid-template-columns:54px 74px 1fr!important}
     .rank-stat-block,.rank-highlight,.rank-kda,.mini-champs{grid-column:3}
+    .team-input-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .team-result-grid,.bot-champ-row{grid-template-columns:1fr}
 }
 
 </style>
@@ -552,6 +601,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
         <button data-page="champions" onclick="showPage('champions',this); loadChampions();">⚔️ 챔피언</button>
         <button data-page="matches" onclick="showPage('matches',this); loadMatches();">📜 내전기록</button>
         <button data-page="recordDisabled" onclick="showPage('recordDisabled',this)">🎯 전적등록</button>
+        <button data-page="bandleBot" onclick="openBandleBot(this)">🤖 벤들 봇</button>
         <button data-page="account" onclick="openAccountPage(this)">⚙️ 계정/설정</button>
         <button onclick="openAdminLogin(this)">🛠️ 관리자</button>
     </div>
@@ -590,6 +640,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
             <button class="sort-btn" data-player-sort="winrate" onclick="setPlayerSort('winrate',this)">승률</button>
             <button class="sort-btn" data-player-sort="games" onclick="setPlayerSort('games',this)">판수</button>
             <button class="sort-btn" data-player-sort="wins" onclick="setPlayerSort('wins',this)">승수</button>
+            <button class="sort-dir-btn desc" id="playerSortDirBtn" onclick="togglePlayerSortDir()" title="정렬 방향"><span>▲</span><span>▼</span></button>
         </div>
     </div>
     <div id="playersContainer" class="player-grid"><div class="loading">데이터 불러오는 중...</div></div>
@@ -614,6 +665,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
             <button class="sort-btn" data-champion-sort="winrate" onclick="setChampionSort('winrate',this)">승률</button>
             <button class="sort-btn" data-champion-sort="kda" onclick="setChampionSort('kda',this)">KDA</button>
             <button class="sort-btn" data-champion-sort="tier" onclick="setChampionSort('tier',this)">티어</button>
+            <button class="sort-dir-btn desc" id="championSortDirBtn" onclick="toggleChampionSortDir()" title="정렬 방향"><span>▲</span><span>▼</span></button>
         </div>
     </div>
     <div id="championsContainer" class="player-grid"><div class="loading">챔피언 데이터 불러오는 중...</div></div>
@@ -631,6 +683,36 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
         <h2>🚧 준비 중</h2><br>
         <p class="stat">사이트 전적등록 기능은 앱 버전에서 지원 예정입니다.</p>
         <p class="stat">현재는 기존 전적등록기 또는 LCU 자동등록을 사용해주세요.</p>
+    </div>
+</div>
+<div id="bandleBot" class="page">
+    <h2 style="margin-bottom:20px;">🤖 벤들 봇</h2>
+    <div class="bot-grid">
+        <div class="bot-section">
+            <h2>오늘의 추천 챔프</h2>
+            <div id="botRecommendArea"><div class="loading">추천 챔피언 계산 중...</div></div>
+        </div>
+        <div class="bot-section">
+            <h2>팀짜기</h2>
+            <div class="team-input-grid">
+                <input class="search-input team-player-input" placeholder="플레이어 1">
+                <input class="search-input team-player-input" placeholder="플레이어 2">
+                <input class="search-input team-player-input" placeholder="플레이어 3">
+                <input class="search-input team-player-input" placeholder="플레이어 4">
+                <input class="search-input team-player-input" placeholder="플레이어 5">
+                <input class="search-input team-player-input" placeholder="플레이어 6">
+                <input class="search-input team-player-input" placeholder="플레이어 7">
+                <input class="search-input team-player-input" placeholder="플레이어 8">
+                <input class="search-input team-player-input" placeholder="플레이어 9">
+                <input class="search-input team-player-input" placeholder="플레이어 10">
+            </div>
+            <div class="bot-action-row">
+                <button class="sort-btn active" onclick="buildBandleTeams()">팀 짜기</button>
+                <button class="sort-btn" onclick="clearBandleTeamInputs()">초기화</button>
+            </div>
+            <div id="botTeamMessage" class="bot-warning"></div>
+            <div id="botTeamResult"></div>
+        </div>
     </div>
 </div>
 <div id="matchDetail" class="page"><div id="matchDetailContent"></div></div>
@@ -759,6 +841,7 @@ const SUPABASE_KEY = "sb_publishable_QHDiR1qAWGVaKSDZguc0qg_fE_eVCwZ";
 
 let db=null, playersCache=[], matchesCache=[], championRecordsCache=[], championStatsCache=[], playerRecordStatsMap={};
 let playerSortKey="lp", championSortKey="honey", championLaneKey="ALL";
+let playerSortAsc=false, championSortAsc=false;
 let navStack=["home"], navIndex=0, suppressNav=false;
 let championIconMap={}, championJsonLoaded=false;
 let currentAccount=null, currentTheme="purple";
@@ -778,7 +861,7 @@ function showPage(id,btn=null,push=true){
 }
 function setActiveMenu(id,btn=null){
     document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
-    const map={home:'home',players:'players',playerDetail:'players',champions:'champions',championDetail:'champions',matches:'matches',matchDetail:'matches',recordDisabled:'recordDisabled',account:'account'};
+    const map={home:'home',players:'players',playerDetail:'players',champions:'champions',championDetail:'champions',matches:'matches',matchDetail:'matches',recordDisabled:'recordDisabled',bandleBot:'bandleBot',account:'account'};
     const key=map[id];
     const target=btn || document.querySelector(`.menu button[data-page="${key}"]`);
     if(target) target.classList.add('active');
@@ -917,10 +1000,18 @@ function miniChampionIcons(champs){
     return champs.map(name=>champIcon(name,'champion-icon',true)).join('');
 }
 function setPlayerSort(key,btn){playerSortKey=key;document.querySelectorAll('[data-player-sort]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderPlayersView()}
+function updateSortDirButtons(){
+    const p=document.getElementById('playerSortDirBtn');
+    if(p){p.classList.toggle('asc',playerSortAsc);p.classList.toggle('desc',!playerSortAsc)}
+    const c=document.getElementById('championSortDirBtn');
+    if(c){c.classList.toggle('asc',championSortAsc);c.classList.toggle('desc',!championSortAsc)}
+}
+function togglePlayerSortDir(){playerSortAsc=!playerSortAsc;updateSortDirButtons();renderPlayersView()}
+function toggleChampionSortDir(){championSortAsc=!championSortAsc;updateSortDirButtons();renderChampionsView()}
 function renderPlayersView(){
     const q=(document.getElementById('playerSearch')?.value||'').toLowerCase().trim();
     let data=[...playersCache].filter(p=>!q||String(p.nickname||'').toLowerCase().includes(q));
-    data.sort((a,b)=>playerSortKey==='winrate'?getWinrateRaw(b)-getWinrateRaw(a):playerSortKey==='games'?(b.total_games||0)-(a.total_games||0):playerSortKey==='wins'?(b.wins||0)-(a.wins||0):getPlayerLP(b)-getPlayerLP(a));
+    data.sort((a,b)=>{const r=playerSortKey==='winrate'?getWinrateRaw(a)-getWinrateRaw(b):playerSortKey==='games'?(a.total_games||0)-(b.total_games||0):playerSortKey==='wins'?(a.wins||0)-(b.wins||0):getPlayerLP(a)-getPlayerLP(b);return playerSortAsc?r:-r});
     renderPlayers(data);
 }
 function renderTopPlayers(data){
@@ -1032,7 +1123,7 @@ function calculateHoneyLocal(c){const wr=getChampionWinrate(c), avgS=getChampion
 function renderChampionsView(){
     const q=(document.getElementById('championSearch')?.value||'').toLowerCase().trim();
     let data=championStatsCache.filter(c=>(championLaneKey==='ALL'?c.lane!=='ALL':c.lane===championLaneKey)&&(!q||String(c.champion_name||'').toLowerCase().includes(q)));
-    data.sort((a,b)=>championSortKey==='winrate'?getChampionWinrate(b)-getChampionWinrate(a):championSortKey==='kda'?getChampionKdaRatio(b)-getChampionKdaRatio(a):championSortKey==='tier'?getChampionTierRank(a)-getChampionTierRank(b):championSortKey==='games'?b.games-a.games:Number(b.honey_score||0)-Number(a.honey_score||0));
+    data.sort((a,b)=>{const r=championSortKey==='winrate'?getChampionWinrate(a)-getChampionWinrate(b):championSortKey==='kda'?getChampionKdaRatio(a)-getChampionKdaRatio(b):championSortKey==='tier'?getChampionTierRank(a)-getChampionTierRank(b):championSortKey==='games'?a.games-b.games:Number(a.honey_score||0)-Number(b.honey_score||0);return championSortAsc?r:-r});
     renderChampions(data);
 }
 function renderChampions(champs){
@@ -1285,7 +1376,7 @@ function buildMostChampions(records){
         m.lanes[lane]=(m.lanes[lane]||0)+1;
         m.lane=Object.entries(m.lanes).sort((a,b)=>b[1]-a[1])[0]?.[0]||lane;
     });
-    return `<div class="champion-list">${Object.values(map).sort((a,b)=>b.games-a.games).slice(0,5).map(c=>{
+    return `<div class="champion-list player-most-list">${Object.values(map).sort((a,b)=>b.games-a.games).slice(0,5).map(c=>{
         const wr=(c.wins/c.games*100).toFixed(1);
         const kda=`${(c.kills/c.games).toFixed(1)} / ${(c.deaths/c.games).toFixed(1)} / ${(c.assists/c.games).toFixed(1)}`;
         const ratio=((c.kills+c.assists)/Math.max(1,c.deaths)).toFixed(1);
@@ -1334,6 +1425,140 @@ function detailRecentRow(r,p=null,showPlayer=false){
         <div class="plain-stat sub">킬관여율 ${r.kp??0}%</div>
         <div class="${cls}">${pc>=0?`+${pc}`:pc} LP</div>
     </div>`;
+}
+
+async function openBandleBot(btn){
+    showPage('bandleBot',btn);
+    await ensureBotData();
+    renderBotRecommendations();
+}
+async function ensureBotData(){
+    if(!playersCache.length)await loadPlayers();
+    if(!championStatsCache.length)await loadChampions();
+}
+function renderBotRecommendations(){
+    const area=document.getElementById('botRecommendArea');
+    if(!area)return;
+    const lanes=['TOP','JUG','MID','ADC','SUP'];
+    area.innerHTML=lanes.map(lane=>{
+        const list=recommendChampionsByLane(lane);
+        return `<div class="bot-lane-block"><div class="bot-lane-title">${lane}</div><div class="bot-champ-row">${list.map(c=>botChampionCard(c)).join('')||'<div class="empty-box">추천할 기록이 없습니다.</div>'}</div></div>`;
+    }).join('');
+}
+function recommendChampionsByLane(lane){
+    const groups={};
+    championRecordsCache.filter(r=>normalizeLane(r.lane)===lane&&r.champion_name).forEach(r=>{
+        if(!groups[r.champion_name])groups[r.champion_name]=[];
+        groups[r.champion_name].push(r);
+    });
+    return Object.entries(groups).map(([name,arr])=>{
+        const recent=[...arr].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0)).slice(0,3);
+        const games=recent.length,wins=recent.filter(r=>r.result==='win').length;
+        const kills=recent.reduce((s,r)=>s+Number(r.kills||0),0);
+        const deaths=recent.reduce((s,r)=>s+Number(r.deaths||0),0);
+        const assists=recent.reduce((s,r)=>s+Number(r.assists||0),0);
+        const kp=recent.reduce((s,r)=>s+Number(r.kp||0),0)/(games||1);
+        const score=wins*30+getKdaRatioFromTotals(kills,deaths,assists)*12+kp*.45+games*5;
+        const stat=getChampionStatByLane(name,lane)||{champion_name:name,lane,games,wins,kills,deaths,assists,kp:kp*games,honey_score:score};
+        return {...stat,champion_name:name,lane,botScore:score};
+    }).sort((a,b)=>b.botScore-a.botScore).slice(0,3);
+}
+function botChampionCard(c){
+    return `<div class="bot-champ-card" onclick="openChampionDetail('${escapeJs(c.champion_name)}','${escapeJs(c.lane)}')">${champRankIcon(c)}<div class="bot-champ-name">${escapeHtml(c.champion_name)}</div></div>`;
+}
+function getKdaRatioFromTotals(k,d,a){return (Number(k||0)+Number(a||0))/Math.max(1,Number(d||0))}
+function clearBandleTeamInputs(){
+    document.querySelectorAll('.team-player-input').forEach(i=>i.value='');
+    document.getElementById('botTeamMessage').innerText='';
+    document.getElementById('botTeamResult').innerHTML='';
+}
+async function buildBandleTeams(){
+    await ensureBotData();
+    const inputs=[...document.querySelectorAll('.team-player-input')];
+    const names=inputs.map(i=>i.value.trim()).filter(Boolean);
+    const msg=document.getElementById('botTeamMessage');
+    const out=document.getElementById('botTeamResult');
+    msg.innerText='';out.innerHTML='';
+    if(names.length!==10){msg.innerText='플레이어 이름 10명을 입력해줘.';return}
+    const picked=[],missing=[];
+    names.forEach(n=>{
+        const p=playersCache.find(x=>String(x.nickname||'').toLowerCase()===n.toLowerCase());
+        if(p&&!picked.some(x=>Number(x.id)===Number(p.id)))picked.push(p);
+        else if(!p)missing.push(n);
+    });
+    if(missing.length){msg.innerText=`${missing.join(', ')}은(는) 벤들지지에 없는 플레이어입니다.`;return}
+    if(picked.length!==10){msg.innerText='중복된 플레이어가 있습니다. 10명을 모두 다르게 넣어줘.';return}
+    const best=findBestTeamPlan(picked);
+    if(!best){msg.innerText='팀 조합을 만들 수 없습니다.';return}
+    msg.innerText=best.strict?'조건을 만족하는 조합입니다.':'완전 조건을 만족하는 조합은 없어서 최대한 맞는 조합으로 추천했습니다.';
+    out.innerHTML=renderTeamPlan(best);
+}
+function getPlayerLaneSet(player){
+    const set=new Set(championRecordsCache.filter(r=>Number(r.player_id)===Number(player.id)).map(r=>normalizeLane(r.lane)).filter(l=>['TOP','JUG','MID','ADC','SUP'].includes(l)));
+    return set;
+}
+function getPlayerTierRankByLp(p){
+    const lp=getPlayerLP(p);
+    if(lp>=2400)return 7;if(lp>=2000)return 6;if(lp>=1600)return 5;if(lp>=1200)return 4;if(lp>=800)return 3;if(lp>=400)return 2;return 1;
+}
+function getPlayerLanePower(p,lane){
+    const rec=championRecordsCache.filter(r=>Number(r.player_id)===Number(p.id)&&normalizeLane(r.lane)===lane);
+    if(!rec.length)return {games:0,score:getPlayerLP(p)*.08-80};
+    const wins=rec.filter(r=>r.result==='win').length;
+    const kills=rec.reduce((s,r)=>s+Number(r.kills||0),0);
+    const deaths=rec.reduce((s,r)=>s+Number(r.deaths||0),0);
+    const assists=rec.reduce((s,r)=>s+Number(r.assists||0),0);
+    const kp=rec.reduce((s,r)=>s+Number(r.kp||0),0)/rec.length;
+    return {games:rec.length,score:getPlayerLP(p)*.08+wins/rec.length*35+getKdaRatioFromTotals(kills,deaths,assists)*8+kp*.2+Math.min(rec.length,8)};
+}
+function combinations(arr,k,start=0,prefix=[],out=[]){
+    if(prefix.length===k){out.push([...prefix]);return out}
+    for(let i=start;i<=arr.length-(k-prefix.length);i++){prefix.push(arr[i]);combinations(arr,k,i+1,prefix,out);prefix.pop()}
+    return out;
+}
+function laneAssignments(team){
+    const lanes=['TOP','JUG','MID','ADC','SUP'],res=[];
+    function step(i,left,assign,penalty,power){
+        if(i===lanes.length){res.push({assign:[...assign],penalty,power});return}
+        const lane=lanes[i];
+        left.forEach((p,idx)=>{
+            const laneSet=getPlayerLaneSet(p);
+            const has=laneSet.has(lane);
+            const lanePower=getPlayerLanePower(p,lane);
+            assign.push({lane,player:p,hasLane:has,lanePower});
+            step(i+1,left.filter((_,j)=>j!==idx),assign,penalty+(has?0:120),power+lanePower.score);
+            assign.pop();
+        });
+    }
+    step(0,team,[],0,0);
+    return res.sort((a,b)=>(a.penalty-b.penalty)||(b.power-a.power)).slice(0,36);
+}
+function findBestTeamPlan(players){
+    const allCombos=combinations(players,5);
+    let best=null;
+    for(const blue of allCombos){
+        if(!blue.includes(players[0]))continue;
+        const red=players.filter(p=>!blue.includes(p));
+        const blueLp=blue.reduce((s,p)=>s+getPlayerLP(p),0),redLp=red.reduce((s,p)=>s+getPlayerLP(p),0);
+        const blueAssigns=laneAssignments(blue),redAssigns=laneAssignments(red);
+        for(const ba of blueAssigns)for(const ra of redAssigns){
+            let tierPenalty=0,maxTierDiff=0;
+            ba.assign.forEach((b,i)=>{
+                const diff=Math.abs(getPlayerTierRankByLp(b.player)-getPlayerTierRankByLp(ra.assign[i].player));
+                maxTierDiff=Math.max(maxTierDiff,diff);
+                if(diff>1)tierPenalty+=(diff-1)*180;
+            });
+            const lpDiff=Math.abs(blueLp-redLp);
+            const score=lpDiff+ba.penalty+ra.penalty+tierPenalty-Math.min(ba.power+ra.power,500)*.05;
+            const plan={blue:ba.assign,red:ra.assign,blueLp,redLp,lpDiff,score,maxTierDiff,strict:ba.penalty===0&&ra.penalty===0&&maxTierDiff<=1};
+            if(!best||score<best.score)best=plan;
+        }
+    }
+    return best;
+}
+function renderTeamPlan(plan){
+    const teamHtml=(title,slots,total)=>`<div class="team-result-card"><h2>${title} <span class="champion-sub">총 LP ${total}</span></h2>${slots.map(s=>`<div class="team-slot"><div class="team-slot-lane">${s.lane}</div><div><div class="team-slot-name">${escapeHtml(s.player.nickname)}</div><div class="team-slot-sub">${getTier(s.player)} · ${getPlayerLP(s.player)} LP${s.hasLane?'':' · 미경험 라인'}</div></div><div class="team-slot-sub">라인점수</div><div class="team-slot-sub">${s.lanePower.score.toFixed(1)}</div></div>`).join('')}</div>`;
+    return `<div class="team-result-grid">${teamHtml('BLUE TEAM',plan.blue,plan.blueLp)}${teamHtml('RED TEAM',plan.red,plan.redLp)}</div><div class="champion-sub" style="margin-top:10px;font-weight:900;">LP 차이 ${plan.lpDiff} · 최대 맞라인 티어차 ${plan.maxTierDiff}</div>`;
 }
 function renderPlayerDetailError(p){document.getElementById('playerDetailContent').innerHTML=`<div class="empty-box">전적 데이터를 불러오지 못했습니다.</div>`}
 
