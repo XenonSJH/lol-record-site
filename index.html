@@ -312,6 +312,29 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
 .account-basic-card{grid-area:basic}.account-theme-card{grid-area:theme}.account-login-card{grid-area:login}.account-size-card{grid-area:size}
 @media(max-width:1000px){.account-layout-fixed{grid-template-columns:1fr!important;grid-template-areas:"basic" "theme" "login" "size"}}
 
+
+/* ===== user requested UI fix patch ===== */
+:root{--bc-hover:var(--bc-accent,#8B5CF6)}
+.player-card:hover,.champion-row:hover,.match-row:hover,.match-card:hover,.ranking-row:hover,.home-top-player-card:hover,.sort-btn:hover,.search-input:focus{border-color:var(--bc-hover)!important}
+.kda-ratio{color:#fff!important;min-width:52px;text-align:right;display:inline-block}
+.kda-line{display:grid!important;grid-template-columns:96px 56px;gap:16px!important;align-items:center;white-space:nowrap}
+.kda-line>span:first-child{font-variant-numeric:tabular-nums;min-width:96px}
+.kda-line>span:nth-child(2){font-variant-numeric:tabular-nums}
+#topPlayers.player-grid{display:flex!important;flex-direction:column!important;gap:14px!important}
+.home-top-player-card{background:var(--bc-card,#1E293B);border:1px solid var(--bc-border,#334155);border-radius:18px;padding:16px 18px;display:grid;grid-template-columns:46px 64px 1fr;gap:14px;align-items:center;cursor:pointer;transition:.2s}
+.home-top-player-card:hover{transform:translateY(-2px)}
+.home-top-player-card .home-rank{font-size:24px;font-weight:1000;color:#EDE9FE;text-align:center}
+.home-top-player-card .rank-avatar{width:60px;height:60px}
+.home-top-main{min-width:0}.home-name{font-size:21px;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.home-sub{margin-top:6px;color:#CBD5E1;font-size:14px;font-weight:800}
+.rank-avatar-wrap{position:relative;grid-row:1 / span 2;width:74px;height:74px;display:inline-flex;align-items:center;justify-content:center}
+.rank-avatar-wrap .rank-avatar{width:74px;height:74px}
+.champ-tier-corner{position:absolute;top:-8px;left:-8px;min-width:28px;height:28px;padding:0 7px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:1000;border:1px solid currentColor;box-shadow:0 0 12px rgba(0,0,0,.45);z-index:4}
+.comp-text{min-width:0;display:flex;flex-direction:column;gap:2px}.comp-duo{display:flex;align-items:center;gap:6px;min-width:0}.comp-side.red-side .comp-duo{justify-content:flex-end}.comp-title,.comp-sub{font-size:14px;font-weight:900;color:#E5E7EB;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.comp-sub{color:#CBD5E1}
+.range-row span:first-child{font-weight:900}
+.ranking-row .profile,.ranking-row .champion-icon{width:calc(var(--bc-player-row-h) * .62);height:calc(var(--bc-player-row-h) * .62)}
+#championsContainer .rank-avatar-wrap,#championsContainer .rank-avatar-wrap .rank-avatar{width:calc(var(--bc-champion-row-h) * .64);height:calc(var(--bc-champion-row-h) * .64)}
+#championsContainer .rank-avatar-wrap{min-width:calc(var(--bc-champion-row-h) * .64)}
+
 </style>
 </head>
 <body>
@@ -456,7 +479,7 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
                 <h2>UI 색깔</h2><br>
                 <div class="theme-grid" id="themeGrid"></div>
                 <br>
-                <button class="sort-btn active" onclick="saveUiSettings()">UI 색깔 저장</button>
+                <button class="sort-btn active" onclick="saveUiSettings('color')">UI 색깔 저장</button>
                 <p class="account-status" id="uiSaveMessage"></p>
             </div>
             <div class="account-card account-login-card">
@@ -475,12 +498,13 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
             <div class="account-card account-size-card">
                 <h2>UI 크기 조절</h2><br>
                 <div class="form-grid">
-                    <div class="range-row"><span>챔피언 UI 높이</span><input type="range" min="92" max="180" id="sizeChampion" oninput="previewUiSettings()"><b id="sizeChampionValue"></b></div>
-                    <div class="range-row"><span>플레이어 UI 높이</span><input type="range" min="92" max="180" id="sizePlayer" oninput="previewUiSettings()"><b id="sizePlayerValue"></b></div>
+                    <div class="range-row"><span>챔피언</span><input type="range" min="92" max="180" id="sizeChampion" oninput="previewUiSettings()"><b id="sizeChampionValue"></b></div>
+                    <div class="range-row"><span>플레이어</span><input type="range" min="92" max="180" id="sizePlayer" oninput="previewUiSettings()"><b id="sizePlayerValue"></b></div>
                     <div class="range-row"><span>모스트 챔피언</span><input type="range" min="58" max="120" id="sizeMost" oninput="previewUiSettings()"><b id="sizeMostValue"></b></div>
                     <div class="range-row"><span>최근 전적</span><input type="range" min="66" max="140" id="sizeRecent" oninput="previewUiSettings()"><b id="sizeRecentValue"></b></div>
                     <div class="range-row"><span>내전 기록</span><input type="range" min="260" max="520" id="sizeMatch" oninput="previewUiSettings()"><b id="sizeMatchValue"></b></div>
-                    <button class="sort-btn active" onclick="saveUiSettings()">UI 크기 저장</button>
+                    <button class="sort-btn active" onclick="saveUiSettings('size')">UI 크기 저장</button>
+                    <p class="account-status" id="uiSizeSaveMessage"></p>
                 </div>
             </div>
         </div>
@@ -697,7 +721,20 @@ function renderTopPlayers(data){
     const top=[...data].sort((a,b)=>getPlayerLP(b)-getPlayerLP(a)).slice(0,3);
     const box=document.getElementById('topPlayers');
     if(!box)return;
-    box.innerHTML=top.map((p,i)=>playerRankingRow(p,i+1)).join('');
+    box.innerHTML=top.map((p,i)=>homeTopPlayerCard(p,i+1)).join('');
+}
+function homeTopPlayerCard(p,rank){
+    return `
+        <div class="home-top-player-card" onclick="openPlayer(${p.id})">
+            <div class="home-rank">#${rank}</div>
+            ${getRankProfileHtml(p)}
+            <div class="home-top-main">
+                <div class="home-name">${escapeHtml(p.nickname)}</div>
+                <div class="home-sub">${getPlayerLP(p)} LP · ${getTier(p)}</div>
+                <div class="home-sub">${p.total_games||0}전 ${p.wins||0}승 ${p.losses||0}패 · 승률 ${getWinrate(p)}%</div>
+            </div>
+        </div>
+    `;
 }
 function playerRankingRow(p,rank){
     const stats=getPlayerRecordStats(p);
@@ -737,26 +774,6 @@ function renderPlayers(data){
     c.innerHTML=data.map((p,i)=>playerRankingRow(p,i+1)).join('');
 }
 
-
-function renderHallOfFame(players){
-    const hof=document.getElementById('hallOfFame');
-    if(!hof)return;
-    const data=players||[];
-    if(!data.length){hof.innerHTML='<div class="empty-box">아직 기록이 없습니다.</div>';return}
-    const mostWins=[...data].sort((a,b)=>(b.wins||0)-(a.wins||0))[0]||{};
-    const maxStreak=[...data].sort((a,b)=>(b.max_win_streak||0)-(a.max_win_streak||0))[0]||{};
-    const mostKills=[...data].sort((a,b)=>(b.total_kills||0)-(a.total_kills||0))[0]||{};
-    const mostAssists=[...data].sort((a,b)=>(b.total_assists||0)-(a.total_assists||0))[0]||{};
-    const bestLP=[...data].sort((a,b)=>getPlayerLP(b)-getPlayerLP(a))[0]||{};
-    hof.innerHTML=`
-        <div class="card"><div class="card-title">🏆 최다 승</div><div class="hof-name">${escapeHtml(mostWins.nickname||'-')}</div><div class="card-value">${mostWins.wins||0}</div></div>
-        <div class="card"><div class="card-title">🔥 최대 연승</div><div class="hof-name">${escapeHtml(maxStreak.nickname||'-')}</div><div class="card-value">${maxStreak.max_win_streak||0}</div></div>
-        <div class="card"><div class="card-title">⚔️ 최다 킬</div><div class="hof-name">${escapeHtml(mostKills.nickname||'-')}</div><div class="card-value">${mostKills.total_kills||0}</div></div>
-        <div class="card"><div class="card-title">🤝 최다 어시</div><div class="hof-name">${escapeHtml(mostAssists.nickname||'-')}</div><div class="card-value">${mostAssists.total_assists||0}</div></div>
-        <div class="card"><div class="card-title">👑 최고 LP</div><div class="hof-name">${escapeHtml(bestLP.nickname||'-')}</div><div class="card-value">${getPlayerLP(bestLP)}</div></div>
-    `;
-}
-
 async function loadChampions(){
     if(!db)return;
     await loadChampionJson();
@@ -786,7 +803,7 @@ function buildChampionStats(records,storedMap={}){
 function calculateHoneyLocal(c){const wr=getChampionWinrate(c), avgS=getChampionAvgScore(c), kda=getChampionKdaRatio(c);const kdaScore=Math.min(kda/5*100,100);const sample=Math.min(1,c.games/10);return Math.round((wr*.45+avgS*.30+kdaScore*.25)*sample*10)/10}
 function renderChampionsView(){
     const q=(document.getElementById('championSearch')?.value||'').toLowerCase().trim();
-    let data=championStatsCache.filter(c=>(championLaneKey==='ALL'?c.lane==='ALL':c.lane===championLaneKey)&&(!q||String(c.champion_name||'').toLowerCase().includes(q)));
+    let data=championStatsCache.filter(c=>(championLaneKey==='ALL'?c.lane!=='ALL':c.lane===championLaneKey)&&(!q||String(c.champion_name||'').toLowerCase().includes(q)));
     data.sort((a,b)=>championSortKey==='winrate'?getChampionWinrate(b)-getChampionWinrate(a):championSortKey==='kda'?getChampionKdaRatio(b)-getChampionKdaRatio(a):championSortKey==='tier'?getChampionTierRank(a)-getChampionTierRank(b):championSortKey==='games'?b.games-a.games:Number(b.honey_score||0)-Number(a.honey_score||0));
     renderChampions(data);
 }
@@ -800,13 +817,13 @@ function championRankingRow(c,rank){
     const kda=avgKdaText(c);
     const kdar=getChampionKdaRatio(c).toFixed(1);
     const wr=getChampionWinrate(c).toFixed(1);
-    const laneText=c.lane==='ALL'?`전체 · ${escapeHtml(mainLaneForChampion(c.champion_name))}`:escapeHtml(c.lane);
+    const laneText=escapeHtml(c.lane);
 
     return `
         <div class="ranking-row" onclick="openChampionDetail('${escapeJs(c.champion_name)}','${escapeJs(c.lane)}')">
             <div class="rank-num">#${rank}</div>
 
-            ${champRankIcon(c.champion_name)}
+            ${champRankIcon(c)}
 
             <div class="rank-main">
                 <div class="rank-name">${escapeHtml(c.champion_name)}</div>
@@ -833,11 +850,16 @@ function championRankingRow(c,rank){
         </div>
     `;
 }
-function champRankIcon(name){
+function champRankIcon(c){
+    const name=typeof c==='string'?c:c.champion_name;
+    const tier=typeof c==='string'?'':getChampionTier(c);
+    const tierHtml=tier?`<span class="champ-tier-corner ${getChampionTierClass(tier)}">${tier}</span>`:'';
     const url=getChampionIconUrl(name);
     const safe=escapeAttribute(name||'?');
-    if(url) return `<img class="rank-avatar" src="${escapeAttribute(url)}" title="${safe}" onclick="event.stopPropagation(); openChampionDetail('${escapeJs(name)}')" onerror="this.outerHTML='<div class=&quot;rank-avatar&quot;>${escapeHtml((name||'?').slice(0,1))}</div>'">`;
-    return `<div class="rank-avatar" title="${safe}" onclick="event.stopPropagation(); openChampionDetail('${escapeJs(name)}')">${escapeHtml((name||'?').slice(0,1))}</div>`;
+    const inner=url
+        ? `<img class="rank-avatar" src="${escapeAttribute(url)}" title="${safe}" onclick="event.stopPropagation(); openChampionDetail('${escapeJs(name)}')" onerror="this.outerHTML='<div class=&quot;rank-avatar&quot;>${escapeHtml((name||'?').slice(0,1))}</div>'">`
+        : `<div class="rank-avatar" title="${safe}" onclick="event.stopPropagation(); openChampionDetail('${escapeJs(name)}')">${escapeHtml((name||'?').slice(0,1))}</div>`;
+    return `<span class="rank-avatar-wrap">${tierHtml}${inner}</span>`;
 }
 function mainLaneForChampion(name){const lanes=championStatsCache.filter(c=>c.champion_name===name&&c.lane!=='ALL').sort((a,b)=>b.games-a.games);return lanes[0]?.lane||'-'}
 function getChampionTier(c){if(c.games<3)return '6';const s=Number(c.honey_score||0);if(s>=85)return 'OP';if(s>=72)return '1';if(s>=60)return '2';if(s>=48)return '3';if(s>=36)return '4';return '5'}
@@ -860,15 +882,32 @@ async function loadMatches(){
     if(recordError){console.error(recordError);container.innerHTML='<div class="empty-box">참가자 기록을 불러오지 못했습니다.</div>';return}
     matchesCache=matches.map(m=>({...m,records:(records||[]).filter(r=>r.match_id===m.id)}));renderMatches(matchesCache);
 }
-function playerNameById(id){return playersCache.find(p=>Number(p.id)===Number(id))?.nickname||'알 수 없음'}
 function renderMatches(matches){
-    document.getElementById('matchesContainer').innerHTML=matches.map(m=>`<div class="match-card" onclick="openMatch(${m.id})"><div class="match-card-top"><div><div class="match-code">${escapeHtml(m.match_code||'MATCH-'+m.id)}</div><div class="match-date">${formatDate(m.played_at||m.created_at)}</div></div></div><div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div>${buildCompRows(m.records)}</div>`).join('');
+    document.getElementById('matchesContainer').innerHTML=matches.map(m=>`<div class="match-card" onclick="openMatch(${m.id})"><div class="match-card-top"><div class="match-code">${escapeHtml(m.match_code||'MATCH-'+m.id)}</div></div><div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div>${buildCompRows(m.records)}</div>`).join('');
 }
 function buildCompRows(records){
     const blue=records.filter(r=>r.team==='blue').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
     const red=records.filter(r=>r.team==='red').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
     const lanes=['TOP','JUG','MID','ADC','SUP'];
-    return `<div class="comp-list">${lanes.map(l=>{const b=blue.find(r=>normalizeLane(r.lane)===l);const r=red.find(r=>normalizeLane(r.lane)===l);return `<div class="comp-row"><div class="comp-side blue-side">${b?champIcon(b.champion_name,'champion-icon small',true):''}<div class="comp-text"><span class="comp-name">${escapeHtml(b?.champion_name||'-')}</span><span class="comp-player">${b?escapeHtml(playerNameById(b.player_id)):''}</span></div></div><div class="lane-pill">${l}</div><div class="comp-side red-side"><div class="comp-text"><span class="comp-name">${escapeHtml(r?.champion_name||'-')}</span><span class="comp-player">${r?escapeHtml(playerNameById(r.player_id)):''}</span></div>${r?champIcon(r.champion_name,'champion-icon small',true):''}</div></div>`}).join('')}</div>`;
+    return `<div class="comp-list">${lanes.map(l=>{
+        const b=blue.find(r=>normalizeLane(r.lane)===l);
+        const r=red.find(r=>normalizeLane(r.lane)===l);
+        return `<div class="comp-row">
+            <div class="comp-side blue-side">
+                ${b?champIcon(b.champion_name,'champion-icon small',true):''}
+                <div class="comp-text">
+                    <div class="comp-duo"><span class="comp-title">${escapeHtml(b?.champion_name||'-')}</span><span class="comp-sub">${b?escapeHtml(playerNameById(b.player_id)):''}</span></div>
+                </div>
+            </div>
+            <div class="lane-pill">${l}</div>
+            <div class="comp-side red-side">
+                <div class="comp-text">
+                    <div class="comp-duo"><span class="comp-title">${r?escapeHtml(playerNameById(r.player_id)):''}</span><span class="comp-sub">${escapeHtml(r?.champion_name||'-')}</span></div>
+                </div>
+                ${r?champIcon(r.champion_name,'champion-icon small',true):''}
+            </div>
+        </div>`;
+    }).join('')}</div>`;
 }
 async function openMatchById(id){if(!matchesCache.length)await loadMatches();openMatch(id)}
 function openMatch(id){
@@ -947,7 +986,7 @@ function applyUiSettings(settings){
     const st={...DEFAULT_UI_SETTINGS,...settings};
     const theme=UI_THEMES[st.theme]||UI_THEMES.purple;
     const root=document.documentElement;
-    root.style.setProperty('--bc-bg',theme.bg);root.style.setProperty('--bc-main',theme.main);root.style.setProperty('--bc-sidebar',theme.sidebar);root.style.setProperty('--bc-card',theme.card);root.style.setProperty('--bc-card2',theme.card2);root.style.setProperty('--bc-border',theme.border);root.style.setProperty('--bc-accent',theme.accent);root.style.setProperty('--bc-accent2',theme.accent2);
+    root.style.setProperty('--bc-bg',theme.bg);root.style.setProperty('--bc-main',theme.main);root.style.setProperty('--bc-sidebar',theme.sidebar);root.style.setProperty('--bc-card',theme.card);root.style.setProperty('--bc-card2',theme.card2);root.style.setProperty('--bc-border',theme.border);root.style.setProperty('--bc-accent',theme.accent);root.style.setProperty('--bc-accent2',theme.accent2);root.style.setProperty('--bc-hover',theme.accent);
     root.style.setProperty('--bc-champion-row-h',(Number(st.sizeChampion)||112)+'px');
     root.style.setProperty('--bc-player-row-h',(Number(st.sizePlayer)||112)+'px');
     root.style.setProperty('--bc-most-row-h',(Number(st.sizeMost)||68)+'px');
@@ -972,7 +1011,22 @@ async function loginAccount(){const username=document.getElementById('loginUsern
 function logoutAccount(){currentAccount=null;sessionStorage.removeItem('bandleAccountId');renderAccountPage()}
 async function restoreAccount(){const id=sessionStorage.getItem('bandleAccountId');if(!id||!db)return;const {data}=await db.from('bc_accounts').select('*').eq('id',id).maybeSingle();if(data){currentAccount=data;applyUiSettings(data.settings||{});}}
 async function saveProfileSettings(){if(!currentAccount)return;const nickname=document.getElementById('settingNickname').value.trim();const profile_image=document.getElementById('settingProfileImage').value.trim();const intro=document.getElementById('settingIntro').value.trim();const settings={...getAccountSettings(),profile_image,intro};const {data,error}=await db.from('bc_accounts').update({nickname,settings,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);document.getElementById('profileSaveMessage').innerText='저장 실패';return}currentAccount=data;if(nickname){await db.from('bc_players').update({profile_image:profile_image||null,intro:intro||null}).eq('nickname',nickname)}document.getElementById('profileSaveMessage').innerText='';await loadPlayers();renderAccountPage()}
-async function saveUiSettings(){if(!currentAccount)return;const st={...getAccountSettings(),theme:currentTheme};['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)st[id]=Number(el.value)});const {data,error}=await db.from('bc_accounts').update({settings:st,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);document.getElementById('uiSaveMessage').innerText='저장 실패';return}currentAccount=data;applyUiSettings(st);document.getElementById('uiSaveMessage').innerText=''}
+async function saveUiSettings(type='all'){
+    if(!currentAccount)return;
+    const st={...getAccountSettings(),theme:currentTheme};
+    ['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)st[id]=Number(el.value)});
+    const {data,error}=await db.from('bc_accounts').update({settings:st,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();
+    const msgId=type==='size'?'uiSizeSaveMessage':'uiSaveMessage';
+    const msg=document.getElementById(msgId);
+    if(error){
+        console.error(error);
+        if(msg)msg.innerText='저장 실패';
+        return;
+    }
+    currentAccount=data;
+    applyUiSettings(st);
+    if(msg)msg.innerText='저장 완료';
+}
 async function changeAccountLogin(){if(!currentAccount)return;const newUsername=document.getElementById('changeUsername').value.trim();const currentPw=document.getElementById('currentPassword').value;const newPw=document.getElementById('changePassword').value;const msg=document.getElementById('accountChangeMessage');const check=await hashPassword(currentPw,currentAccount.password_salt);if(check!==currentAccount.password_hash){msg.innerText='현재 비밀번호가 틀림';return}const update={updated_at:new Date().toISOString()};if(newUsername)update.username=newUsername;if(newPw){const salt=makeSalt();update.password_salt=salt;update.password_hash=await hashPassword(newPw,salt)}const {data,error}=await db.from('bc_accounts').update(update).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);msg.innerText='변경 실패';return}currentAccount=data;msg.innerText='';renderAccountPage()}
 function getIntroHtml(p){return p?.intro?`<div class="intro-box">${escapeHtml(p.intro)}</div>`:''}
 function openAdminLogin(btn){
