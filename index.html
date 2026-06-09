@@ -833,6 +833,29 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
             시즌 저장
         </button>
     </div>
+    <br>
+    <div class="card" style="max-width:520px;">
+        <h2>관리자 비번 변경</h2>
+        <br>
+        <input class="search-input" id="adminOldPassword" type="password" placeholder="현재 관리자 비밀번호">
+        <br><br>
+        <input class="search-input" id="adminNewPassword" type="password" placeholder="새 관리자 비밀번호">
+        <br><br>
+        <button class="sort-btn active" onclick="changeAdminPassword()">비번 변경</button>
+        <p class="stat" id="adminPasswordChangeMessage"></p>
+    </div>
+    <br>
+    <div class="card">
+        <h2>요주의 인물 리스트</h2>
+        <br>
+        <div class="toolbar-line">
+            <input class="search-input" id="watchPlayerInput" placeholder="플레이어 닉네임 입력">
+            <button class="sort-btn active" onclick="addWatchPlayer()">추가</button>
+        </div>
+        <p class="stat" id="watchPlayerMessage"></p>
+        <br>
+        <div id="watchListArea"></div>
+    </div>
 </div>
 </div>
 <script>
@@ -847,6 +870,8 @@ let championIconMap={}, championJsonLoaded=false;
 let currentAccount=null, currentTheme="purple";
 
 const ADMIN_PASSWORD = "1234";
+const ADMIN_PASSWORD_KEY = "bandleAdminPassword";
+const WATCH_PLAYERS_KEY = "bandleWatchPlayers";
 let adminMenuButton = null;
 
 if(SUPABASE_URL&&SUPABASE_KEY){
@@ -1645,6 +1670,9 @@ function openAdminLogin(btn){
     showPage("adminLogin", btn);
 }
 
+function getAdminPassword(){
+    return localStorage.getItem(ADMIN_PASSWORD_KEY) || ADMIN_PASSWORD;
+}
 function checkAdminPassword(){
     const input =
         document.getElementById("adminPassword").value;
@@ -1652,12 +1680,13 @@ function checkAdminPassword(){
     const msg =
         document.getElementById("adminLoginMessage");
 
-    if(input === ADMIN_PASSWORD){
+    if(input === getAdminPassword()){
 
         showPage(
             "adminPage",
             adminMenuButton
         );
+        renderWatchList();
 
     }else{
 
@@ -1667,6 +1696,48 @@ function checkAdminPassword(){
     }
 }
 
+function changeAdminPassword(){
+    const oldPw=document.getElementById("adminOldPassword").value;
+    const newPw=document.getElementById("adminNewPassword").value;
+    const msg=document.getElementById("adminPasswordChangeMessage");
+    if(oldPw!==getAdminPassword()){msg.innerText="현재 비밀번호가 틀렸습니다.";return}
+    if(!newPw.trim()){msg.innerText="새 비밀번호를 입력해줘.";return}
+    localStorage.setItem(ADMIN_PASSWORD_KEY,newPw);
+    document.getElementById("adminOldPassword").value="";
+    document.getElementById("adminNewPassword").value="";
+    msg.innerText="관리자 비밀번호 변경 완료";
+}
+function getManualWatchPlayers(){
+    try{return JSON.parse(localStorage.getItem(WATCH_PLAYERS_KEY)||"[]")}catch(e){return []}
+}
+function saveManualWatchPlayers(list){
+    localStorage.setItem(WATCH_PLAYERS_KEY,JSON.stringify([...new Set(list)]));
+}
+function addWatchPlayer(){
+    const input=document.getElementById("watchPlayerInput");
+    const msg=document.getElementById("watchPlayerMessage");
+    const name=input.value.trim();
+    if(!name){msg.innerText="닉네임을 입력해줘.";return}
+    const p=playersCache.find(x=>String(x.nickname||"").toLowerCase()===name.toLowerCase());
+    if(!p){msg.innerText=`${name}은(는) 벤들지지에 없는 플레이어입니다.`;return}
+    const list=getManualWatchPlayers();
+    list.push(p.nickname);
+    saveManualWatchPlayers(list);
+    input.value="";
+    msg.innerText="";
+    renderWatchList();
+}
+function watchListPlayers(){
+    const manual=new Set(getManualWatchPlayers().map(x=>String(x).toLowerCase()));
+    return playersCache.filter(p=>getWinrateRaw(p)>=70||manual.has(String(p.nickname||"").toLowerCase()));
+}
+function renderWatchList(){
+    const area=document.getElementById("watchListArea");
+    if(!area)return;
+    const list=watchListPlayers().sort((a,b)=>getWinrateRaw(b)-getWinrateRaw(a)||getPlayerLP(b)-getPlayerLP(a));
+    if(!list.length){area.innerHTML='<div class="empty-box">요주의 인물이 없습니다.</div>';return}
+    area.innerHTML=`<div class="champion-list">${list.map(p=>`<div class="champion-row"><div class="champion-main"><div class="champion-name">${escapeHtml(p.nickname||"-")}</div><div class="champion-sub">${p.total_games||0}전 ${p.wins||0}승 ${p.losses||0}패 승률 ${getWinrate(p)}%</div></div></div>`).join("")}</div>`;
+}
 
 async function saveSeasonSetting(){
     const name = document.getElementById("seasonNameInput").value || "시즌 1";
