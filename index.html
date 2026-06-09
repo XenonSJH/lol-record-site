@@ -1504,7 +1504,7 @@ async function buildBandleTeams(){
     const msg=document.getElementById('botTeamMessage');
     const out=document.getElementById('botTeamResult');
     msg.innerText='';out.innerHTML='';
-    if(names.length!==10){msg.innerText='플레이어 이름 10명을 입력해줘.';return}
+    if(names.length!==10){msg.innerText='플레이어 이름 10명을 입력해주세요.';return}
     const picked=[],missing=[];
     names.forEach(n=>{
         const p=playersCache.find(x=>String(x.nickname||'').toLowerCase()===n.toLowerCase());
@@ -1512,7 +1512,7 @@ async function buildBandleTeams(){
         else if(!p)missing.push(n);
     });
     if(missing.length){msg.innerText=`${missing.join(', ')}은(는) 벤들지지에 없는 플레이어입니다.`;return}
-    if(picked.length!==10){msg.innerText='중복된 플레이어가 있습니다. 10명을 모두 다르게 넣어줘.';return}
+    if(picked.length!==10){msg.innerText='중복된 플레이어가 있습니다. 10명을 모두 다르게 넣어주세요.';return}
     const best=findBestTeamPlan(picked);
     if(!best){msg.innerText='팀 조합을 만들 수 없습니다.';return}
     msg.innerText=best.strict?'조건을 만족하는 조합입니다.':'완전 조건을 만족하는 조합은 없어서 최대한 맞는 조합으로 추천했습니다.';
