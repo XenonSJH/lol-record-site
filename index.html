@@ -129,6 +129,7 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
         <button data-page="matches" onclick="showPage('matches',this); loadMatches();">📜 내전기록</button>
         <button data-page="recordDisabled" onclick="showPage('recordDisabled',this)">🎯 전적등록</button>
         <button>⚙️ 설정</button>
+        <button onclick="openAdminLogin(this)">🛠️ 관리자</button>
     </div>
 </div>
 <div class="main">
@@ -145,7 +146,9 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
         <div class="card"><div class="card-title">플레이어</div><div class="card-value" id="playerCount">0</div></div>
         <div class="card"><div class="card-title">총 경기</div><div class="card-value" id="totalGameCount">-</div></div>
         <div class="card"><div class="card-title">이번주 경기</div><div class="card-value" id="weeklyGameCount">-</div></div>
-        <div class="card"><div class="card-title">📢 밴들 뉴스</div><div class="news-list" id="bandleNews">전적 데이터 갱신중<br>꿀챔 랭킹 업데이트<br>명예의 전당 집계중</div></div>
+        <div class="card-title">현재 시즌</div>
+        <div class="card-value" id="currentSeasonName">시즌 1</div>
+        <div class="stat" id="currentSeasonPeriod">기간 미설정</div>
     </div>
     <div class="section">
         <h2>🏆 TOP 플레이어</h2>
@@ -207,16 +210,58 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
 </div>
 <div id="matchDetail" class="page"><div id="matchDetailContent"></div></div>
 <div id="championDetail" class="page"><div id="championDetailContent"></div></div>
-<div id="playerDetail" class="page"><div id="playerDetailContent"></div></div>
+<div id="playerDetail" class="page"><div id="playerDetailContent"></div></div><div id="adminLogin" class="page">
+    <h2 style="margin-bottom:20px;">🛠️ 관리자 로그인</h2>
+
+    <div class="card" style="max-width:420px;">
+        <input class="search-input" id="adminPassword" type="password" placeholder="관리자 비밀번호 입력">
+        <br><br>
+        <button class="sort-btn active" onclick="checkAdminPassword()">로그인</button>
+        <p class="stat" id="adminLoginMessage"></p>
+    </div>
+</div>
+
+<div id="adminPage" class="page">
+    <h2 style="margin-bottom:20px;">🛠️ 관리자</h2>
+
+    <div class="card" style="max-width:520px;">
+        <h2>시즌 설정</h2>
+
+        <br>
+
+        <input class="search-input" id="seasonNameInput" placeholder="시즌 이름">
+
+        <br><br>
+
+        <input class="search-input" id="seasonStartInput" type="date">
+
+        <br><br>
+
+        <input class="search-input" id="seasonEndInput" type="date">
+
+        <br><br>
+
+        <button class="sort-btn active" onclick="saveSeasonSetting()">
+            시즌 저장
+        </button>
+    </div>
+</div>
 </div>
 <script>
 const SUPABASE_URL = "https://ehligpqxjczgcggjpzwn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_QHDiR1qAWGVaKSDZguc0qg_fE_eVCwZ";
+
 let db=null, playersCache=[], matchesCache=[], championRecordsCache=[], championStatsCache=[];
 let playerSortKey="lp", championSortKey="honey", championLaneKey="ALL";
 let navStack=["home"], navIndex=0, suppressNav=false;
 let championIconMap={}, championJsonLoaded=false;
-if(SUPABASE_URL&&SUPABASE_KEY){db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY)}
+
+const ADMIN_PASSWORD = "1234";
+let adminMenuButton = null;
+
+if(SUPABASE_URL&&SUPABASE_KEY){
+    db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
+}
 
 function showPage(id,btn=null,push=true){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -451,7 +496,120 @@ function formatDate(v){if(!v)return '-';return new Date(v).toLocaleString('ko-KR
 function escapeHtml(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
 function escapeAttribute(v){return escapeHtml(v).replaceAll('`','&#096;')}
 function escapeJs(v){return String(v??'').replaceAll('\\','\\\\').replaceAll("'","\\'").replaceAll('\n',' ')}
+function openAdminLogin(btn){
+    adminMenuButton = btn;
+    showPage("adminLogin", btn);
+}
+
+function checkAdminPassword(){
+    const input =
+        document.getElementById("adminPassword").value;
+
+    const msg =
+        document.getElementById("adminLoginMessage");
+
+    if(input === ADMIN_PASSWORD){
+
+        showPage(
+            "adminPage",
+            adminMenuButton
+        );
+
+    }else{
+
+        msg.innerText =
+            "비밀번호가 틀렸습니다.";
+
+    }
+}
+
+
+async function saveSeasonSetting(){
+    const name = document.getElementById("seasonNameInput").value || "시즌 1";
+    const start = document.getElementById("seasonStartInput").value || "";
+    const end = document.getElementById("seasonEndInput").value || "";
+
+    if(!db){
+        alert("DB 연결 실패");
+        return;
+    }
+
+    const {error} = await db
+        .from("bc_settings")
+        .upsert({
+            key: "current_season",
+            value: {
+                name: name,
+                start: start,
+                end: end
+            },
+            updated_at: new Date().toISOString()
+        });
+
+    if(error){
+        console.error(error);
+        alert("시즌 저장 실패");
+        return;
+    }
+
+    await loadSeasonSetting();
+    alert("시즌 설정 저장 완료");
+}
+
+async function loadSeasonSetting(){
+    const defaultSeason = {
+        name: "시즌 1",
+        start: "",
+        end: ""
+    };
+
+    if(!db){
+        applySeasonToUI(defaultSeason);
+        return;
+    }
+
+    const {data,error} = await db
+        .from("bc_settings")
+        .select("value")
+        .eq("key","current_season")
+        .maybeSingle();
+
+    if(error){
+        console.error(error);
+        applySeasonToUI(defaultSeason);
+        return;
+    }
+
+    const season = data?.value || defaultSeason;
+    applySeasonToUI(season);
+}
+function applySeasonToUI(season){
+    const name = season.name || "시즌 1";
+    const start = season.start || "";
+    const end = season.end || "";
+
+    const currentSeasonName = document.getElementById("currentSeasonName");
+    const currentSeasonPeriod = document.getElementById("currentSeasonPeriod");
+
+    if(currentSeasonName){
+        currentSeasonName.innerText = name;
+    }
+
+    if(currentSeasonPeriod){
+        currentSeasonPeriod.innerText =
+            start && end ? `${start} ~ ${end}` : "기간 미설정";
+    }
+
+    const nameInput = document.getElementById("seasonNameInput");
+    const startInput = document.getElementById("seasonStartInput");
+    const endInput = document.getElementById("seasonEndInput");
+
+    if(nameInput) nameInput.value = name;
+    if(startInput) startInput.value = start;
+    if(endInput) endInput.value = end;
+}
 loadPlayers();
+loadSeasonSetting();
 </script>
 </body>
 </html>
