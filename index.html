@@ -774,6 +774,26 @@ function renderTopPlayers(data){
     if(!box)return;
     box.innerHTML=top.map((p,i)=>homeTopPlayerCard(p,i+1)).join('');
 }
+function renderHallOfFame(data){
+    const box=document.getElementById('hallOfFame');
+    if(!box)return;
+    const list=[
+        {title:'LP 1위',player:[...data].sort((a,b)=>getPlayerLP(b)-getPlayerLP(a))[0],value:p=>`${getPlayerLP(p)} LP`},
+        {title:'승률 1위',player:[...data].filter(p=>(p.total_games||0)>0).sort((a,b)=>getWinrateRaw(b)-getWinrateRaw(a))[0],value:p=>`${getWinrate(p)}%`},
+        {title:'최다 승',player:[...data].sort((a,b)=>(b.wins||0)-(a.wins||0))[0],value:p=>`${p.wins||0}승`},
+        {title:'최다 판수',player:[...data].sort((a,b)=>(b.total_games||0)-(a.total_games||0))[0],value:p=>`${p.total_games||0}판`},
+        {title:'평균 KDA 1위',player:[...data].sort((a,b)=>playerAvgKdaRatio(b)-playerAvgKdaRatio(a))[0],value:p=>playerAvgKdaRatio(p).toFixed(2)}
+    ].filter(x=>x.player);
+    if(!list.length){box.innerHTML='<div class="empty-box">표시할 기록이 없습니다.</div>';return}
+    box.innerHTML=list.map(x=>`
+        <div class="card" onclick="openPlayer(${x.player.id})">
+            <div class="card-title">${escapeHtml(x.title)}</div>
+            ${getRankProfileHtml(x.player)}
+            <div class="hof-name">${escapeHtml(x.player.nickname||'-')}</div>
+            <div class="card-value">${escapeHtml(x.value(x.player))}</div>
+        </div>
+    `).join('');
+}
 function homeTopPlayerCard(p,rank){
     return `
         <div class="home-top-player-card" onclick="openPlayer(${p.id})">
@@ -963,6 +983,10 @@ async function loadMatches(){
     const {data:records,error:recordError}=await db.from('bc_records').select('*').in('match_id',ids);
     if(recordError){console.error(recordError);container.innerHTML='<div class="empty-box">참가자 기록을 불러오지 못했습니다.</div>';return}
     matchesCache=matches.map(m=>({...m,records:(records||[]).filter(r=>r.match_id===m.id)}));renderMatches(matchesCache);
+}
+function playerNameById(id){
+    const p=playersCache.find(x=>Number(x.id)===Number(id));
+    return p?.nickname||p?.lol_name||'-';
 }
 function renderMatches(matches){
     document.getElementById('matchesContainer').innerHTML=matches.map(m=>`
