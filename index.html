@@ -263,8 +263,55 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
     .rank-highlight{grid-column:1 / -1}
 }
 
-.winner-blue-badge{background:#1E3A8A!important;color:#BFDBFE!important;border-color:#60A5FA!important}
-.winner-red-badge{background:#7F1D1D!important;color:#FECACA!important;border-color:#F87171!important}
+
+/* ===== account/settings patch: preserve original UI, add personalization ===== */
+:root{
+    --bc-bg:#0F172A;
+    --bc-main:#0F172A;
+    --bc-sidebar:#111827;
+    --bc-card:#1E293B;
+    --bc-card2:#111827;
+    --bc-border:#334155;
+    --bc-accent:#8B5CF6;
+    --bc-accent2:#A78BFA;
+    --bc-text:#ffffff;
+    --bc-sub:#CBD5E1;
+    --bc-player-row-h:112px;
+    --bc-champion-row-h:112px;
+    --bc-most-row-h:68px;
+    --bc-recent-row-h:76px;
+    --bc-match-card-h:0px;
+}
+body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
+.main,.header{background:var(--bc-main)!important}
+.sidebar{background:var(--bc-sidebar)!important;border-color:var(--bc-border)!important}
+.card,.rank-row,.home-top-card,.match-card{background:var(--bc-card)!important;border-color:var(--bc-border)!important}
+.team-card,.champion-row,.match-row,.comp-row,.empty-box{background:var(--bc-card2)!important;border-color:var(--bc-border)!important}
+.menu button.active,.header button,.sort-btn.active{background:var(--bc-accent)!important}
+.header button:hover,.sort-btn:hover,.nav-btn:hover{background:var(--bc-accent2)!important}
+.logo{color:var(--bc-accent)!important}.logo-mark{background:linear-gradient(135deg,var(--bc-accent),#4C1D95)!important;border-color:var(--bc-accent2)!important}
+.rank-row{min-height:var(--bc-player-row-h)}
+#championsContainer .rank-row{min-height:var(--bc-champion-row-h)}
+.champion-row{min-height:var(--bc-most-row-h)}
+.match-row{min-height:var(--bc-recent-row-h)}
+.match-card{min-height:var(--bc-match-card-h)}
+.rank-row .profile,.rank-row .champion-icon{width:calc(var(--bc-player-row-h) * .62);height:calc(var(--bc-player-row-h) * .62)}
+#championsContainer .champion-icon{width:calc(var(--bc-champion-row-h) * .64);height:calc(var(--bc-champion-row-h) * .64)}
+.account-panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
+.account-card{background:var(--bc-card);border:1px solid var(--bc-border);border-radius:20px;padding:22px}
+.form-grid{display:flex;flex-direction:column;gap:12px}.form-label{font-size:13px;color:var(--bc-sub);font-weight:900}.form-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.theme-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.theme-btn{border:1px solid var(--bc-border);border-radius:14px;padding:12px;cursor:pointer;color:white;font-weight:1000;background:#1E293B;text-align:left}.theme-btn.active{outline:2px solid var(--bc-accent2)}
+.theme-swatch{height:34px;border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,.2)}
+.range-row{display:grid;grid-template-columns:150px 1fr 58px;gap:10px;align-items:center}.range-row input{width:100%}
+.account-status{font-size:14px;color:var(--bc-sub);font-weight:800}.intro-box{margin-top:14px;background:#111827;border:1px solid var(--bc-border);border-radius:14px;padding:12px;color:var(--bc-sub);line-height:1.55;white-space:pre-wrap}
+@media(max-width:1000px){.account-panel{grid-template-columns:1fr}.theme-grid{grid-template-columns:1fr}.range-row{grid-template-columns:1fr}}
+
+
+.account-status-card{margin-bottom:20px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.account-layout-fixed{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-areas:"basic theme" "login size"}
+.account-basic-card{grid-area:basic}.account-theme-card{grid-area:theme}.account-login-card{grid-area:login}.account-size-card{grid-area:size}
+@media(max-width:1000px){.account-layout-fixed{grid-template-columns:1fr!important;grid-template-areas:"basic" "theme" "login" "size"}}
+
 </style>
 </head>
 <body>
@@ -279,7 +326,7 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
         <button data-page="champions" onclick="showPage('champions',this); loadChampions();">⚔️ 챔피언</button>
         <button data-page="matches" onclick="showPage('matches',this); loadMatches();">📜 내전기록</button>
         <button data-page="recordDisabled" onclick="showPage('recordDisabled',this)">🎯 전적등록</button>
-        <button>⚙️ 설정</button>
+        <button data-page="account" onclick="openAccountPage(this)">⚙️ 계정/설정</button>
         <button onclick="openAdminLogin(this)">🛠️ 관리자</button>
     </div>
 </div>
@@ -297,9 +344,7 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
         <div class="card"><div class="card-title">플레이어</div><div class="card-value" id="playerCount">0</div></div>
         <div class="card"><div class="card-title">총 경기</div><div class="card-value" id="totalGameCount">-</div></div>
         <div class="card"><div class="card-title">이번주 경기</div><div class="card-value" id="weeklyGameCount">-</div></div>
-        <div class="card-title">현재 시즌</div>
-        <div class="card-value" id="currentSeasonName">시즌 1</div>
-        <div class="stat" id="currentSeasonPeriod">기간 미설정</div>
+        <div class="card"><div class="card-title">현재 시즌</div><div class="card-value" id="currentSeasonName">시즌 1</div><div class="stat" id="currentSeasonPeriod">기간 미설정</div><div class="stat" id="seasonRemain">시즌 종료 D-?</div></div>
     </div>
     <div class="section">
         <h2>🏆 TOP 플레이어</h2>
@@ -361,7 +406,87 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
 </div>
 <div id="matchDetail" class="page"><div id="matchDetailContent"></div></div>
 <div id="championDetail" class="page"><div id="championDetailContent"></div></div>
-<div id="playerDetail" class="page"><div id="playerDetailContent"></div></div><div id="adminLogin" class="page">
+<div id="playerDetail" class="page"><div id="playerDetailContent"></div></div>
+<div id="account" class="page">
+    <h2 style="margin-bottom:20px;">⚙️ 계정 / 개인 설정</h2>
+    <div id="accountLoggedOut" class="account-panel">
+        <div class="account-card">
+            <h2>로그인</h2><br>
+            <div class="form-grid">
+                <input class="search-input" id="loginUsername" placeholder="아이디">
+                <input class="search-input" id="loginPassword" type="password" placeholder="비밀번호">
+                <button class="sort-btn active" onclick="loginAccount()">로그인</button>
+                <p class="account-status" id="loginMessage"></p>
+            </div>
+        </div>
+        <div class="account-card">
+            <h2>계정 생성</h2><br>
+            <div class="form-grid">
+                <input class="search-input" id="signupUsername" placeholder="새 아이디">
+                <input class="search-input" id="signupPassword" type="password" placeholder="새 비밀번호">
+                <input class="search-input" id="signupNickname" placeholder="연결할 플레이어 닉네임">
+                <button class="sort-btn active" onclick="signupAccount()">계정 생성</button>
+                <p class="account-status" id="signupMessage">플레이어 닉네임은 BANDLE.GG에 등록된 닉네임과 같게 쓰면 프로필/소개글이 연결됨.</p>
+            </div>
+        </div>
+    </div>
+    <div id="accountLoggedIn" style="display:none;">
+        <div class="account-card account-status-card">
+            <div>
+                <h2 id="accountTitle">로그인됨</h2>
+                <p class="account-status" id="accountSub"></p>
+            </div>
+            <button class="sort-btn" onclick="logoutAccount()">로그아웃</button>
+        </div>
+        <div class="account-panel account-layout-fixed">
+            <div class="account-card account-basic-card">
+                <h2>기본 정보</h2><br>
+                <div class="form-grid">
+                    <label class="form-label">연결 플레이어 닉네임</label>
+                    <input class="search-input" id="settingNickname" placeholder="예: Xenon">
+                    <label class="form-label">프로필 사진 URL</label>
+                    <input class="search-input" id="settingProfileImage" placeholder="https://...">
+                    <label class="form-label">소개글</label>
+                    <textarea class="search-input" id="settingIntro" rows="5" style="resize:vertical;min-height:110px" placeholder="상세 페이지 프로필 사진 아래에 표시됩니다."></textarea>
+                    <button class="sort-btn active" onclick="saveProfileSettings()">프로필 저장</button>
+                    <p class="account-status" id="profileSaveMessage"></p>
+                </div>
+            </div>
+            <div class="account-card account-theme-card">
+                <h2>UI 색깔</h2><br>
+                <div class="theme-grid" id="themeGrid"></div>
+                <br>
+                <button class="sort-btn active" onclick="saveUiSettings()">UI 색깔 저장</button>
+                <p class="account-status" id="uiSaveMessage"></p>
+            </div>
+            <div class="account-card account-login-card">
+                <h2>아이디 / 비밀번호 변경</h2><br>
+                <div class="form-grid">
+                    <label class="form-label">새 아이디</label>
+                    <input class="search-input" id="changeUsername" placeholder="비우면 유지">
+                    <label class="form-label">현재 비밀번호</label>
+                    <input class="search-input" id="currentPassword" type="password" placeholder="현재 비밀번호">
+                    <label class="form-label">새 비밀번호</label>
+                    <input class="search-input" id="changePassword" type="password" placeholder="비우면 유지">
+                    <button class="sort-btn active" onclick="changeAccountLogin()">계정 정보 변경</button>
+                    <p class="account-status" id="accountChangeMessage"></p>
+                </div>
+            </div>
+            <div class="account-card account-size-card">
+                <h2>UI 크기 조절</h2><br>
+                <div class="form-grid">
+                    <div class="range-row"><span>챔피언 UI 높이</span><input type="range" min="92" max="180" id="sizeChampion" oninput="previewUiSettings()"><b id="sizeChampionValue"></b></div>
+                    <div class="range-row"><span>플레이어 UI 높이</span><input type="range" min="92" max="180" id="sizePlayer" oninput="previewUiSettings()"><b id="sizePlayerValue"></b></div>
+                    <div class="range-row"><span>모스트 챔피언</span><input type="range" min="58" max="120" id="sizeMost" oninput="previewUiSettings()"><b id="sizeMostValue"></b></div>
+                    <div class="range-row"><span>최근 전적</span><input type="range" min="66" max="140" id="sizeRecent" oninput="previewUiSettings()"><b id="sizeRecentValue"></b></div>
+                    <div class="range-row"><span>내전 기록</span><input type="range" min="260" max="520" id="sizeMatch" oninput="previewUiSettings()"><b id="sizeMatchValue"></b></div>
+                    <button class="sort-btn active" onclick="saveUiSettings()">UI 크기 저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="adminLogin" class="page">
     <h2 style="margin-bottom:20px;">🛠️ 관리자 로그인</h2>
 
     <div class="card" style="max-width:420px;">
@@ -406,6 +531,7 @@ let db=null, playersCache=[], matchesCache=[], championRecordsCache=[], champion
 let playerSortKey="lp", championSortKey="honey", championLaneKey="ALL";
 let navStack=["home"], navIndex=0, suppressNav=false;
 let championIconMap={}, championJsonLoaded=false;
+let currentAccount=null, currentTheme="purple";
 
 const ADMIN_PASSWORD = "1234";
 let adminMenuButton = null;
@@ -422,7 +548,7 @@ function showPage(id,btn=null,push=true){
 }
 function setActiveMenu(id,btn=null){
     document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
-    const map={home:'home',players:'players',playerDetail:'players',champions:'champions',championDetail:'champions',matches:'matches',matchDetail:'matches',recordDisabled:'recordDisabled'};
+    const map={home:'home',players:'players',playerDetail:'players',champions:'champions',championDetail:'champions',matches:'matches',matchDetail:'matches',recordDisabled:'recordDisabled',account:'account'};
     const key=map[id];
     const target=btn || document.querySelector(`.menu button[data-page="${key}"]`);
     if(target) target.classList.add('active');
@@ -611,6 +737,26 @@ function renderPlayers(data){
     c.innerHTML=data.map((p,i)=>playerRankingRow(p,i+1)).join('');
 }
 
+
+function renderHallOfFame(players){
+    const hof=document.getElementById('hallOfFame');
+    if(!hof)return;
+    const data=players||[];
+    if(!data.length){hof.innerHTML='<div class="empty-box">아직 기록이 없습니다.</div>';return}
+    const mostWins=[...data].sort((a,b)=>(b.wins||0)-(a.wins||0))[0]||{};
+    const maxStreak=[...data].sort((a,b)=>(b.max_win_streak||0)-(a.max_win_streak||0))[0]||{};
+    const mostKills=[...data].sort((a,b)=>(b.total_kills||0)-(a.total_kills||0))[0]||{};
+    const mostAssists=[...data].sort((a,b)=>(b.total_assists||0)-(a.total_assists||0))[0]||{};
+    const bestLP=[...data].sort((a,b)=>getPlayerLP(b)-getPlayerLP(a))[0]||{};
+    hof.innerHTML=`
+        <div class="card"><div class="card-title">🏆 최다 승</div><div class="hof-name">${escapeHtml(mostWins.nickname||'-')}</div><div class="card-value">${mostWins.wins||0}</div></div>
+        <div class="card"><div class="card-title">🔥 최대 연승</div><div class="hof-name">${escapeHtml(maxStreak.nickname||'-')}</div><div class="card-value">${maxStreak.max_win_streak||0}</div></div>
+        <div class="card"><div class="card-title">⚔️ 최다 킬</div><div class="hof-name">${escapeHtml(mostKills.nickname||'-')}</div><div class="card-value">${mostKills.total_kills||0}</div></div>
+        <div class="card"><div class="card-title">🤝 최다 어시</div><div class="hof-name">${escapeHtml(mostAssists.nickname||'-')}</div><div class="card-value">${mostAssists.total_assists||0}</div></div>
+        <div class="card"><div class="card-title">👑 최고 LP</div><div class="hof-name">${escapeHtml(bestLP.nickname||'-')}</div><div class="card-value">${getPlayerLP(bestLP)}</div></div>
+    `;
+}
+
 async function loadChampions(){
     if(!db)return;
     await loadChampionJson();
@@ -714,21 +860,22 @@ async function loadMatches(){
     if(recordError){console.error(recordError);container.innerHTML='<div class="empty-box">참가자 기록을 불러오지 못했습니다.</div>';return}
     matchesCache=matches.map(m=>({...m,records:(records||[]).filter(r=>r.match_id===m.id)}));renderMatches(matchesCache);
 }
+function playerNameById(id){return playersCache.find(p=>Number(p.id)===Number(id))?.nickname||'알 수 없음'}
 function renderMatches(matches){
-    document.getElementById('matchesContainer').innerHTML=matches.map(m=>`<div class="match-card" onclick="openMatch(${m.id})"><div class="match-card-top"><div class="match-code">${escapeHtml(m.match_code||'MATCH-'+m.id)}</div></div><div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div>${buildCompRows(m.records)}</div>`).join('');
+    document.getElementById('matchesContainer').innerHTML=matches.map(m=>`<div class="match-card" onclick="openMatch(${m.id})"><div class="match-card-top"><div><div class="match-code">${escapeHtml(m.match_code||'MATCH-'+m.id)}</div><div class="match-date">${formatDate(m.played_at||m.created_at)}</div></div></div><div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div>${buildCompRows(m.records)}</div>`).join('');
 }
 function buildCompRows(records){
     const blue=records.filter(r=>r.team==='blue').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
     const red=records.filter(r=>r.team==='red').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
     const lanes=['TOP','JUG','MID','ADC','SUP'];
-    return `<div class="comp-list">${lanes.map(l=>{const b=blue.find(r=>normalizeLane(r.lane)===l);const r=red.find(r=>normalizeLane(r.lane)===l);return `<div class="comp-row"><div class="comp-side blue-side">${b?champIcon(b.champion_name,'champion-icon small',true):''}<span class="comp-name">${escapeHtml(b?.champion_name||'-')}</span></div><div class="lane-pill">${l}</div><div class="comp-side red-side"><span class="comp-name">${escapeHtml(r?.champion_name||'-')}</span>${r?champIcon(r.champion_name,'champion-icon small',true):''}</div></div>`}).join('')}</div>`;
+    return `<div class="comp-list">${lanes.map(l=>{const b=blue.find(r=>normalizeLane(r.lane)===l);const r=red.find(r=>normalizeLane(r.lane)===l);return `<div class="comp-row"><div class="comp-side blue-side">${b?champIcon(b.champion_name,'champion-icon small',true):''}<div class="comp-text"><span class="comp-name">${escapeHtml(b?.champion_name||'-')}</span><span class="comp-player">${b?escapeHtml(playerNameById(b.player_id)):''}</span></div></div><div class="lane-pill">${l}</div><div class="comp-side red-side"><div class="comp-text"><span class="comp-name">${escapeHtml(r?.champion_name||'-')}</span><span class="comp-player">${r?escapeHtml(playerNameById(r.player_id)):''}</span></div>${r?champIcon(r.champion_name,'champion-icon small',true):''}</div></div>`}).join('')}</div>`;
 }
 async function openMatchById(id){if(!matchesCache.length)await loadMatches();openMatch(id)}
 function openMatch(id){
     const m=matchesCache.find(x=>Number(x.id)===Number(id));if(!m)return;
     const blue=m.records.filter(r=>r.team==='blue').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
     const red=m.records.filter(r=>r.team==='red').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
-    document.getElementById('matchDetailContent').innerHTML=`<div class="section"><div class="card"><div class="match-card-top"><h1>${escapeHtml(m.match_code||'MATCH-'+m.id)}</h1><div class="badge ${m.winner==='blue'?'winner-blue-badge':'winner-red-badge'}">${m.winner==='blue'?'블루 승리':'레드 승리'}</div></div><div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div></div><div class="team-grid"><div class="team-card"><div class="team-title blue">BLUE TEAM</div>${buildDetailRecords(blue)}</div><div class="team-card"><div class="team-title red">RED TEAM</div>${buildDetailRecords(red)}</div></div></div>`;
+    document.getElementById('matchDetailContent').innerHTML=`<div class="section"><div class="card"><div class="match-card-top"><h1>${escapeHtml(m.match_code||'MATCH-'+m.id)}</h1><div class="badge">${m.winner==='blue'?'블루 승리':'레드 승리'}</div></div><div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div></div><div class="team-grid"><div class="team-card"><div class="team-title blue">BLUE TEAM</div>${buildDetailRecords(blue)}</div><div class="team-card"><div class="team-title red">RED TEAM</div>${buildDetailRecords(red)}</div></div></div>`;
     showPage('matchDetail');
 }
 function buildDetailRecords(records){
@@ -747,7 +894,7 @@ function openChampionDetail(name,lane='ALL'){
 
 async function openPlayer(id){
     const p=playersCache.find(x=>Number(x.id)===Number(id));if(!p)return;
-    document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}<h1>${escapeHtml(p.nickname)}</h1><br>${getTierBadge(p)}<p class="stat">⚔️ ${p.total_games}전</p><p class="stat">🏆 ${p.wins}승 ${p.losses}패</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p></div><div><div class="card"><h2>모스트 챔피언</h2><br><div class="detail-loading">전적 데이터를 불러오는 중...</div></div><br><div class="card"><h2>최근 전적</h2><br><div class="detail-loading">최근 전적을 불러오는 중...</div></div></div></div>`;
+    document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}${getIntroHtml(p)}<h1>${escapeHtml(p.nickname)}</h1><br>${getTierBadge(p)}<p class="stat">⚔️ ${p.total_games}전</p><p class="stat">🏆 ${p.wins}승 ${p.losses}패</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p></div><div><div class="card"><h2>모스트 챔피언</h2><br><div class="detail-loading">전적 데이터를 불러오는 중...</div></div><br><div class="card"><h2>최근 전적</h2><br><div class="detail-loading">최근 전적을 불러오는 중...</div></div></div></div>`;
     showPage('playerDetail');await loadPlayerDetail(p);
 }
 async function loadPlayerDetail(p){
@@ -755,7 +902,7 @@ async function loadPlayerDetail(p){
     if(error){console.error(error);return renderPlayerDetailError(p)}renderPlayerDetail(p,data||[])
 }
 function renderPlayerDetail(p,records){
-    document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}<h1>${escapeHtml(p.nickname)}</h1><br>${getTierBadge(p)}<p class="stat">⚔️ ${p.total_games}전</p><p class="stat">🏆 ${p.wins}승 ${p.losses}패</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p><br><p class="stat">승리 시 예상 LP : +${getWinPointChange(p,'win')}</p><p class="stat">패배 시 예상 LP : ${getWinPointChange(p,'lose')}</p></div><div><div class="card"><h2>모스트 챔피언</h2><br>${buildMostChampions(records)}</div><br><div class="card"><h2>최근 전적</h2><br>${buildRecentMatches(p,records)}</div></div></div>`;
+    document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}${getIntroHtml(p)}<h1>${escapeHtml(p.nickname)}</h1><br>${getTierBadge(p)}<p class="stat">⚔️ ${p.total_games}전</p><p class="stat">🏆 ${p.wins}승 ${p.losses}패</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p><br><p class="stat">승리 시 예상 LP : +${getWinPointChange(p,'win')}</p><p class="stat">패배 시 예상 LP : ${getWinPointChange(p,'lose')}</p></div><div><div class="card"><h2>모스트 챔피언</h2><br>${buildMostChampions(records)}</div><br><div class="card"><h2>최근 전적</h2><br>${buildRecentMatches(p,records)}</div></div></div>`;
 }
 function buildMostChampions(records){
     if(!records.length)return '<div class="empty-box">아직 전적 데이터가 없습니다.</div>';
@@ -780,10 +927,54 @@ function getRankProfileHtml(p){
 }
 function getProfileHtml(p,size='normal'){const cls=size==='big'?'big-profile':'profile';const u=p.profile_image;if(u)return `<img class="${cls}" src="${escapeAttribute(u)}" onerror="this.outerHTML='<div class=&quot;${cls}&quot;></div>'">`;return `<div class="${cls}"></div>`}
 function getWinPointChange(p,result){const g=p.total_games||0,w=p.wins||0;if(g<5)return result==='win'?250:40;if(result==='lose')return -15;const wr=g?w/g*100:50;let v=20;if(wr<50)v=20-Math.ceil((50-wr)/5)*2;return Math.max(v,4)}
-function formatDate(v){if(!v)return '-';const raw=String(v);const d=/^\d+$/.test(raw)?new Date(Number(raw)):new Date(v);return isNaN(d.getTime())?'-':d.toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
+function formatDate(v){if(!v)return '-';return new Date(v).toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
 function escapeHtml(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
 function escapeAttribute(v){return escapeHtml(v).replaceAll('`','&#096;')}
 function escapeJs(v){return String(v??'').replaceAll('\\','\\\\').replaceAll("'","\\'").replaceAll('\n',' ')}
+
+const UI_THEMES={
+    purple:{name:'보라 기본',bg:'#0F172A',main:'#0F172A',sidebar:'#111827',card:'#1E293B',card2:'#111827',border:'#334155',accent:'#8B5CF6',accent2:'#A78BFA'},
+    blue:{name:'블루 단색',bg:'#08111f',main:'#0B1220',sidebar:'#0F172A',card:'#13233A',card2:'#0B1628',border:'#24415F',accent:'#3B82F6',accent2:'#60A5FA'},
+    emerald:{name:'에메랄드',bg:'#061A14',main:'#071F19',sidebar:'#09231D',card:'#102E25',card2:'#071A15',border:'#1F4D3F',accent:'#10B981',accent2:'#34D399'},
+    rose:{name:'로즈 다크',bg:'#1A0B16',main:'#1F0F1B',sidebar:'#160914',card:'#2A1524',card2:'#160914',border:'#5A2A49',accent:'#E11D48',accent2:'#FB7185'},
+    gold:{name:'골드 블랙',bg:'#100C05',main:'#141007',sidebar:'#0C0A05',card:'#211A0C',card2:'#141007',border:'#5A4518',accent:'#D97706',accent2:'#FBBF24'},
+    gradient:{name:'보라 그라데이션',bg:'linear-gradient(135deg,#020617,#1E1B4B,#312E81)',main:'linear-gradient(135deg,#020617,#111827)',sidebar:'#111827',card:'linear-gradient(135deg,#1E293B,#1E1B4B)',card2:'#111827',border:'#4C1D95',accent:'#8B5CF6',accent2:'#C4B5FD'}
+};
+const DEFAULT_UI_SETTINGS={theme:'purple',sizeChampion:112,sizePlayer:112,sizeMost:68,sizeRecent:76,sizeMatch:300};
+function openAccountPage(btn){showPage('account',btn);renderAccountPage()}
+function getAccountSettings(){return {...DEFAULT_UI_SETTINGS,...(currentAccount?.settings||{})}}
+function applyUiSettings(settings){
+    const st={...DEFAULT_UI_SETTINGS,...settings};
+    const theme=UI_THEMES[st.theme]||UI_THEMES.purple;
+    const root=document.documentElement;
+    root.style.setProperty('--bc-bg',theme.bg);root.style.setProperty('--bc-main',theme.main);root.style.setProperty('--bc-sidebar',theme.sidebar);root.style.setProperty('--bc-card',theme.card);root.style.setProperty('--bc-card2',theme.card2);root.style.setProperty('--bc-border',theme.border);root.style.setProperty('--bc-accent',theme.accent);root.style.setProperty('--bc-accent2',theme.accent2);
+    root.style.setProperty('--bc-champion-row-h',(Number(st.sizeChampion)||112)+'px');
+    root.style.setProperty('--bc-player-row-h',(Number(st.sizePlayer)||112)+'px');
+    root.style.setProperty('--bc-most-row-h',(Number(st.sizeMost)||68)+'px');
+    root.style.setProperty('--bc-recent-row-h',(Number(st.sizeRecent)||76)+'px');
+    root.style.setProperty('--bc-match-card-h',(Number(st.sizeMatch)||300)+'px');
+    currentTheme=st.theme;
+}
+function previewUiSettings(){
+    const st={...getAccountSettings(),theme:currentTheme};
+    ['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)st[id]=Number(el.value)});
+    applyUiSettings(st);updateRangeLabels(st);
+}
+function updateRangeLabels(st){['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const v=document.getElementById(id+'Value');if(v)v.innerText=(st[id]||DEFAULT_UI_SETTINGS[id])+'px';})}
+function renderThemeGrid(){const grid=document.getElementById('themeGrid');if(!grid)return;grid.innerHTML=Object.entries(UI_THEMES).map(([key,t])=>`<button class="theme-btn ${currentTheme===key?'active':''}" onclick="selectTheme('${key}')"><div class="theme-swatch" style="background:${t.bg.includes('gradient')?t.bg:`linear-gradient(135deg,${t.card},${t.accent})`}"></div>${t.name}</button>`).join('')}
+function selectTheme(key){currentTheme=key;renderThemeGrid();previewUiSettings()}
+function fillSettingsInputs(){const st=getAccountSettings();currentTheme=st.theme||'purple';['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=st[id]||DEFAULT_UI_SETTINGS[id]});updateRangeLabels(st);renderThemeGrid();const nick=document.getElementById('settingNickname');if(nick)nick.value=currentAccount?.nickname||'';const img=document.getElementById('settingProfileImage');if(img)img.value=st.profile_image||'';const intro=document.getElementById('settingIntro');if(intro)intro.value=st.intro||'';const cu=document.getElementById('changeUsername');if(cu)cu.value=''}
+function renderAccountPage(){const out=document.getElementById('accountLoggedOut'),inn=document.getElementById('accountLoggedIn');if(currentAccount){out.style.display='none';inn.style.display='block';document.getElementById('accountTitle').innerText=`${currentAccount.username} 로그인됨`;document.getElementById('accountSub').innerText=`연결 플레이어: ${currentAccount.nickname||'미설정'}`;fillSettingsInputs()}else{out.style.display='grid';inn.style.display='none'}}
+async function hashPassword(password,salt){const enc=new TextEncoder();const data=enc.encode(password+'|'+salt);const digest=await crypto.subtle.digest('SHA-256',data);return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+function makeSalt(){return crypto.getRandomValues(new Uint32Array(4)).join('-')}
+async function signupAccount(){const username=document.getElementById('signupUsername').value.trim();const password=document.getElementById('signupPassword').value;const nickname=document.getElementById('signupNickname').value.trim();const msg=document.getElementById('signupMessage');if(!username||!password){msg.innerText='아이디/비밀번호를 입력해줘.';return}const salt=makeSalt();const password_hash=await hashPassword(password,salt);const {data,error}=await db.from('bc_accounts').insert({username,password_hash,password_salt:salt,nickname,settings:{...DEFAULT_UI_SETTINGS}}).select('*').single();if(error){console.error(error);msg.innerText='계정 생성 실패: 이미 있는 아이디일 수 있음';return}currentAccount=data;sessionStorage.setItem('bandleAccountId',data.id);applyUiSettings(data.settings);renderAccountPage();msg.innerText='계정 생성 완료'}
+async function loginAccount(){const username=document.getElementById('loginUsername').value.trim();const password=document.getElementById('loginPassword').value;const msg=document.getElementById('loginMessage');const {data,error}=await db.from('bc_accounts').select('*').eq('username',username).maybeSingle();if(error||!data){msg.innerText='계정을 찾지 못함';return}const h=await hashPassword(password,data.password_salt);if(h!==data.password_hash){msg.innerText='비밀번호가 틀림';return}currentAccount=data;sessionStorage.setItem('bandleAccountId',data.id);applyUiSettings(data.settings);renderAccountPage();msg.innerText='로그인 완료'}
+function logoutAccount(){currentAccount=null;sessionStorage.removeItem('bandleAccountId');renderAccountPage()}
+async function restoreAccount(){const id=sessionStorage.getItem('bandleAccountId');if(!id||!db)return;const {data}=await db.from('bc_accounts').select('*').eq('id',id).maybeSingle();if(data){currentAccount=data;applyUiSettings(data.settings||{});}}
+async function saveProfileSettings(){if(!currentAccount)return;const nickname=document.getElementById('settingNickname').value.trim();const profile_image=document.getElementById('settingProfileImage').value.trim();const intro=document.getElementById('settingIntro').value.trim();const settings={...getAccountSettings(),profile_image,intro};const {data,error}=await db.from('bc_accounts').update({nickname,settings,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);document.getElementById('profileSaveMessage').innerText='저장 실패';return}currentAccount=data;if(nickname){await db.from('bc_players').update({profile_image:profile_image||null,intro:intro||null}).eq('nickname',nickname)}document.getElementById('profileSaveMessage').innerText='';await loadPlayers();renderAccountPage()}
+async function saveUiSettings(){if(!currentAccount)return;const st={...getAccountSettings(),theme:currentTheme};['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)st[id]=Number(el.value)});const {data,error}=await db.from('bc_accounts').update({settings:st,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);document.getElementById('uiSaveMessage').innerText='저장 실패';return}currentAccount=data;applyUiSettings(st);document.getElementById('uiSaveMessage').innerText=''}
+async function changeAccountLogin(){if(!currentAccount)return;const newUsername=document.getElementById('changeUsername').value.trim();const currentPw=document.getElementById('currentPassword').value;const newPw=document.getElementById('changePassword').value;const msg=document.getElementById('accountChangeMessage');const check=await hashPassword(currentPw,currentAccount.password_salt);if(check!==currentAccount.password_hash){msg.innerText='현재 비밀번호가 틀림';return}const update={updated_at:new Date().toISOString()};if(newUsername)update.username=newUsername;if(newPw){const salt=makeSalt();update.password_salt=salt;update.password_hash=await hashPassword(newPw,salt)}const {data,error}=await db.from('bc_accounts').update(update).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);msg.innerText='변경 실패';return}currentAccount=data;msg.innerText='';renderAccountPage()}
+function getIntroHtml(p){return p?.intro?`<div class="intro-box">${escapeHtml(p.intro)}</div>`:''}
 function openAdminLogin(btn){
     adminMenuButton = btn;
     showPage("adminLogin", btn);
@@ -878,26 +1069,29 @@ function applySeasonToUI(season){
 
     const currentSeasonName = document.getElementById("currentSeasonName");
     const currentSeasonPeriod = document.getElementById("currentSeasonPeriod");
+    const seasonRemain = document.getElementById("seasonRemain");
 
-    if(currentSeasonName){
-        currentSeasonName.innerText = name;
-    }
-
-    if(currentSeasonPeriod){
-        currentSeasonPeriod.innerText =
-            start && end ? `${start} ~ ${end}` : "기간 미설정";
+    if(currentSeasonName){currentSeasonName.innerText = name;}
+    if(currentSeasonPeriod){currentSeasonPeriod.innerText = start && end ? `${start} ~ ${end}` : "기간 미설정";}
+    if(seasonRemain){
+        if(end){
+            const today = new Date();
+            const endDate = new Date(end + "T23:59:59");
+            const diff = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+            seasonRemain.innerText = diff >= 0 ? `시즌 종료 D-${diff}` : "시즌 종료";
+        }else{
+            seasonRemain.innerText = "시즌 종료 D-?";
+        }
     }
 
     const nameInput = document.getElementById("seasonNameInput");
     const startInput = document.getElementById("seasonStartInput");
     const endInput = document.getElementById("seasonEndInput");
-
     if(nameInput) nameInput.value = name;
     if(startInput) startInput.value = start;
     if(endInput) endInput.value = end;
 }
-loadPlayers();
-loadSeasonSetting();
+restoreAccount().then(()=>{loadPlayers();loadSeasonSetting();});
 </script>
 </body>
 </html>
