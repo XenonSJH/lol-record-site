@@ -312,6 +312,74 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
 .account-basic-card{grid-area:basic}.account-theme-card{grid-area:theme}.account-login-card{grid-area:login}.account-size-card{grid-area:size}
 @media(max-width:1000px){.account-layout-fixed{grid-template-columns:1fr!important;grid-template-areas:"basic" "theme" "login" "size"}}
 
+
+/* ===== home top / hall of fame fix ===== */
+#topPlayers.home-top-grid{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:20px!important;
+}
+.home-top-card{
+    background:var(--bc-card,#1E293B)!important;
+    border:1px solid var(--bc-border,#334155)!important;
+    border-radius:22px;
+    padding:20px;
+    cursor:pointer;
+    transition:.2s;
+    display:grid;
+    grid-template-columns:48px 76px 1fr;
+    gap:14px;
+    align-items:center;
+    min-width:0;
+    min-height:104px;
+}
+.home-top-card:hover{
+    transform:translateY(-3px);
+    border-color:var(--bc-accent,#8B5CF6)!important;
+}
+.home-top-rank{
+    font-size:28px;
+    font-weight:1000;
+    color:#fff;
+    text-align:center;
+}
+.home-top-info{min-width:0}
+.home-top-name{
+    font-size:20px;
+    font-weight:1000;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.home-top-sub{
+    font-size:14px;
+    color:var(--bc-sub,#CBD5E1);
+    margin-top:5px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+#hallOfFame.hof-grid{
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    gap:20px!important;
+}
+.hof-grid .card{
+    min-width:0;
+}
+.hof-grid .card-value{
+    font-size:28px;
+    line-height:1.1;
+}
+@media(max-width:1200px){
+    #topPlayers.home-top-grid{grid-template-columns:1fr!important}
+    #hallOfFame.hof-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:720px){
+    #hallOfFame.hof-grid{grid-template-columns:1fr!important}
+    .home-top-card{grid-template-columns:44px 64px 1fr}
+}
+
 </style>
 </head>
 <body>
@@ -348,7 +416,7 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
     </div>
     <div class="section">
         <h2>🏆 TOP 플레이어</h2>
-        <div id="topPlayers" class="player-grid"></div>
+        <div id="topPlayers" class="home-top-grid"></div>
     </div>
     <div class="section">
         <h2>🏛️ 명예의 전당</h2>
@@ -480,7 +548,7 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
                     <div class="range-row"><span>모스트 챔피언</span><input type="range" min="58" max="120" id="sizeMost" oninput="previewUiSettings()"><b id="sizeMostValue"></b></div>
                     <div class="range-row"><span>최근 전적</span><input type="range" min="66" max="140" id="sizeRecent" oninput="previewUiSettings()"><b id="sizeRecentValue"></b></div>
                     <div class="range-row"><span>내전 기록</span><input type="range" min="260" max="520" id="sizeMatch" oninput="previewUiSettings()"><b id="sizeMatchValue"></b></div>
-                    <button class="sort-btn active" onclick="saveUiSettings()">UI 크기 저장</button>
+                    <button class="sort-btn active" onclick="saveSizeSettings()">UI 크기 저장</button><p class="account-status" id="uiSizeSaveMessage"></p>
                 </div>
             </div>
         </div>
@@ -697,7 +765,18 @@ function renderTopPlayers(data){
     const top=[...data].sort((a,b)=>getPlayerLP(b)-getPlayerLP(a)).slice(0,3);
     const box=document.getElementById('topPlayers');
     if(!box)return;
-    box.innerHTML=top.map((p,i)=>playerRankingRow(p,i+1)).join('');
+    box.className='home-top-grid';
+    box.innerHTML=top.map((p,i)=>`
+        <div class="home-top-card" onclick="openPlayer(${p.id})">
+            <div class="home-top-rank">#${i+1}</div>
+            ${getProfileHtml(p)}
+            <div class="home-top-info">
+                <div class="home-top-name">${escapeHtml(p.nickname)}</div>
+                <div class="home-top-sub">${p.total_games||0}전 ${p.wins||0}승 ${p.losses||0}패 · 승률 ${getWinrate(p)}%</div>
+                <div class="home-top-sub">${getPlayerLP(p)} LP · ${getTier(p)}</div>
+            </div>
+        </div>
+    `).join('');
 }
 function playerRankingRow(p,rank){
     const stats=getPlayerRecordStats(p);
@@ -952,6 +1031,11 @@ function logoutAccount(){currentAccount=null;sessionStorage.removeItem('bandleAc
 async function restoreAccount(){const id=sessionStorage.getItem('bandleAccountId');if(!id||!db)return;const {data}=await db.from('bc_accounts').select('*').eq('id',id).maybeSingle();if(data){currentAccount=data;applyUiSettings(data.settings||{});}}
 async function saveProfileSettings(){if(!currentAccount)return;const nickname=document.getElementById('settingNickname').value.trim();const profile_image=document.getElementById('settingProfileImage').value.trim();const intro=document.getElementById('settingIntro').value.trim();const settings={...getAccountSettings(),profile_image,intro};const {data,error}=await db.from('bc_accounts').update({nickname,settings,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);document.getElementById('profileSaveMessage').innerText='저장 실패';return}currentAccount=data;if(nickname){await db.from('bc_players').update({profile_image:profile_image||null,intro:intro||null}).eq('nickname',nickname)}document.getElementById('profileSaveMessage').innerText='';await loadPlayers();renderAccountPage()}
 async function saveUiSettings(){if(!currentAccount)return;const st={...getAccountSettings(),theme:currentTheme};['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)st[id]=Number(el.value)});const {data,error}=await db.from('bc_accounts').update({settings:st,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);document.getElementById('uiSaveMessage').innerText='저장 실패';return}currentAccount=data;applyUiSettings(st);document.getElementById('uiSaveMessage').innerText=''}
+async function saveSizeSettings(){
+    await saveUiSettings();
+    const msg=document.getElementById('uiSizeSaveMessage');
+    if(msg) msg.innerText='';
+}
 async function changeAccountLogin(){if(!currentAccount)return;const newUsername=document.getElementById('changeUsername').value.trim();const currentPw=document.getElementById('currentPassword').value;const newPw=document.getElementById('changePassword').value;const msg=document.getElementById('accountChangeMessage');const check=await hashPassword(currentPw,currentAccount.password_salt);if(check!==currentAccount.password_hash){msg.innerText='현재 비밀번호가 틀림';return}const update={updated_at:new Date().toISOString()};if(newUsername)update.username=newUsername;if(newPw){const salt=makeSalt();update.password_salt=salt;update.password_hash=await hashPassword(newPw,salt)}const {data,error}=await db.from('bc_accounts').update(update).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);msg.innerText='변경 실패';return}currentAccount=data;msg.innerText='';renderAccountPage()}
 function getIntroHtml(p){return p?.intro?`<div class="intro-box">${escapeHtml(p.intro)}</div>`:''}
 function openAdminLogin(btn){
