@@ -640,8 +640,8 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     text-align:left;
 }
 .detail-match-row{
-    grid-template-columns:68px minmax(170px,1.1fr) minmax(92px,.7fr) minmax(86px,.62fr) minmax(74px,.55fr) minmax(78px,.58fr)!important;
-    gap:12px!important;
+    grid-template-columns:62px minmax(145px,.88fr) minmax(82px,.58fr) minmax(76px,.52fr) minmax(112px,.78fr) minmax(72px,.48fr)!important;
+    gap:10px!important;
 }
 .detail-match-row .plain-stat,
 .detail-match-row .plain-stat.sub{
@@ -809,6 +809,20 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     gap:10px;
     flex-wrap:wrap;
 }
+.record-register-card{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+.record-id-row{
+    display:grid;
+    grid-template-columns:minmax(260px,1fr) auto auto;
+    gap:10px;
+    align-items:center;
+}
+.record-id-row .search-input{
+    width:100%;
+}
 .record-preview{
     display:flex;
     flex-direction:column;
@@ -839,6 +853,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 }
 @media(max-width:900px){
     .record-ui-grid{grid-template-columns:1fr}
+    .record-id-row{grid-template-columns:1fr}
 }
 
 @media(max-width:900px){
@@ -948,32 +963,14 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 </div>
 <div id="recordDisabled" class="page">
     <h2 style="margin-bottom:20px;">🎯 전적등록</h2>
-    <div class="record-ui-grid">
-        <div class="card">
-            <h2>전적 입력</h2>
-            <br>
-            <div class="record-form">
-                <select class="search-input" id="recordWinnerInput" onchange="updateRecordPreview()">
-                    <option value="">승리팀 선택</option>
-                    <option value="BLUE">BLUE 승리</option>
-                    <option value="RED">RED 승리</option>
-                </select>
-                <textarea class="search-input" id="recordBlueTeamInput" placeholder="블루팀 조합 입력&#10;예: TOP 가렌 - Xenon&#10;JUG 리 신 - Player2" oninput="updateRecordPreview()"></textarea>
-                <textarea class="search-input" id="recordRedTeamInput" placeholder="레드팀 조합 입력&#10;예: TOP 말파이트 - Player6&#10;JUG 바이 - Player7" oninput="updateRecordPreview()"></textarea>
-                <input class="search-input" id="recordBlueBanInput" placeholder="블루팀 밴 입력 예: 야스오, 요네, 제드" oninput="updateRecordPreview()">
-                <input class="search-input" id="recordRedBanInput" placeholder="레드팀 밴 입력 예: 티모, 유미, 샤코" oninput="updateRecordPreview()">
-                <div class="record-actions">
-                    <button class="sort-btn active" onclick="fakeRecordSubmit()">전적 등록</button>
-                    <button class="sort-btn" onclick="cancelRecordForm()">등록 취소</button>
-                </div>
-                <p class="record-hint" id="recordFormMessage">지금은 UI 미리보기만 지원합니다. 실제 저장은 연결되어 있지 않습니다.</p>
-            </div>
+    <div class="card record-register-card">
+        <div class="record-id-row">
+            <input class="search-input" id="recordMatchIdInput" placeholder="매치 ID 입력" oninput="updateRecordPreview()" onkeydown="if(event.key==='Enter')fakeRecordSubmit()">
+            <button class="sort-btn active" onclick="fakeRecordSubmit()">전적 등록</button>
+            <button class="sort-btn" onclick="cancelRecordForm()">등록 취소</button>
         </div>
-        <div class="card">
-            <h2>등록 미리보기</h2>
-            <br>
-            <div class="record-preview" id="recordPreviewBox"></div>
-        </div>
+        <p class="record-hint" id="recordFormMessage">매치 ID를 입력하면 아래에 등록될 매치 내용이 미리 표시됩니다. 지금은 UI만 연결되어 있습니다.</p>
+        <div class="record-preview" id="recordPreviewBox"></div>
     </div>
 </div>
 <div id="bandleBot" class="page">
@@ -1783,40 +1780,36 @@ function recordPreviewSection(title,body){
     return `<div class="record-preview-section"><div class="record-preview-title">${escapeHtml(title)}</div><div class="record-preview-lines">${escapeHtml(body||'입력 없음')}</div></div>`;
 }
 
-function splitRecordList(value){
-    return String(value||'').split(/\n|,/).map(v=>v.trim()).filter(Boolean).join('\n');
-}
-
 function updateRecordPreview(){
     const box=document.getElementById('recordPreviewBox');
     if(!box)return;
-    const winner=document.getElementById('recordWinnerInput')?.value||'';
-    const blueTeam=splitRecordList(document.getElementById('recordBlueTeamInput')?.value);
-    const redTeam=splitRecordList(document.getElementById('recordRedTeamInput')?.value);
-    const blueBan=splitRecordList(document.getElementById('recordBlueBanInput')?.value);
-    const redBan=splitRecordList(document.getElementById('recordRedBanInput')?.value);
+    const matchId=(document.getElementById('recordMatchIdInput')?.value||'').trim();
+    if(!matchId){
+        box.innerHTML=recordPreviewSection('매치 내용','매치 ID를 입력하면 이곳에 등록될 경기 정보가 표시됩니다.');
+        return;
+    }
 
     box.innerHTML=[
-        recordPreviewSection('승리팀',winner?`${winner} 승리`:'승리팀 선택 안 됨'),
-        recordPreviewSection('블루팀 조합',blueTeam),
-        recordPreviewSection('레드팀 조합',redTeam),
-        recordPreviewSection('블루팀 밴',blueBan),
-        recordPreviewSection('레드팀 밴',redBan)
+        recordPreviewSection('매치 ID',matchId),
+        recordPreviewSection('승리팀','매치 데이터를 불러오면 BLUE / RED 승리 결과가 표시됩니다.'),
+        recordPreviewSection('블루팀 조합','매치 데이터를 불러오면 블루팀 TOP, JUG, MID, ADC, SUP 조합이 표시됩니다.'),
+        recordPreviewSection('레드팀 조합','매치 데이터를 불러오면 레드팀 TOP, JUG, MID, ADC, SUP 조합이 표시됩니다.'),
+        recordPreviewSection('블루팀 밴','매치 데이터를 불러오면 블루팀 밴 목록이 표시됩니다.'),
+        recordPreviewSection('레드팀 밴','매치 데이터를 불러오면 레드팀 밴 목록이 표시됩니다.')
     ].join('');
 }
 
 function fakeRecordSubmit(){
     updateRecordPreview();
-    flashMessage('recordFormMessage','UI 미리보기만 완료되었습니다. 실제 저장은 아직 연결되어 있지 않습니다.');
+    const matchId=(document.getElementById('recordMatchIdInput')?.value||'').trim();
+    flashMessage('recordFormMessage',matchId?'매치 ID 기준 등록 UI입니다. 실제 저장은 아직 연결되어 있지 않습니다.':'매치 ID를 입력해주세요.');
 }
 
 function cancelRecordForm(){
-    ['recordWinnerInput','recordBlueTeamInput','recordRedTeamInput','recordBlueBanInput','recordRedBanInput'].forEach(id=>{
-        const el=document.getElementById(id);
-        if(el)el.value='';
-    });
+    const el=document.getElementById('recordMatchIdInput');
+    if(el)el.value='';
     updateRecordPreview();
-    flashMessage('recordFormMessage','등록 입력을 취소했습니다.');
+    flashMessage('recordFormMessage','등록을 취소했습니다.');
 }
 
 async function openBandleBot(btn){
