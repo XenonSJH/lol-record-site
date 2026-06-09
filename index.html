@@ -381,6 +381,17 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
 }
 
 </style>
+
+<style id="bandle_patch_v3">
+.kda-ratio{color:var(--bc-accent)!important}
+.player-card:hover,.champion-row:hover,.match-row:hover,.match-card:hover,.ranking-row:hover{
+ border-color:var(--bc-accent)!important;
+}
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:var(--bc-sidebar)}
+::-webkit-scrollbar-thumb{background:var(--bc-accent);border-radius:999px}
+</style>
+
 </head>
 <body>
 <div class="sidebar">
@@ -543,8 +554,8 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
             <div class="account-card account-size-card">
                 <h2>UI 크기 조절</h2><br>
                 <div class="form-grid">
-                    <div class="range-row"><span>챔피언 UI 높이</span><input type="range" min="92" max="180" id="sizeChampion" oninput="previewUiSettings()"><b id="sizeChampionValue"></b></div>
-                    <div class="range-row"><span>플레이어 UI 높이</span><input type="range" min="92" max="180" id="sizePlayer" oninput="previewUiSettings()"><b id="sizePlayerValue"></b></div>
+                    <div class="range-row"><span>챔피언</span><input type="range" min="92" max="180" id="sizeChampion" oninput="previewUiSettings()"><b id="sizeChampionValue"></b></div>
+                    <div class="range-row"><span>플레이어</span><input type="range" min="92" max="180" id="sizePlayer" oninput="previewUiSettings()"><b id="sizePlayerValue"></b></div>
                     <div class="range-row"><span>모스트 챔피언</span><input type="range" min="58" max="120" id="sizeMost" oninput="previewUiSettings()"><b id="sizeMostValue"></b></div>
                     <div class="range-row"><span>최근 전적</span><input type="range" min="66" max="140" id="sizeRecent" oninput="previewUiSettings()"><b id="sizeRecentValue"></b></div>
                     <div class="range-row"><span>내전 기록</span><input type="range" min="260" max="520" id="sizeMatch" oninput="previewUiSettings()"><b id="sizeMatchValue"></b></div>
@@ -952,7 +963,7 @@ function openChampionDetail(name,lane='ALL'){
 
 async function openPlayer(id){
     const p=playersCache.find(x=>Number(x.id)===Number(id));if(!p)return;
-    document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}${getIntroHtml(p)}<h1>${escapeHtml(p.nickname)}</h1><br>${getTierBadge(p)}<p class="stat">⚔️ ${p.total_games}전</p><p class="stat">🏆 ${p.wins}승 ${p.losses}패</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p></div><div><div class="card"><h2>모스트 챔피언</h2><br><div class="detail-loading">전적 데이터를 불러오는 중...</div></div><br><div class="card"><h2>최근 전적</h2><br><div class="detail-loading">최근 전적을 불러오는 중...</div></div></div></div>`;
+    document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}<h1>${escapeHtml(p.nickname)}</h1>${getIntroHtml(p)}<br>${getTierBadge(p)}<p class="stat">⚔️ ${p.total_games}전</p><p class="stat">🏆 ${p.wins}승 ${p.losses}패</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p></div><div><div class="card"><h2>모스트 챔피언</h2><br><div class="detail-loading">전적 데이터를 불러오는 중...</div></div><br><div class="card"><h2>최근 전적</h2><br><div class="detail-loading">최근 전적을 불러오는 중...</div></div></div></div>`;
     showPage('playerDetail');await loadPlayerDetail(p);
 }
 async function loadPlayerDetail(p){
@@ -960,7 +971,7 @@ async function loadPlayerDetail(p){
     if(error){console.error(error);return renderPlayerDetailError(p)}renderPlayerDetail(p,data||[])
 }
 function renderPlayerDetail(p,records){
-    document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}${getIntroHtml(p)}<h1>${escapeHtml(p.nickname)}</h1><br>${getTierBadge(p)}<p class="stat">⚔️ ${p.total_games}전</p><p class="stat">🏆 ${p.wins}승 ${p.losses}패</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p><br><p class="stat">승리 시 예상 LP : +${getWinPointChange(p,'win')}</p><p class="stat">패배 시 예상 LP : ${getWinPointChange(p,'lose')}</p></div><div><div class="card"><h2>모스트 챔피언</h2><br>${buildMostChampions(records)}</div><br><div class="card"><h2>최근 전적</h2><br>${buildRecentMatches(p,records)}</div></div></div>`;
+    document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}<h1>${escapeHtml(p.nickname)}</h1>${getIntroHtml(p)}<br>${getTierBadge(p)}<p class="stat">⚔️ ${p.total_games}전</p><p class="stat">🏆 ${p.wins}승 ${p.losses}패</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p><br><p class="stat">승리 시 예상 LP : +${getWinPointChange(p,'win')}</p><p class="stat">패배 시 예상 LP : ${getWinPointChange(p,'lose')}</p></div><div><div class="card"><h2>모스트 챔피언</h2><br>${buildMostChampions(records)}</div><br><div class="card"><h2>최근 전적</h2><br>${buildRecentMatches(p,records)}</div></div></div>`;
 }
 function buildMostChampions(records){
     if(!records.length)return '<div class="empty-box">아직 전적 데이터가 없습니다.</div>';
@@ -1029,14 +1040,14 @@ async function signupAccount(){const username=document.getElementById('signupUse
 async function loginAccount(){const username=document.getElementById('loginUsername').value.trim();const password=document.getElementById('loginPassword').value;const msg=document.getElementById('loginMessage');const {data,error}=await db.from('bc_accounts').select('*').eq('username',username).maybeSingle();if(error||!data){msg.innerText='계정을 찾지 못함';return}const h=await hashPassword(password,data.password_salt);if(h!==data.password_hash){msg.innerText='비밀번호가 틀림';return}currentAccount=data;sessionStorage.setItem('bandleAccountId',data.id);applyUiSettings(data.settings);renderAccountPage();msg.innerText='로그인 완료'}
 function logoutAccount(){currentAccount=null;sessionStorage.removeItem('bandleAccountId');renderAccountPage()}
 async function restoreAccount(){const id=sessionStorage.getItem('bandleAccountId');if(!id||!db)return;const {data}=await db.from('bc_accounts').select('*').eq('id',id).maybeSingle();if(data){currentAccount=data;applyUiSettings(data.settings||{});}}
-async function saveProfileSettings(){if(!currentAccount)return;const nickname=document.getElementById('settingNickname').value.trim();const profile_image=document.getElementById('settingProfileImage').value.trim();const intro=document.getElementById('settingIntro').value.trim();const settings={...getAccountSettings(),profile_image,intro};const {data,error}=await db.from('bc_accounts').update({nickname,settings,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);document.getElementById('profileSaveMessage').innerText='저장 실패';return}currentAccount=data;if(nickname){await db.from('bc_players').update({profile_image:profile_image||null,intro:intro||null}).eq('nickname',nickname)}document.getElementById('profileSaveMessage').innerText='';await loadPlayers();renderAccountPage()}
+async function saveProfileSettings(){if(!currentAccount)return;const nickname=document.getElementById('settingNickname').value.trim();const profile_image=document.getElementById('settingProfileImage').value.trim();const intro=document.getElementById('settingIntro').value.trim();const settings={...getAccountSettings(),profile_image,intro};const {data,error}=await db.from('bc_accounts').update({nickname,settings,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);document.getElementById('profileSaveMessage').innerText='저장 실패';return}currentAccount=data;if(nickname){await db.from('bc_players').update({profile_image:profile_image||null,intro:intro||null}).eq('nickname',nickname)}document.getElementById('profileSaveMessage').innerText='저장 완료';await loadPlayers();renderAccountPage()}
 async function saveUiSettings(){if(!currentAccount)return;const st={...getAccountSettings(),theme:currentTheme};['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)st[id]=Number(el.value)});const {data,error}=await db.from('bc_accounts').update({settings:st,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);document.getElementById('uiSaveMessage').innerText='저장 실패';return}currentAccount=data;applyUiSettings(st);document.getElementById('uiSaveMessage').innerText=''}
 async function saveSizeSettings(){
     await saveUiSettings();
     const msg=document.getElementById('uiSizeSaveMessage');
-    if(msg) msg.innerText='';
+    if(msg) msg.innerText='저장 완료';
 }
-async function changeAccountLogin(){if(!currentAccount)return;const newUsername=document.getElementById('changeUsername').value.trim();const currentPw=document.getElementById('currentPassword').value;const newPw=document.getElementById('changePassword').value;const msg=document.getElementById('accountChangeMessage');const check=await hashPassword(currentPw,currentAccount.password_salt);if(check!==currentAccount.password_hash){msg.innerText='현재 비밀번호가 틀림';return}const update={updated_at:new Date().toISOString()};if(newUsername)update.username=newUsername;if(newPw){const salt=makeSalt();update.password_salt=salt;update.password_hash=await hashPassword(newPw,salt)}const {data,error}=await db.from('bc_accounts').update(update).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);msg.innerText='변경 실패';return}currentAccount=data;msg.innerText='';renderAccountPage()}
+async function changeAccountLogin(){if(!currentAccount)return;const newUsername=document.getElementById('changeUsername').value.trim();const currentPw=document.getElementById('currentPassword').value;const newPw=document.getElementById('changePassword').value;const msg=document.getElementById('accountChangeMessage');const check=await hashPassword(currentPw,currentAccount.password_salt);if(check!==currentAccount.password_hash){msg.innerText='현재 비밀번호가 틀림';return}const update={updated_at:new Date().toISOString()};if(newUsername)update.username=newUsername;if(newPw){const salt=makeSalt();update.password_salt=salt;update.password_hash=await hashPassword(newPw,salt)}const {data,error}=await db.from('bc_accounts').update(update).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);msg.innerText='변경 실패';return}currentAccount=data;msg.innerText='저장 완료';renderAccountPage()}
 function getIntroHtml(p){return p?.intro?`<div class="intro-box">${escapeHtml(p.intro)}</div>`:''}
 function openAdminLogin(btn){
     adminMenuButton = btn;
@@ -1156,5 +1167,34 @@ function applySeasonToUI(season){
 }
 restoreAccount().then(()=>{loadPlayers();loadSeasonSetting();});
 </script>
+
+<script>
+document.addEventListener('input',function(e){
+ const ids=['profileSaveMessage','uiSaveMessage','uiSizeSaveMessage','accountChangeMessage'];
+ ids.forEach(id=>{
+   const el=document.getElementById(id);
+   if(el && el.innerText.trim()){
+      el.innerText='';
+      localStorage.removeItem('saved_'+id);
+   }
+ });
+});
+const _setText=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');
+function restoreSaveFlags(){
+ ['profileSaveMessage','uiSaveMessage','uiSizeSaveMessage','accountChangeMessage'].forEach(id=>{
+   const el=document.getElementById(id);
+   const v=localStorage.getItem('saved_'+id);
+   if(el && v) el.innerText=v;
+ });
+}
+window.addEventListener('load',restoreSaveFlags);
+setInterval(()=>{
+ ['profileSaveMessage','uiSaveMessage','uiSizeSaveMessage','accountChangeMessage'].forEach(id=>{
+   const el=document.getElementById(id);
+   if(el && el.innerText.trim()) localStorage.setItem('saved_'+id,el.innerText);
+ });
+},1000);
+</script>
+
 </body>
 </html>
