@@ -111,6 +111,57 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
 .team-card{background:#111827;border:1px solid #334155;border-radius:18px;padding:18px}
 .team-title{font-size:20px;font-weight:900;margin-bottom:14px}
 .record-row{display:grid;grid-template-columns:44px 1fr 145px 100px 90px;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #334155;cursor:pointer}
+.record-row{
+    grid-template-columns:58px minmax(180px,1fr) 120px 70px 90px 90px;
+}
+
+.record-main-name{
+    font-size:16px;
+    font-weight:900;
+}
+
+.record-sub{
+    color:#94A3B8;
+    font-size:13px;
+    margin-top:3px;
+}
+
+.record-kda-line,
+.record-ratio,
+.record-kp{
+    color:white;
+    font-weight:900;
+    text-align:center;
+    white-space:nowrap;
+}
+
+.record-lp{
+    text-align:right;
+    font-weight:900;
+    white-space:nowrap;
+}
+
+.record-champion-wrap{
+    position:relative;
+    width:38px;
+    height:38px;
+}
+
+.record-tier-badge{
+    position:absolute;
+    left:-7px;
+    top:-7px;
+    min-width:22px;
+    height:22px;
+    padding:0 5px;
+    border-radius:999px;
+    font-size:10px;
+    font-weight:1000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:5;
+}
 .record-row:hover{background:#1E293B}
 .record-row:last-child{border-bottom:none}
 @media(max-width:900px){.sidebar{width:210px}.cards,.hof-grid{grid-template-columns:1fr}.team-grid,.detail-layout{grid-template-columns:1fr}.match-card{min-width:0}.record-row{grid-template-columns:44px 1fr;gap:10px}.match-row{grid-template-columns:1fr}.comp-row{grid-template-columns:1fr 44px 1fr}}
@@ -865,6 +916,37 @@ function mainLaneForChampion(name){const lanes=championStatsCache.filter(c=>c.ch
 function getChampionTier(c){if(c.games<3)return '6';const s=Number(c.honey_score||0);if(s>=85)return 'OP';if(s>=72)return '1';if(s>=60)return '2';if(s>=48)return '3';if(s>=36)return '4';return '5'}
 function getChampionTierRank(c){const t=getChampionTier(c);return {'OP':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6}[t]??9}
 function getChampionTierClass(t){return t==='OP'?'champ-tier-op':`champ-tier-${t}`}
+function getChampionStatByLane(champion, lane){
+    const targetLane = normalizeLane(lane);
+
+    return championStatsCache.find(c =>
+        c.champion_name === champion &&
+        normalizeLane(c.lane) === targetLane
+    );
+}
+
+function champTierBadge(champion, lane){
+    const stat = getChampionStatByLane(champion, lane);
+
+    if(!stat) return '';
+
+    const tier = getChampionTier(stat);
+
+    return `
+        <span class="record-tier-badge ${getChampionTierClass(tier)}">
+            ${tier}
+        </span>
+    `;
+}
+
+function recordChampIcon(champion, lane){
+    return `
+        <div class="record-champion-wrap">
+            ${champIcon(champion,'champion-icon small',true)}
+            ${champTierBadge(champion,lane)}
+        </div>
+    `;
+}
 function getChampionWinrate(c){return c.games?c.wins/c.games*100:0}
 function getChampionAvgKP(c){return c.games?Number(c.kp||0)/c.games:0}
 function getChampionAvgScore(c){return c.games?Number(c.score||0)/c.games:0}
@@ -874,7 +956,7 @@ function avgKdaText(c){if(!c.games)return '0/0/0';return `${(c.kills/c.games).to
 async function loadMatches(){
     if(!db)return;if(!playersCache.length)await loadPlayers();await loadChampionJson();
     const container=document.getElementById('matchesContainer');container.innerHTML='<div class="loading">내전 기록 불러오는 중...</div>';
-    const {data:matches,error:matchError}=await db.from('bc_matches').select('*').order('played_at',{ascending:false});
+    const {data:matches,error:matchError}=await db.from('bc_matches').select('*').order('id',{ascending:false});
     if(matchError){console.error(matchError);container.innerHTML='<div class="empty-box">내전 기록을 불러오지 못했습니다.</div>';return}
     if(!matches.length){container.innerHTML='<div class="empty-box">아직 내전 기록이 없습니다.</div>';return}
     const ids=matches.map(m=>m.id);
@@ -883,7 +965,22 @@ async function loadMatches(){
     matchesCache=matches.map(m=>({...m,records:(records||[]).filter(r=>r.match_id===m.id)}));renderMatches(matchesCache);
 }
 function renderMatches(matches){
-    document.getElementById('matchesContainer').innerHTML=matches.map(m=>`<div class="match-card" onclick="openMatch(${m.id})"><div class="match-card-top"><div class="match-code">${escapeHtml(m.match_code||'MATCH-'+m.id)}</div></div><div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div>${buildCompRows(m.records)}</div>`).join('');
+    document.getElementById('matchesContainer').innerHTML=matches.map(m=>`
+        <div class="match-card" onclick="openMatch(${m.id})">
+            <div class="match-card-top">
+                <div>
+                    <div class="match-code">${escapeHtml(m.match_code||'MATCH-'+m.id)}</div>
+                    <div class="match-date">${formatDate(m.played_at)}</div>
+                </div>
+            </div>
+            <div class="score-box">
+                <span class="blue">BLUE ${m.blue_score??0}</span>
+                <span>:</span>
+                <span class="red">${m.red_score??0} RED</span>
+            </div>
+            ${buildCompRows(m.records)}
+        </div>
+    `).join('');
 }
 function buildCompRows(records){
     const blue=records.filter(r=>r.team==='blue').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
@@ -919,7 +1016,29 @@ function openMatch(id){
 }
 function buildDetailRecords(records){
     if(!records.length)return '<div class="empty-box">기록 없음</div>';
-    return records.map(r=>{const p=playersCache.find(x=>x.id===r.player_id);const ratio=kdaRatio(r).toFixed(1);const lp=getWinPointChange(p||{},r.result);const lpText=lp>=0?`+${lp}`:`${lp}`;return `<div class="record-row" onclick="openPlayer(${r.player_id})">${champIcon(r.champion_name,'champion-icon small',true)}<div><strong>${escapeHtml(p?.nickname||'알 수 없음')}</strong><div class="champion-sub">${escapeHtml(r.champion_name||'-')} · ${normalizeLane(r.lane)}</div></div><div class="kda-line"><span>${r.kills||0}/${r.deaths||0}/${r.assists||0}</span><span class="kda-ratio">${ratio}</span></div><div>킬관여율 ${r.kp??0}%</div><div class="${lp>=0?'point-plus':'point-minus'}">${lpText} LP</div></div>`}).join('');
+
+    return records.map(r=>{
+        const p=playersCache.find(x=>x.id===r.player_id);
+        const ratio=kdaRatio(r).toFixed(2);
+        const lp=getWinPointChange(p||{},r.result);
+        const lpText=lp>=0?`+${lp}`:`${lp}`;
+
+        return `
+            <div class="record-row" onclick="openPlayer(${r.player_id})">
+                ${recordChampIcon(r.champion_name,r.lane)}
+
+                <div>
+                    <div class="record-main-name">${escapeHtml(p?.nickname||'알 수 없음')}</div>
+                    <div class="record-sub">${escapeHtml(r.champion_name||'-')} · ${normalizeLane(r.lane)}</div>
+                </div>
+
+                <div class="record-kda-line">${r.kills||0}/${r.deaths||0}/${r.assists||0}</div>
+                <div class="record-ratio">${ratio}</div>
+                <div class="record-kp">${r.kp??0}%</div>
+                <div class="record-lp ${lp>=0?'point-plus':'point-minus'}">${lpText} LP</div>
+            </div>
+        `;
+    }).join('');
 }
 function kdaRatio(r){return (Number(r.kills||0)+Number(r.assists||0))/Math.max(1,Number(r.deaths||0))}
 
