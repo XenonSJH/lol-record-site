@@ -602,6 +602,127 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 @media(max-width:1200px){.theme-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:900px){#adminPage.page.active{grid-template-columns:1fr}}
 
+/* ===== 2026-06-10 detail overflow / match layout fix ===== */
+#playerDetail.page.active,
+#championDetail.page.active,
+#matchDetail.page.active{
+    overflow:auto!important;
+    padding-bottom:42px;
+}
+
+#playerDetail .detail-layout,
+#championDetail .detail-layout{
+    grid-template-columns:minmax(320px,360px) minmax(0,1fr)!important;
+    align-items:start;
+}
+
+#playerDetail .detail-layout>div,
+#championDetail .detail-layout>div,
+#playerDetail .card,
+#championDetail .card,
+#matchDetail .card,
+#matchDetail .team-card{
+    min-width:0;
+}
+
+.player-most-list{
+    max-width:100%;
+    overflow:auto!important;
+    padding-bottom:10px;
+}
+
+.player-most-list .champion-row{
+    grid-template-columns:minmax(210px,1.35fr) minmax(120px,.72fr) minmax(92px,.55fr) minmax(130px,.72fr) minmax(165px,.88fr)!important;
+    min-width:780px;
+    gap:20px!important;
+}
+
+.player-most-list .plain-stat{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.player-most-list .plain-stat.sub{
+    white-space:normal!important;
+    line-height:1.35;
+}
+
+.champion-detail-card .kda-line{
+    grid-template-columns:138px 92px!important;
+    gap:42px!important;
+}
+
+.champion-detail-card .kda-line>span:first-child{
+    min-width:138px!important;
+}
+
+#matchesContainer.player-grid{
+    grid-template-columns:repeat(auto-fit,minmax(520px,1fr))!important;
+    gap:18px!important;
+    align-items:start!important;
+}
+
+#matchesContainer .match-card{
+    min-width:0!important;
+    min-height:auto!important;
+    height:auto!important;
+    overflow:visible!important;
+    transform:none!important;
+}
+
+#matchesContainer .match-card:hover{
+    transform:none!important;
+}
+
+#matchesContainer .comp-list{
+    gap:8px!important;
+    overflow:visible!important;
+}
+
+#matchesContainer .comp-row{
+    grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr)!important;
+    min-height:58px;
+    overflow:hidden;
+}
+
+#matchesContainer .comp-side{
+    min-width:0;
+}
+
+#matchesContainer .comp-side .champion-icon.small{
+    width:42px!important;
+    height:42px!important;
+}
+
+#matchesContainer .comp-title,
+#matchesContainer .comp-sub{
+    max-width:100%;
+}
+
+#matchDetail .team-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+
+#matchDetail .record-row{
+    grid-template-columns:52px minmax(72px,1fr) 82px 54px 66px 64px!important;
+    gap:7px!important;
+}
+
+@media(max-width:900px){
+    #playerDetail .detail-layout,
+    #championDetail .detail-layout,
+    #matchDetail .team-grid{
+        grid-template-columns:1fr!important;
+    }
+    .player-most-list .champion-row{
+        min-width:680px;
+    }
+    #matchesContainer.player-grid{
+        grid-template-columns:1fr!important;
+    }
+}
+
 </style>
 </head>
 <body>
