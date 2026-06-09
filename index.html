@@ -452,7 +452,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 .plain-stat.sub{color:#CBD5E1;font-size:14px}
 .champion-top-row{
     display:grid!important;
-    grid-template-columns:minmax(140px,1.2fr) minmax(135px,1fr) minmax(120px,.8fr) minmax(115px,.8fr) minmax(120px,.85fr);
+    grid-template-columns:56px minmax(140px,1.2fr) minmax(135px,1fr) minmax(120px,.8fr) minmax(115px,.8fr) minmax(120px,.85fr);
     align-items:center;
     gap:14px;
 }
@@ -580,6 +580,80 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 .team-slot-lane{font-weight:1000;color:#EDE9FE}
 .team-slot-name{font-weight:1000;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .team-slot-sub{color:#CBD5E1;font-size:13px;font-weight:800}
+#champions .toolbar{
+    flex-direction:row!important;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px!important;
+}
+#champions .toolbar-line{
+    display:contents!important;
+}
+#champions #championSearch{
+    width:260px;
+    min-width:220px;
+}
+#champions [data-champion-lane="SUP"]{
+    position:relative;
+    margin-right:18px;
+}
+#champions [data-champion-lane="SUP"]::after{
+    content:"|";
+    position:absolute;
+    right:-14px;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--bc-sub,#CBD5E1);
+    font-weight:1000;
+    pointer-events:none;
+}
+.comp-text{
+    gap:3px!important;
+}
+.comp-duo{
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    gap:1px!important;
+}
+.comp-side.red-side .comp-duo{
+    align-items:flex-end!important;
+}
+.comp-title{
+    font-size:15px!important;
+}
+.comp-sub{
+    font-size:12px!important;
+}
+.most-rank{
+    color:#EDE9FE;
+    font-size:18px;
+    font-weight:1000;
+    text-align:center;
+    white-space:nowrap;
+}
+.champion-top-row .most-rank{
+    text-align:left;
+}
+.player-most-list .plain-stat.kp-stack{
+    white-space:normal!important;
+    line-height:1.35;
+    text-align:left;
+}
+.detail-match-row{
+    grid-template-columns:68px minmax(170px,1.1fr) minmax(92px,.7fr) minmax(86px,.62fr) minmax(74px,.55fr) minmax(78px,.58fr)!important;
+    gap:12px!important;
+}
+.detail-match-row .plain-stat,
+.detail-match-row .plain-stat.sub{
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.match-detail-date{
+    color:#CBD5E1;
+    font-size:15px;
+    font-weight:800;
+    margin-top:6px;
+}
 #adminPage.page.active{overflow:auto!important;padding-bottom:40px;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:16px}
 #adminPage>br{display:none}
 #adminPage>h2{grid-column:1/-1}
@@ -632,7 +706,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 }
 
 .player-most-list .champion-row{
-    grid-template-columns:minmax(210px,1.35fr) minmax(120px,.72fr) minmax(92px,.55fr) minmax(130px,.72fr) minmax(165px,.88fr)!important;
+    grid-template-columns:54px minmax(210px,1.35fr) minmax(120px,.72fr) minmax(92px,.55fr) minmax(130px,.72fr) minmax(112px,.62fr)!important;
     min-width:780px;
     gap:20px!important;
 }
@@ -1132,8 +1206,15 @@ function buildPlayerRecordStats(records){
         s.kp+=Number(r.kp||0);
 
         const champ=r.champion_name||"알 수 없음";
-        if(!s.champs[champ]) s.champs[champ]=0;
-        s.champs[champ]++;
+        if(!s.champs[champ]) s.champs[champ]={games:0,wins:0,kills:0,deaths:0,assists:0,kp:0,score:0};
+        const c=s.champs[champ];
+        c.games++;
+        if(r.result==='win')c.wins++;
+        c.kills+=Number(r.kills||0);
+        c.deaths+=Number(r.deaths||0);
+        c.assists+=Number(r.assists||0);
+        c.kp+=Number(r.kp||0);
+        c.score+=Number(r.score||0);
     });
 
     Object.values(map).forEach(s=>{
@@ -1143,7 +1224,7 @@ function buildPlayerRecordStats(records){
         s.kdaRatio=(s.kills+s.assists)/Math.max(1,s.deaths);
         s.avgKP=s.games?s.kp/s.games:0;
         s.topChamps=Object.entries(s.champs)
-            .sort((a,b)=>b[1]-a[1])
+            .sort((a,b)=>champPerformanceScore(b[1])-champPerformanceScore(a[1]))
             .slice(0,3)
             .map(([name])=>name);
     });
@@ -1299,6 +1380,16 @@ function buildChampionStats(records,storedMap={}){
     return [...Object.values(total),...Object.values(map)];
 }
 function calculateHoneyLocal(c){const wr=getChampionWinrate(c), avgS=getChampionAvgScore(c), kda=getChampionKdaRatio(c);const kdaScore=Math.min(kda/5*100,100);const sample=Math.min(1,c.games/10);return Math.round((wr*.45+avgS*.30+kdaScore*.25)*sample*10)/10}
+function champPerformanceScore(c){
+    const games=Number(c.games||0);
+    if(!games)return 0;
+    const wr=Number(c.wins||0)/games*100;
+    const kda=getKdaRatioFromTotals(c.kills,c.deaths,c.assists);
+    const kp=Number(c.kp||0)/games;
+    const avgScore=Number(c.score||0)/games;
+    const sample=Math.min(1,games/5);
+    return (wr*.38+Math.min(kda/5*100,100)*.30+kp*.22+avgScore*.10)*sample;
+}
 function renderChampionsView(){
     const q=(document.getElementById('championSearch')?.value||'').toLowerCase().trim();
     let data=championStatsCache.filter(c=>(championLaneKey==='ALL'?c.lane!=='ALL':c.lane===championLaneKey)&&(!q||String(c.champion_name||'').toLowerCase().includes(q)));
@@ -1457,7 +1548,7 @@ function buildCompRows(records){
             <div class="lane-pill">${l}</div>
             <div class="comp-side red-side">
                 <div class="comp-text">
-                    <div class="comp-duo"><span class="comp-title">${r?escapeHtml(playerNameById(r.player_id)):''}</span><span class="comp-sub">${escapeHtml(r?.champion_name||'-')}</span></div>
+                    <div class="comp-duo"><span class="comp-title">${escapeHtml(r?.champion_name||'-')}</span><span class="comp-sub">${r?escapeHtml(playerNameById(r.player_id)):''}</span></div>
                 </div>
                 ${r?champIcon(r.champion_name,'champion-icon small',true):''}
             </div>
@@ -1469,7 +1560,7 @@ function openMatch(id){
     const m=matchesCache.find(x=>Number(x.id)===Number(id));if(!m)return;
     const blue=m.records.filter(r=>r.team==='blue').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
     const red=m.records.filter(r=>r.team==='red').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
-    document.getElementById('matchDetailContent').innerHTML=`<div class="section"><div class="card"><div class="match-card-top"><h1>${escapeHtml(m.match_code||'MATCH-'+m.id)}</h1><div class="badge">${m.winner==='blue'?'블루 승리':'레드 승리'}</div></div><div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div></div><div class="team-grid"><div class="team-card"><div class="team-title blue">BLUE TEAM</div>${buildDetailRecords(blue)}</div><div class="team-card"><div class="team-title red">RED TEAM</div>${buildDetailRecords(red)}</div></div></div>`;
+    document.getElementById('matchDetailContent').innerHTML=`<div class="section"><div class="card"><div class="match-card-top"><div><h1>${escapeHtml(m.match_code||'MATCH-'+m.id)}</h1><div class="match-detail-date">${formatDate(m.played_at)}</div></div></div><div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div></div><div class="team-grid"><div class="team-card"><div class="team-title blue">BLUE TEAM</div>${buildDetailRecords(blue)}</div><div class="team-card"><div class="team-title red">RED TEAM</div>${buildDetailRecords(red)}</div></div></div>`;
     showPage('matchDetail');
 }
 function buildDetailRecords(records){
@@ -1503,18 +1594,19 @@ function kdaRatio(r){return (Number(r.kills||0)+Number(r.assists||0))/Math.max(1
 function openChampionDetail(name,lane='ALL'){
     const champ=championStatsCache.find(c=>c.champion_name===name&&c.lane===lane)||championStatsCache.find(c=>c.champion_name===name&&c.lane==='ALL');if(!champ)return;
     const topMap={};champ.records.forEach(r=>{const p=playersCache.find(x=>x.id===r.player_id);const n=p?.nickname||'알 수 없음';if(!topMap[n])topMap[n]={name:n,games:0,wins:0,kills:0,deaths:0,assists:0,kp:0};const t=topMap[n];t.games++;if(r.result==='win')t.wins++;t.kills+=Number(r.kills||0);t.deaths+=Number(r.deaths||0);t.assists+=Number(r.assists||0);t.kp+=Number(r.kp||0)});
-    const top=Object.values(topMap).sort((a,b)=>b.games-a.games||b.wins-a.wins).slice(0,5);
-    document.getElementById('championDetailContent').innerHTML=`<div class="detail-layout"><div class="card champion-detail-card"><div class="champion-detail-portrait"><span class="champion-detail-tier ${getChampionTierClass(getChampionTier(champ))}">${getChampionTier(champ)}</span>${champIcon(name,'champion-icon big',false)}<div class="champion-detail-honey">🍯 ${Number(champ.honey_score||0).toFixed(1)}</div></div><h1>${escapeHtml(name)}</h1><br><p class="stat">${lane==='ALL'?'전체':escapeHtml(lane)}</p><p class="stat">⚔️ ${champ.games}판</p><p class="stat">🏆 ${champ.wins}승 ${champ.games-champ.wins}패</p><p class="stat">📈 승률 ${getChampionWinrate(champ).toFixed(1)}%</p><div class="kda-line"><span>${avgKdaText(champ)}</span><span class="kda-ratio">${getChampionKdaRatio(champ).toFixed(1)}</span></div></div><div><div class="card"><h2>TOP 플레이어</h2><br><div class="champion-list">${top.map(p=>championTopPlayerRow(p)).join('')}</div></div><br><div class="card"><h2>최근 사용 경기</h2><br>${buildChampionRecentMatches(champ.records.slice(-10).reverse())}</div></div></div>`;
+    const top=Object.values(topMap).sort((a,b)=>champPerformanceScore(b)-champPerformanceScore(a)).slice(0,5);
+    document.getElementById('championDetailContent').innerHTML=`<div class="detail-layout"><div class="card champion-detail-card"><div class="champion-detail-portrait"><span class="champion-detail-tier ${getChampionTierClass(getChampionTier(champ))}">${getChampionTier(champ)}</span>${champIcon(name,'champion-icon big',false)}<div class="champion-detail-honey">🍯 ${Number(champ.honey_score||0).toFixed(1)}</div></div><h1>${escapeHtml(name)}</h1><br><p class="stat">${lane==='ALL'?'전체':escapeHtml(lane)}</p><p class="stat">⚔️ ${champ.games}판</p><p class="stat">🏆 ${champ.wins}승 ${champ.games-champ.wins}패</p><p class="stat">📈 승률 ${getChampionWinrate(champ).toFixed(1)}%</p><div class="kda-line"><span>${avgKdaText(champ)}</span><span class="kda-ratio">${getChampionKdaRatio(champ).toFixed(1)}</span></div></div><div><div class="card"><h2>TOP 플레이어</h2><br><div class="champion-list">${top.map((p,i)=>championTopPlayerRow(p,i+1)).join('')}</div></div><br><div class="card"><h2>최근 사용 경기</h2><br>${buildChampionRecentMatches(champ.records.slice(-10).reverse())}</div></div></div>`;
     showPage('championDetail');
 }
 
-function championTopPlayerRow(p){
+function championTopPlayerRow(p,rank){
     const losses=p.games-p.wins;
     const wr=p.games?p.wins/p.games*100:0;
     const kdaText=p.games?`${(p.kills/p.games).toFixed(1)}/${(p.deaths/p.games).toFixed(1)}/${(p.assists/p.games).toFixed(1)}`:'0/0/0';
     const ratio=((p.kills+p.assists)/Math.max(1,p.deaths)).toFixed(1);
     const kp=p.games?(p.kp/p.games).toFixed(1):'0.0';
     return `<div class="champion-row champion-top-row">
+        <div class="most-rank">#${rank}</div>
         <div class="champion-main">
             <div class="champion-name">${escapeHtml(p.name)}</div>
         </div>
@@ -1555,12 +1647,13 @@ function buildMostChampions(records){
         m.lanes[lane]=(m.lanes[lane]||0)+1;
         m.lane=Object.entries(m.lanes).sort((a,b)=>b[1]-a[1])[0]?.[0]||lane;
     });
-    return `<div class="champion-list player-most-list">${Object.values(map).sort((a,b)=>b.games-a.games).slice(0,5).map(c=>{
+    return `<div class="champion-list player-most-list">${Object.values(map).sort((a,b)=>champPerformanceScore(b)-champPerformanceScore(a)).slice(0,5).map((c,i)=>{
         const wr=(c.wins/c.games*100).toFixed(1);
         const kda=`${(c.kills/c.games).toFixed(1)} / ${(c.deaths/c.games).toFixed(1)} / ${(c.assists/c.games).toFixed(1)}`;
         const ratio=((c.kills+c.assists)/Math.max(1,c.deaths)).toFixed(1);
         const kp=(c.kp/c.games).toFixed(1);
         return `<div class="champion-row" onclick="openChampionDetail('${escapeJs(c.champion_name)}','${escapeJs(c.lane)}')">
+            <div class="most-rank">#${i+1}</div>
             <div class="detail-row-main">
                 ${recordChampIcon(c.champion_name,c.lane)}
                 <div class="detail-row-text">
@@ -1571,7 +1664,7 @@ function buildMostChampions(records){
             <div class="plain-stat">${c.games}전 ${c.wins}승 ${c.games-c.wins}패</div>
             <div class="plain-stat sub">승률 ${wr}%</div>
             <div class="plain-stat">${kda}</div>
-            <div class="plain-stat sub">KDA ${ratio} · 킬관여율 ${kp}%</div>
+            <div class="plain-stat kp-stack">KDA ${ratio}<br>${kp}%</div>
         </div>`;
     }).join('')}</div>`;
 }
@@ -1586,10 +1679,9 @@ function buildChampionRecentMatches(records){
 function detailRecentRow(r,p=null,showPlayer=false){
     const player=p||playersCache.find(x=>Number(x.id)===Number(r.player_id))||{};
     const pc=getWinPointChange(player,r.result), cls=pc>=0?'point-plus':'point-minus';
-    const matchCode=escapeHtml(r.bc_matches?.match_code||`MATCH-${r.match_id}`);
     const resultText=r.result==='win'?'승리':'패배';
     const title=showPlayer?escapeHtml(player.nickname||'알 수 없음'):escapeHtml(r.champion_name||'-');
-    const sub=showPlayer?`${escapeHtml(r.champion_name||'-')} · ${normalizeLane(r.lane)} · ${matchCode}`:`${matchCode} · ${normalizeLane(r.lane)}`;
+    const sub=showPlayer?`${escapeHtml(r.champion_name||'-')} · ${normalizeLane(r.lane)}`:`${normalizeLane(r.lane)}`;
     return `<div class="match-row detail-match-row" onclick="openMatchById(${r.match_id})">
         <div class="${r.result==='win'?'result-win':'result-lose'}">${resultText}</div>
         <div class="detail-row-main">
@@ -1775,6 +1867,20 @@ const UI_THEMES={
     ocean:{name:'오션',bg:'#03111D',main:'#061826',sidebar:'#04101B',card:'#0D2A40',card2:'#061826',border:'#1B4E6B',accent:'#0EA5E9',accent2:'#7DD3FC'},
     grape:{name:'포도',bg:'#140B1B',main:'#1B1024',sidebar:'#100816',card:'#29183A',card2:'#180D22',border:'#5B3A78',accent:'#C084FC',accent2:'#E9D5FF'},
     mono:{name:'모노',bg:'#09090B',main:'#111113',sidebar:'#0A0A0B',card:'#1C1C20',card2:'#111113',border:'#3F3F46',accent:'#A1A1AA',accent2:'#F4F4F5'},
+    aurora:{name:'오로라',bg:'linear-gradient(135deg,#03131C,#102A43,#2D1B69)',main:'linear-gradient(135deg,#06141F,#111827)',sidebar:'#07111E',card:'linear-gradient(135deg,#142033,#1B2D3F)',card2:'#09131F',border:'#31546E',accent:'#38BDF8',accent2:'#C084FC'},
+    checker:{name:'체커',bg:'linear-gradient(45deg,#0B1020 25%,#111827 25%,#111827 50%,#0B1020 50%,#0B1020 75%,#111827 75%)',main:'#0F172A',sidebar:'#0B1020',card:'#1E293B',card2:'#111827',border:'#475569',accent:'#8B5CF6',accent2:'#F472B6'},
+    carbon:{name:'카본',bg:'repeating-linear-gradient(45deg,#080B10 0 12px,#0F172A 12px 24px)',main:'#0B111A',sidebar:'#070B11',card:'#182232',card2:'#0D1320',border:'#354258',accent:'#94A3B8',accent2:'#E2E8F0'},
+    neon:{name:'네온',bg:'#050816',main:'#080B1D',sidebar:'#050816',card:'#121833',card2:'#080B1D',border:'#29366D',accent:'#22D3EE',accent2:'#F0ABFC'},
+    candy:{name:'캔디',bg:'linear-gradient(135deg,#190A22,#28113D,#3B1242)',main:'#1B1029',sidebar:'#14091F',card:'#2B1B3D',card2:'#180D24',border:'#6D3A82',accent:'#F472B6',accent2:'#F9A8D4'},
+    forest:{name:'포레스트',bg:'#07130B',main:'#0A1A10',sidebar:'#061009',card:'#122718',card2:'#0A160D',border:'#2F5A39',accent:'#22C55E',accent2:'#BBF7D0'},
+    lava:{name:'라바',bg:'linear-gradient(135deg,#160305,#2A0A0A,#431407)',main:'#1A0707',sidebar:'#110404',card:'#2A1010',card2:'#160606',border:'#7F1D1D',accent:'#EF4444',accent2:'#FDBA74'},
+    ice:{name:'아이스',bg:'#07131C',main:'#0A1A24',sidebar:'#061018',card:'#132A38',card2:'#081823',border:'#2C5A70',accent:'#67E8F9',accent2:'#E0F2FE'},
+    royal:{name:'로얄',bg:'#0D071A',main:'#120B22',sidebar:'#090512',card:'#21143A',card2:'#120B22',border:'#4C2D70',accent:'#7C3AED',accent2:'#FDE68A'},
+    matrix:{name:'매트릭스',bg:'repeating-linear-gradient(90deg,#031107 0 10px,#061A0B 10px 20px)',main:'#06120A',sidebar:'#030D06',card:'#0D2112',card2:'#06140A',border:'#1E5A2D',accent:'#22C55E',accent2:'#86EFAC'},
+    midnight:{name:'미드나잇',bg:'radial-gradient(circle at 20% 10%,#1E1B4B,#020617 45%,#000 100%)',main:'#070B16',sidebar:'#050813',card:'#111827',card2:'#080C16',border:'#263248',accent:'#4F46E5',accent2:'#93C5FD'},
+    blossom:{name:'블라썸',bg:'radial-gradient(circle at 80% 0%,#4A1238,#180B1B 42%,#0F0712 100%)',main:'#1A0D1C',sidebar:'#120816',card:'#2A1730',card2:'#170B1B',border:'#6B315F',accent:'#EC4899',accent2:'#FBCFE8'},
+    sandstorm:{name:'샌드스톰',bg:'linear-gradient(135deg,#120D05,#261C0B,#3A2A0D)',main:'#171106',sidebar:'#100B04',card:'#251C0E',card2:'#151006',border:'#6B5527',accent:'#EAB308',accent2:'#FEF3C7'},
+    prism:{name:'프리즘',bg:'linear-gradient(135deg,#020617,#312E81,#0E7490,#581C87)',main:'linear-gradient(135deg,#08111F,#111827)',sidebar:'#090F1E',card:'linear-gradient(135deg,#172033,#241A3A)',card2:'#0C1220',border:'#475569',accent:'#A78BFA',accent2:'#67E8F9'},
     gradient:{name:'보라 그라데이션',bg:'linear-gradient(135deg,#020617,#1E1B4B,#312E81)',main:'linear-gradient(135deg,#020617,#111827)',sidebar:'#111827',card:'linear-gradient(135deg,#1E293B,#1E1B4B)',card2:'#111827',border:'#4C1D95',accent:'#8B5CF6',accent2:'#C4B5FD'}
 };
 const DEFAULT_UI_SETTINGS={theme:'purple',sizeChampion:112,sizePlayer:112,sizeMost:68,sizeRecent:76,sizeMatch:300};
