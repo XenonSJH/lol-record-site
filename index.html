@@ -448,6 +448,19 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 }
 .detail-row-main{display:flex;align-items:center;gap:12px;min-width:0}
 .detail-row-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+.plain-stat{color:#E2E8F0;font-size:15px;font-weight:900;white-space:nowrap}
+.plain-stat.sub{color:#CBD5E1;font-size:14px}
+.champion-top-row{
+    display:grid!important;
+    grid-template-columns:minmax(140px,1.2fr) minmax(135px,1fr) minmax(120px,.8fr) minmax(115px,.8fr) minmax(120px,.85fr);
+    align-items:center;
+    gap:14px;
+}
+.detail-match-row{
+    grid-template-columns:70px minmax(220px,1.25fr) minmax(130px,.8fr) minmax(108px,.7fr) minmax(110px,.75fr) minmax(80px,.6fr)!important;
+}
+.detail-match-row .record-champion-wrap{width:42px;height:42px}
+.detail-match-row .champion-icon.small{width:42px;height:42px}
 .matches-search-wrap{margin-bottom:16px;flex-shrink:0}
 .matches-search-wrap .search-input{width:360px;max-width:100%}
 @media(max-width:1100px){
@@ -1149,10 +1162,27 @@ function kdaRatio(r){return (Number(r.kills||0)+Number(r.assists||0))/Math.max(1
 
 function openChampionDetail(name,lane='ALL'){
     const champ=championStatsCache.find(c=>c.champion_name===name&&c.lane===lane)||championStatsCache.find(c=>c.champion_name===name&&c.lane==='ALL');if(!champ)return;
-    const topMap={};champ.records.forEach(r=>{const p=playersCache.find(x=>x.id===r.player_id);const n=p?.nickname||'알 수 없음';if(!topMap[n])topMap[n]={name:n,games:0,wins:0,kills:0,deaths:0,assists:0};const t=topMap[n];t.games++;if(r.result==='win')t.wins++;t.kills+=Number(r.kills||0);t.deaths+=Number(r.deaths||0);t.assists+=Number(r.assists||0)});
+    const topMap={};champ.records.forEach(r=>{const p=playersCache.find(x=>x.id===r.player_id);const n=p?.nickname||'알 수 없음';if(!topMap[n])topMap[n]={name:n,games:0,wins:0,kills:0,deaths:0,assists:0,kp:0};const t=topMap[n];t.games++;if(r.result==='win')t.wins++;t.kills+=Number(r.kills||0);t.deaths+=Number(r.deaths||0);t.assists+=Number(r.assists||0);t.kp+=Number(r.kp||0)});
     const top=Object.values(topMap).sort((a,b)=>b.games-a.games||b.wins-a.wins).slice(0,5);
-    document.getElementById('championDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${champIcon(name,'champion-icon big',false)}<h1>${escapeHtml(name)}</h1><br><div class="tier-badge ${getChampionTierClass(getChampionTier(champ))}">${getChampionTier(champ)}</div><p class="stat">${lane==='ALL'?'전체':escapeHtml(lane)}</p><p class="stat">⚔️ ${champ.games}판</p><p class="stat">🏆 ${champ.wins}승 ${champ.games-champ.wins}패</p><p class="stat">📈 승률 ${getChampionWinrate(champ).toFixed(1)}%</p><div class="kda-line"><span>${avgKdaText(champ)}</span><span class="kda-ratio">${getChampionKdaRatio(champ).toFixed(1)}</span></div></div><div><div class="card"><h2>TOP 플레이어</h2><br><div class="champion-list">${top.map(p=>`<div class="champion-row"><div class="champion-main"><div class="champion-name">${escapeHtml(p.name)}</div><div class="champion-sub">${p.games}판 · 승률 ${(p.wins/p.games*100).toFixed(1)}%</div></div><div class="badge">${(p.kills/p.games).toFixed(1)} / ${(p.deaths/p.games).toFixed(1)} / ${(p.assists/p.games).toFixed(1)}</div></div>`).join('')}</div></div><br><div class="card"><h2>최근 사용 경기</h2><br><div class="match-list">${champ.records.slice(-10).reverse().map(r=>`<div class="match-row" onclick="openMatchById(${r.match_id})"><div class="${r.result==='win'?'result-win':'result-lose'}">${r.result==='win'?'승리':'패배'}</div><div><strong>${normalizeLane(r.lane)}</strong><div class="champion-sub">MATCH-${r.match_id}</div></div><div class="kda-line"><span>${r.kills||0}/${r.deaths||0}/${r.assists||0}</span><span class="kda-ratio">${kdaRatio(r).toFixed(1)}</span></div><div>킬관여율 ${r.kp??0}%</div></div>`).join('')}</div></div></div></div>`;
+    document.getElementById('championDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${champIcon(name,'champion-icon big',false)}<h1>${escapeHtml(name)}</h1><br><div class="tier-badge ${getChampionTierClass(getChampionTier(champ))}">${getChampionTier(champ)}</div><p class="stat">${lane==='ALL'?'전체':escapeHtml(lane)}</p><p class="stat">⚔️ ${champ.games}판</p><p class="stat">🏆 ${champ.wins}승 ${champ.games-champ.wins}패</p><p class="stat">📈 승률 ${getChampionWinrate(champ).toFixed(1)}%</p><div class="kda-line"><span>${avgKdaText(champ)}</span><span class="kda-ratio">${getChampionKdaRatio(champ).toFixed(1)}</span></div></div><div><div class="card"><h2>TOP 플레이어</h2><br><div class="champion-list">${top.map(p=>championTopPlayerRow(p)).join('')}</div></div><br><div class="card"><h2>최근 사용 경기</h2><br>${buildChampionRecentMatches(champ.records.slice(-10).reverse())}</div></div></div>`;
     showPage('championDetail');
+}
+
+function championTopPlayerRow(p){
+    const losses=p.games-p.wins;
+    const wr=p.games?p.wins/p.games*100:0;
+    const kdaText=p.games?`${(p.kills/p.games).toFixed(1)}/${(p.deaths/p.games).toFixed(1)}/${(p.assists/p.games).toFixed(1)}`:'0/0/0';
+    const ratio=((p.kills+p.assists)/Math.max(1,p.deaths)).toFixed(1);
+    const kp=p.games?(p.kp/p.games).toFixed(1):'0.0';
+    return `<div class="champion-row champion-top-row">
+        <div class="champion-main">
+            <div class="champion-name">${escapeHtml(p.name)}</div>
+        </div>
+        <div class="plain-stat">${p.games}판 ${p.wins}승 ${losses}패</div>
+        <div class="plain-stat sub">승률 ${wr.toFixed(1)}%</div>
+        <div class="plain-stat">${kdaText} <span class="plain-stat sub">${ratio}</span></div>
+        <div class="plain-stat sub">킬관여율 ${kp}%</div>
+    </div>`;
 }
 
 async function openPlayer(id){
@@ -1198,28 +1228,42 @@ function buildMostChampions(records){
                     <div class="champion-sub">${escapeHtml(c.lane)}</div>
                 </div>
             </div>
-            <div class="badge">${c.games}전 ${c.wins}승 ${c.games-c.wins}패</div>
-            <div class="champion-sub">승률 ${wr}%</div>
-            <div class="badge">${kda}</div>
-            <div class="champion-sub">KDA ${ratio} · 킬관여율 ${kp}%</div>
+            <div class="plain-stat">${c.games}전 ${c.wins}승 ${c.games-c.wins}패</div>
+            <div class="plain-stat sub">승률 ${wr}%</div>
+            <div class="plain-stat">${kda}</div>
+            <div class="plain-stat sub">KDA ${ratio} · 킬관여율 ${kp}%</div>
         </div>`;
     }).join('')}</div>`;
 }
 function buildRecentMatches(p,records){
     if(!records.length)return '<div class="empty-box">아직 최근 전적 데이터가 없습니다.</div>';
-    return `<div class="match-list">${records.map(r=>{const pc=getWinPointChange(p,r.result), cls=pc>=0?'point-plus':'point-minus';return `<div class="match-row" onclick="openMatchById(${r.match_id})">
-        <div class="${r.result==='win'?'result-win':'result-lose'}">${r.result==='win'?'승리':'패배'}</div>
+    return `<div class="match-list">${records.map(r=>detailRecentRow(r,p,false)).join('')}</div>`;
+}
+function buildChampionRecentMatches(records){
+    if(!records.length)return '<div class="empty-box">아직 최근 전적 데이터가 없습니다.</div>';
+    return `<div class="match-list">${records.map(r=>detailRecentRow(r,null,true)).join('')}</div>`;
+}
+function detailRecentRow(r,p=null,showPlayer=false){
+    const player=p||playersCache.find(x=>Number(x.id)===Number(r.player_id))||{};
+    const pc=getWinPointChange(player,r.result), cls=pc>=0?'point-plus':'point-minus';
+    const matchCode=escapeHtml(r.bc_matches?.match_code||`MATCH-${r.match_id}`);
+    const resultText=r.result==='win'?'승리':'패배';
+    const title=showPlayer?escapeHtml(player.nickname||'알 수 없음'):escapeHtml(r.champion_name||'-');
+    const sub=showPlayer?`${escapeHtml(r.champion_name||'-')} · ${normalizeLane(r.lane)} · ${matchCode}`:`${matchCode} · ${normalizeLane(r.lane)}`;
+    return `<div class="match-row detail-match-row" onclick="openMatchById(${r.match_id})">
+        <div class="${r.result==='win'?'result-win':'result-lose'}">${resultText}</div>
         <div class="detail-row-main">
             ${recordChampIcon(r.champion_name,r.lane)}
             <div class="detail-row-text">
-                <strong>${escapeHtml(r.champion_name||'-')}</strong>
-                <div class="champion-sub">${escapeHtml(r.bc_matches?.match_code||'MATCH')} · ${normalizeLane(r.lane)}</div>
+                <strong>${title}</strong>
+                <div class="champion-sub">${sub}</div>
             </div>
         </div>
-        <div class="kda-line"><span>${r.kills||0}/${r.deaths||0}/${r.assists||0}</span><span class="kda-ratio">${kdaRatio(r).toFixed(1)}</span></div>
-        <div>킬관여율 ${r.kp??0}%</div>
+        <div class="plain-stat">${r.kills||0}/${r.deaths||0}/${r.assists||0}</div>
+        <div class="plain-stat sub">KDA ${kdaRatio(r).toFixed(1)}</div>
+        <div class="plain-stat sub">킬관여율 ${r.kp??0}%</div>
         <div class="${cls}">${pc>=0?`+${pc}`:pc} LP</div>
-    </div>`}).join('')}</div>`;
+    </div>`;
 }
 function renderPlayerDetailError(p){document.getElementById('playerDetailContent').innerHTML=`<div class="empty-box">전적 데이터를 불러오지 못했습니다.</div>`}
 
