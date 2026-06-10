@@ -1557,41 +1557,25 @@ function renderChampions(champs){
     container.innerHTML=champs.map((c,i)=>championRankingRow(c,i+1)).join('');
 }
 function championRankingRow(c,rank){
-    const tier=getChampionTier(c);
-    const kda=avgKdaText(c);
-    const kdar=getChampionKdaRatio(c).toFixed(1);
+
+    const totalGames =
+        championStatsCache.reduce(
+            (sum,x)=>sum+(x.games||0),
+            0
+        );
+
+    const pickRate =
+        totalGames > 0
+            ? (((c.games || 0) / totalGames) * 100).toFixed(1)
+            : "0.0";
+
     const wr=getChampionWinrate(c).toFixed(1);
-    const laneText=escapeHtml(c.lane);
 
     return `
-        <div class="ranking-row" onclick="openChampionDetail('${escapeJs(c.champion_name)}','${escapeJs(c.lane)}')">
-            <div class="rank-num">#${rank}</div>
-
-            ${champRankIcon(c)}
-
-            <div class="rank-main">
-                <div class="rank-name">${escapeHtml(c.champion_name)}</div>
-                <div class="rank-sub">${laneText}</div>
-            </div>
-
-            <div class="rank-stat-block">
-                <span class="honey-pill">🍯 ${Number(c.honey_score||0).toFixed(1)}</span>
-            </div>
-
-            <div class="rank-stat-block">
-                <div>승률 ${wr}%</div>
-                
-            </div>
-
-            <div class="rank-stat-block">
-                <div>벤율 ${Number(c.ban_rate||0).toFixed(1)}%</div>
-                
-            </div>
-
-            <div class="rank-stat-block">
-                <div>픽률</div>
-                <div class="stat-sub">${pickRate}%</div>
-            </div>
+        ...
+        <div class="rank-stat-block">
+            <div>픽률</div>
+            <div class="stat-sub">${pickRate}%</div>
         </div>
     `;
 }
@@ -2555,16 +2539,27 @@ async function resetAllRecords(){
         return;
     }
 
-    const { error } = await supabase.rpc(
-        'reset_bandle_records'
-    );
+    const { error } = await db
+        .from("bc_players")
+        .update({
+            wins:0,
+            losses:0,
+            total_games:0,
+            total_kills:0,
+            total_deaths:0,
+            total_assists:0,
+            lp:0,
+            max_win_streak:0,
+            current_win_streak:0
+        })
+        .gte("id",0);
 
     if(error){
-        alert('실패 : ' + error.message);
+        alert(error.message);
         return;
     }
 
-    alert('초기화 완료');
+    alert("초기화 완료");
 
     await loadPlayers();
     await loadChampions();
