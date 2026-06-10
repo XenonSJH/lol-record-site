@@ -44,6 +44,23 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
 .player-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
 .player-card{background:#1E293B;border-radius:20px;padding:20px;transition:.2s;cursor:pointer;border:1px solid #334155;position:relative;overflow:hidden}
 .player-card:hover{transform:translateY(-4px);border-color:#8B5CF6}
+.kda-vertical{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    font-size:18px;
+    font-weight:1000;
+    color:#E2E8F0;
+}
+
+.champion-detail-card{
+    min-height:650px;
+}
+
+.champion-detail-honey{
+    margin-top:12px;
+    margin-bottom:12px;
+}
 .profile,.big-profile{border-radius:50%;background:#334155;object-fit:cover;display:block}
 .profile{width:70px;height:70px;margin-bottom:15px}
 .big-profile{width:120px;height:120px;margin-bottom:20px}
@@ -1538,18 +1555,18 @@ function championRankingRow(c,rank){
             </div>
 
             <div class="rank-stat-block">
-                <div>${c.games}전 ${c.wins}승 ${c.games-c.wins}패</div>
-                <div class="stat-sub">승률 ${wr}%</div>
+                <div>승률 ${wr}%</div>
+                <div class="stat-sub">픽률 ${c.games}판</div>
             </div>
 
             <div class="rank-stat-block">
-                <div>${kda}</div>
-                <div class="stat-sub">KDA ${kdar}</div>
+                <div>벤율 ${Number(c.ban_rate||0).toFixed(1)}%</div>
+                <div class="stat-sub">픽률 ${c.games}판</div>
             </div>
 
             <div class="rank-stat-block">
-                <div>킬관여율</div>
-                <div class="stat-sub">${getChampionAvgKP(c).toFixed(1)}%</div>
+                <div>승률</div>
+                <div class="stat-sub">${wr}%</div>
             </div>
         </div>
     `;
@@ -1802,10 +1819,134 @@ function isRedBan(b){
 }
 
 function openChampionDetail(name,lane='ALL'){
-    const champ=championStatsCache.find(c=>c.champion_name===name&&c.lane===lane)||championStatsCache.find(c=>c.champion_name===name&&c.lane==='ALL');if(!champ)return;
-    const topMap={};champ.records.forEach(r=>{const p=playersCache.find(x=>x.id===r.player_id);const n=p?.nickname||'알 수 없음';if(!topMap[n])topMap[n]={name:n,games:0,wins:0,kills:0,deaths:0,assists:0,kp:0};const t=topMap[n];t.games++;if(r.result==='win')t.wins++;t.kills+=Number(r.kills||0);t.deaths+=Number(r.deaths||0);t.assists+=Number(r.assists||0);t.kp+=Number(r.kp||0)});
-    const top=Object.values(topMap).sort((a,b)=>champPerformanceScore(b)-champPerformanceScore(a)).slice(0,5);
-    document.getElementById('championDetailContent').innerHTML=`<div class="detail-layout"><div class="card champion-detail-card"><div class="champion-detail-portrait"><span class="champion-detail-tier ${getChampionTierClass(getChampionTier(champ))}">${getChampionTier(champ)}</span>${champIcon(name,'champion-icon big',false)}<div class="champion-detail-honey">🍯 ${Number(champ.honey_score||0).toFixed(1)}</div></div><h1>${escapeHtml(name)}</h1><br><p class="stat">${lane==='ALL'?'전체':escapeHtml(lane)}</p><p class="stat">⚔️ ${champ.games}판</p><p class="stat">🏆 ${champ.wins}승 ${champ.games-champ.wins}패</p><p class="stat">📈 승률 ${getChampionWinrate(champ).toFixed(1)}%</p><div class="kda-line"><span>${avgKdaText(champ)}</span><span class="kda-ratio">${getChampionKdaRatio(champ).toFixed(1)}</span></div></div><div><div class="card"><h2>TOP 플레이어</h2><br><div class="champion-list">${top.map((p,i)=>championTopPlayerRow(p,i+1)).join('')}</div></div><br><div class="card"><h2>최근 사용 경기</h2><br>${buildChampionRecentMatches(champ.records.slice(-10).reverse())}</div></div></div>`;
+    const champ =
+        championStatsCache.find(c=>c.champion_name===name&&c.lane===lane) ||
+        championStatsCache.find(c=>c.champion_name===name&&c.lane==='ALL');
+
+    if(!champ) return;
+
+    const topMap={};
+
+    champ.records.forEach(r=>{
+        const p=playersCache.find(x=>x.id===r.player_id);
+        const n=p?.nickname||'알 수 없음';
+
+        if(!topMap[n]){
+            topMap[n]={
+                name:n,
+                games:0,
+                wins:0,
+                kills:0,
+                deaths:0,
+                assists:0,
+                kp:0
+            };
+        }
+
+        const t=topMap[n];
+
+        t.games++;
+        if(r.result==='win') t.wins++;
+
+        t.kills+=Number(r.kills||0);
+        t.deaths+=Number(r.deaths||0);
+        t.assists+=Number(r.assists||0);
+        t.kp+=Number(r.kp||0);
+    });
+
+    const top = Object.values(topMap)
+        .sort((a,b)=>champPerformanceScore(b)-champPerformanceScore(a))
+        .slice(0,5);
+
+    const totalChampionGames =
+        championStatsCache
+            .filter(x=>x.lane==='ALL')
+            .reduce((s,x)=>s + Number(x.games||0),0);
+
+    const pickRate =
+        totalChampionGames > 0
+            ? ((Number(champ.games||0) / totalChampionGames) * 100).toFixed(1)
+            : '0.0';
+
+    document.getElementById('championDetailContent').innerHTML = `
+<div class="detail-layout">
+
+    <div class="card champion-detail-card">
+
+        <div class="champion-detail-portrait">
+            <span class="champion-detail-tier ${getChampionTierClass(getChampionTier(champ))}">
+                ${getChampionTier(champ)}
+            </span>
+
+            ${champIcon(name,'champion-icon big',false)}
+        </div>
+
+        <h1>${escapeHtml(name)}</h1>
+
+        <p class="stat">
+            ${lane==='ALL' ? '전체' : escapeHtml(lane)}
+        </p>
+
+        <div class="champion-detail-honey">
+            🍯 ${Number(champ.honey_score||0).toFixed(1)}
+        </div>
+
+        <br>
+
+        <p class="stat">
+            ${champ.games}전 ${champ.wins}승 ${champ.games-champ.wins}패
+        </p>
+
+        <p class="stat">
+            승률 ${getChampionWinrate(champ).toFixed(1)}%
+        </p>
+
+        <p class="stat">
+            픽률 ${pickRate}%
+        </p>
+
+        <p class="stat">
+            벤율 ${Number(champ.ban_rate||0).toFixed(1)}%
+        </p>
+
+        <br>
+
+        <div class="kda-vertical">
+            <div>${avgKdaText(champ)}</div>
+            <div>KDA ${getChampionKdaRatio(champ).toFixed(1)}</div>
+        </div>
+
+        <br>
+
+        <p class="stat">
+            킬관여율 ${getChampionAvgKP(champ).toFixed(1)}%
+        </p>
+
+    </div>
+
+    <div>
+
+        <div class="card">
+            <h2>TOP 플레이어</h2>
+            <br>
+            <div class="champion-list">
+                ${top.map((p,i)=>championTopPlayerRow(p,i+1)).join('')}
+            </div>
+        </div>
+
+        <br>
+
+        <div class="card">
+            <h2>최근 사용 경기</h2>
+            <br>
+            ${buildChampionRecentMatches(champ.records.slice(-10).reverse())}
+        </div>
+
+    </div>
+
+</div>
+`;
+
     showPage('championDetail');
 }
 
