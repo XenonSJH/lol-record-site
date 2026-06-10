@@ -131,7 +131,42 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
 .record-row{
     grid-template-columns:58px minmax(180px,1fr) 120px 70px 90px 90px;
 }
+.record-ban-grid{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
 
+.record-ban-icon{
+    width:56px;
+    height:56px;
+    border-radius:10px;
+
+    border:1px solid #334155;
+
+    transition:.2s;
+}
+
+.record-ban-icon:hover{
+    transform:scale(1.05);
+}
+.record-player-card{
+    position:relative;
+}
+.record-lane{
+    position:absolute;
+    top:8px;
+    right:8px;
+
+    background:none;
+    border:none;
+    padding:0;
+
+    color:#cbd5e1;
+
+    font-size:11px;
+    font-weight:900;
+}
 .record-main-name{
     font-size:16px;
     font-weight:900;
@@ -216,6 +251,64 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
     color:#EDE9FE;
     text-align:center;
     letter-spacing:-1px;
+}
+.record-winner{
+    text-align:center;
+    font-size:22px;
+    font-weight:800;
+    margin-bottom:20px;
+    padding:12px;
+
+    background:#111827;
+    border:1px solid #334155;
+    border-radius:14px;
+}
+
+.record-winner{
+    text-align:center;
+    font-size:22px;
+    font-weight:800;
+    color:white !important;
+
+    margin-bottom:20px;
+    padding:12px;
+
+    background:#111827;
+    border:1px solid #334155;
+    border-radius:14px;
+}
+.record-team-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:12px;
+    margin-top:12px;
+}
+
+.record-player-card{
+    background:#111827;
+    border:1px solid #334155;
+    border-radius:14px;
+    padding:12px;
+    text-align:center;
+}
+
+.record-champ-icon{
+    width:72px;
+    height:72px;
+    border-radius:12px;
+    display:block;
+    margin:0 auto 8px;
+}
+
+.record-player-name{
+    font-weight:700;
+    font-size:14px;
+    margin-bottom:4px;
+}
+
+.record-player-kda{
+    color:#94a3b8;
+    font-size:12px;
 }
 .rank-avatar{
     grid-row:1 / span 2;
@@ -634,6 +727,30 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     font-weight:1000;
     pointer-events:none;
 }
+.record-preview{
+    max-height: 60vh;
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+    scrollbar-color: var(--bc-accent,#8B5CF6) rgba(15,23,42,.55);
+}
+
+.record-preview::-webkit-scrollbar{
+    width:10px;
+}
+
+.record-preview::-webkit-scrollbar-track{
+    background:rgba(15,23,42,.55);
+}
+
+.record-preview::-webkit-scrollbar-thumb{
+    background:linear-gradient(
+        180deg,
+        var(--bc-accent,#8B5CF6),
+        var(--bc-accent2,#A78BFA)
+    );
+    border-radius:999px;
+}
 .comp-text{
     gap:3px!important;
 }
@@ -913,6 +1030,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     font-size:13px;
     line-height:1.5;
 }
+
 @media(max-width:900px){
     .record-ui-grid{grid-template-columns:1fr}
     .record-id-row{grid-template-columns:1fr}
@@ -967,7 +1085,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
         <div class="card"><div class="card-title">플레이어</div><div class="card-value" id="playerCount">0</div></div>
         <div class="card"><div class="card-title">총 경기</div><div class="card-value" id="totalGameCount">-</div></div>
         <div class="card"><div class="card-title">이번주 경기</div><div class="card-value" id="weeklyGameCount">-</div></div>
-        <div class="card"><div class="card-title">현재 시즌</div><div class="card-value" id="currentSeasonName">시즌 1</div><div class="stat" id="currentSeasonPeriod">기간 미설정</div><div class="stat" id="seasonRemain">시즌 종료 D-?</div></div>
+        <div class="card"><div class="card-title">현재 시즌</div><div class="card-value" id="currentSeasonName">시즌 불러오는중...</div><div class="stat" id="currentSeasonPeriod">기간 불러오는중...</div><div class="stat" id="seasonRemain">시즌 종료 D-?</div></div>
     </div>
     <div class="section">
         <h2>🏆 TOP 플레이어</h2>
@@ -1028,11 +1146,11 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     <h2 style="margin-bottom:20px;">🎯 전적등록</h2>
     <div class="card record-register-card">
         <div class="record-id-row">
-            <input class="search-input" id="recordMatchIdInput" placeholder="매치 ID 입력" oninput="updateRecordPreview()" onkeydown="if(event.key==='Enter')fakeRecordSubmit()">
+            <input class="search-input" id="recordMatchIdInput" placeholder="게임 ID 입력" oninput="updateRecordPreview()" onkeydown="if(event.key==='Enter')fakeRecordSubmit()">
             <button class="sort-btn active" onclick="fakeRecordSubmit()">전적 등록</button>
             <button class="sort-btn" onclick="cancelRecordForm()">등록 취소</button>
         </div>
-        <p class="record-hint" id="recordFormMessage">매치 ID를 입력하면 아래에 등록될 매치 내용이 미리 표시됩니다. 지금은 UI만 연결되어 있습니다.</p>
+        <p class="record-hint" id="recordFormMessage">매치 ID를 입력하면 아래에 등록될 매치 내용이 미리 표시됩니다.</p>
         <div class="record-preview" id="recordPreviewBox"></div>
     </div>
 </div>
@@ -1115,7 +1233,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
                 </div>
             </div>
             <div class="account-card account-theme-card">
-                <h2>UI 색깔</h2><br>
+                <h2>UI 디자인</h2><br>
                 <div class="theme-grid" id="themeGrid"></div>
                 <br>
                 <button class="sort-btn active" onclick="saveUiSettings('color')">UI 색깔 저장</button>
@@ -2075,35 +2193,273 @@ function recordPreviewSection(title,body){
 }
 
 function updateRecordPreview(){
-    const box=document.getElementById('recordPreviewBox');
+
+    const box =
+        document.getElementById('recordPreviewBox');
+
     if(!box)return;
-    const matchId=(document.getElementById('recordMatchIdInput')?.value||'').trim();
+
+    const matchId =
+        (
+            document.getElementById('recordMatchIdInput')?.value
+            || ''
+        ).trim();
+
     if(!matchId){
-        box.innerHTML=recordPreviewSection('매치 내용','매치 ID를 입력하면 이곳에 등록될 경기 정보가 표시됩니다.');
+
+        box.innerHTML =
+            recordPreviewSection(
+                '매치 내용',
+                '매치 ID를 입력하면 이곳에 등록될 경기 정보가 표시됩니다.'
+            );
+
         return;
     }
 
-    box.innerHTML=[
-        recordPreviewSection('매치 ID',matchId),
-        recordPreviewSection('승리팀','매치 데이터를 불러오면 BLUE / RED 승리 결과가 표시됩니다.'),
-        recordPreviewSection('블루팀 조합','매치 데이터를 불러오면 블루팀 TOP, JUG, MID, ADC, SUP 조합이 표시됩니다.'),
-        recordPreviewSection('레드팀 조합','매치 데이터를 불러오면 레드팀 TOP, JUG, MID, ADC, SUP 조합이 표시됩니다.'),
-        recordPreviewSection('블루팀 밴','매치 데이터를 불러오면 블루팀 밴 목록이 표시됩니다.'),
-        recordPreviewSection('레드팀 밴','매치 데이터를 불러오면 레드팀 밴 목록이 표시됩니다.')
-    ].join('');
+    box.innerHTML = `
+        <div class="record-preview-empty">
+            매치 ID를 입력한 뒤 전적 등록 버튼을 눌러주세요.
+        </div>
+    `;
 }
 
-function fakeRecordSubmit(){
+async function fakeRecordSubmit(){
+
     updateRecordPreview();
-    const matchId=(document.getElementById('recordMatchIdInput')?.value||'').trim();
-    flashMessage('recordFormMessage',matchId?'매치 ID 기준 등록 UI입니다. 실제 저장은 아직 연결되어 있지 않습니다.':'매치 ID를 입력해주세요.');
+
+    const matchId =
+        (document.getElementById("recordMatchIdInput")?.value || "").trim();
+
+    if(!matchId){
+        flashMessage(
+            "recordFormMessage",
+            "매치 ID를 입력해주세요."
+        );
+        return;
+    }
+
+    flashMessage(
+        "recordFormMessage",
+        "전적 등록 요청 중..."
+    );
+
+    try{
+
+        const result =
+            await window.collector.registerMatch(matchId);
+
+        flashMessage(
+            "recordFormMessage",
+            "전적 등록 완료"
+        );
+
+        console.log(result);
+
+        const data =
+            typeof result === "string"
+                ? JSON.parse(result)
+                : result;
+        const winnerTeam =
+            data.players.find(p => p.win)?.team === "blue"
+                ? "🔵 블루팀 승리"
+                : "🔴 레드팀 승리";
+
+        const bluePlayers =
+            data.players.filter(
+                p => p.team === "blue"
+            );
+
+        const redPlayers =
+            data.players.filter(
+                p => p.team === "red"
+            );
+        const lanes = [
+            "TOP",
+            "JUG",
+            "MID",
+            "ADC",
+            "SUP"
+        ];
+        const blueBans =
+            data.bans.filter(
+                b => b.team_id === 100
+            );
+
+        const redBans =
+            data.bans.filter(
+                b => b.team_id === 200
+            );
+        bluePlayers.forEach(
+            (p,i) => p.lane = lanes[i] || "?"
+        );
+
+        redPlayers.forEach(
+            (p,i) => p.lane = lanes[i] || "?"
+        );
+        const previewBox =
+            document.getElementById(
+                "recordPreviewBox"
+            );
+
+        if(previewBox){
+
+            previewBox.innerHTML = `
+
+                <div class="record-winnder">
+                    ${winnerTeam}
+                </div>
+
+                <div class="record-team blue">
+
+                    <h3>🔵 블루팀</h3>
+                    <div class="record-team-grid">
+                    </div>
+
+                    <div class="record-team-grid">
+
+                        ${bluePlayers.map(p => `
+                            <div class="record-player-card">
+
+                                <div class="record-lane">
+                                    ${p.lane}
+                                </div>
+
+                                <img
+                                    src="${getChampionIconUrl(p.champion_name)}"
+                                    class="record-champ-icon"
+                                >
+
+                                <div class="record-player-name">
+                                    ${p.lol_name}
+                                </div>
+
+                                <div class="record-player-kda">
+                                    ${p.kills}/${p.deaths}/${p.assists}
+                                </div>
+
+                            </div>
+                        `).join("")}
+
+                    </div>
+
+                </div>
+
+                <br>
+
+                <div class="record-team red">
+
+                    <h3>🔴 레드팀</h3>
+
+                    <div class="record-team-grid">
+
+                        ${redPlayers.map(p => `
+                            <div class="record-player-card">
+
+                                <div class="record-lane">
+                                    ${p.lane}
+                                </div>
+
+                                <img
+                                    src="${getChampionIconUrl(p.champion_name)}"
+                                    class="record-champ-icon"
+                                >
+
+                                <div class="record-player-name">
+                                    ${p.lol_name}
+                                </div>
+
+                                <div class="record-player-kda">
+                                    ${p.kills}/${p.deaths}/${p.assists}
+                                </div>
+
+                            </div>
+                        `).join("")}
+
+                    </div>
+
+                </div>
+                <div class="record-bans">
+
+                    <h3>🚫 블루팀 밴</h3>
+
+                    <div class="record-ban-grid">
+
+                        ${blueBans.map(b => `
+                            <img
+                                src="${getChampionIconUrl(b.champion_name)}"
+                                class="record-ban-icon"
+                            >
+                        `).join("")}
+
+                    </div>
+
+                    <h3 style="margin-top:20px;">🚫 레드팀 밴</h3>
+
+                    <div class="record-ban-grid">
+
+                        ${redBans.map(b => `
+                            <img
+                                src="${getChampionIconUrl(b.champion_name)}"
+                                class="record-ban-icon"
+                            >
+                        `).join("")}
+
+                    </div>
+
+                </div>    
+
+            `;
+        }
+
+    }catch(err){
+
+        flashMessage(
+            "recordFormMessage",
+            "등록 실패 : " + err
+        );
+
+        console.error(err);
+    }
 }
 
-function cancelRecordForm(){
-    const el=document.getElementById('recordMatchIdInput');
-    if(el)el.value='';
-    updateRecordPreview();
-    flashMessage('recordFormMessage','등록을 취소했습니다.');
+async function cancelRecordForm(){
+
+    const matchId =
+        (document.getElementById("recordMatchIdInput")?.value || "").trim();
+
+    if(!matchId){
+        flashMessage(
+            "recordFormMessage",
+            "매치 ID가 없습니다."
+        );
+        return;
+    }
+
+    try{
+
+        await window.collector.cancelMatch(matchId);
+
+        const el =
+            document.getElementById("recordMatchIdInput");
+
+        if(el) el.value = "";
+
+        updateRecordPreview();
+
+        flashMessage(
+            "recordFormMessage",
+            "등록 취소 완료"
+        );
+
+    }catch(err){
+
+        flashMessage(
+            "recordFormMessage",
+            "취소 실패 : " + err
+        );
+
+        console.error(err);
+    }
 }
 
 async function openBandleBot(btn){
@@ -2325,10 +2681,36 @@ function flashMessage(elOrId,text,ms=1000){
     clearTimeout(el.__flashTimer);
     el.__flashTimer=setTimeout(()=>{el.innerText=''},ms);
 }
-async function signupAccount(){const username=document.getElementById('signupUsername').value.trim();const password=document.getElementById('signupPassword').value;const nickname=document.getElementById('signupNickname').value.trim();const msg=document.getElementById('signupMessage');if(!username||!password){flashMessage(msg,'아이디/비밀번호를 입력해줘.');return}const salt=makeSalt();const password_hash=await hashPassword(password,salt);const {data,error}=await db.from('bc_accounts').insert({username,password_hash,password_salt:salt,nickname,settings:{...DEFAULT_UI_SETTINGS,lp:0}}).select('*').single();if(error){console.error(error);flashMessage(msg,'계정 생성 실패: 이미 있는 아이디일 수 있음');return}currentAccount=data;sessionStorage.setItem('bandleAccountId',data.id);applyUiSettings(data.settings);renderAccountPage();flashMessage('signupMessage','계정 생성 완료')}
-async function loginAccount(){const username=document.getElementById('loginUsername').value.trim();const password=document.getElementById('loginPassword').value;const msg=document.getElementById('loginMessage');const {data,error}=await db.from('bc_accounts').select('*').eq('username',username).maybeSingle();if(error||!data){msg.innerText='계정을 찾지 못함';return}const h=await hashPassword(password,data.password_salt);if(h!==data.password_hash){msg.innerText='비밀번호가 틀림';return}currentAccount=data;sessionStorage.setItem('bandleAccountId',data.id);applyUiSettings(data.settings);renderAccountPage();msg.innerText='로그인 완료'}
-function logoutAccount(){currentAccount=null;sessionStorage.removeItem('bandleAccountId');renderAccountPage()}
-async function restoreAccount(){const id=sessionStorage.getItem('bandleAccountId');if(!id||!db)return;const {data}=await db.from('bc_accounts').select('*').eq('id',id).maybeSingle();if(data){currentAccount=data;applyUiSettings(data.settings||{});}}
+async function signupAccount(){const username=document.getElementById('signupUsername').value.trim();const password=document.getElementById('signupPassword').value;const nickname=document.getElementById('signupNickname').value.trim();const msg=document.getElementById('signupMessage');if(!username||!password){flashMessage(msg,'아이디/비밀번호를 입력해줘.');return}const salt=makeSalt();const password_hash=await hashPassword(password,salt);const {data,error}=await db.from('bc_accounts').insert({username,password_hash,password_salt:salt,nickname,settings:{...DEFAULT_UI_SETTINGS,lp:0}}).select('*').single();if(error){console.error(error);flashMessage(msg,'계정 생성 실패: 이미 있는 아이디일 수 있음');return}currentAccount=data;applyUiSettings(data.settings);renderAccountPage();flashMessage('signupMessage','계정 생성 완료')}
+async function loginAccount(){const username=document.getElementById('loginUsername').value.trim();const password=document.getElementById('loginPassword').value;const msg=document.getElementById('loginMessage');const {data,error}=await db.from('bc_accounts').select('*').eq('username',username).maybeSingle();if(error||!data){msg.innerText='계정을 찾지 못함';return}const h=await hashPassword(password,data.password_salt);if(h!==data.password_hash){msg.innerText='비밀번호가 틀림';return}currentAccount=data;localStorage.setItem('bandleAccountId',data.id);applyUiSettings(data.settings);renderAccountPage();msg.innerText='로그인 완료'}
+function logoutAccount(){currentAccount=null;localStorage.removeItem('bandleAccountId');renderAccountPage()}
+async function restoreAccount(){
+
+    const id = localStorage.getItem('bandleAccountId');
+
+    console.log("RESTORE ID =", id);
+
+    if(!id || !db){
+        console.log("NO ID OR DB");
+        return;
+    }
+
+    const {data,error} = await db
+        .from('bc_accounts')
+        .select('*')
+        .eq('id',id)
+        .maybeSingle();
+
+    console.log("RESTORE DATA =", data);
+    console.log("RESTORE ERROR =", error);
+
+    if(data){
+        currentAccount = data;
+        applyUiSettings(data.settings || {});
+        renderAccountPage();
+        console.log("RESTORE SUCCESS");
+    }
+}
 async function saveProfileSettings(){if(!currentAccount)return;const nickname=document.getElementById('settingNickname').value.trim();const profile_image=document.getElementById('settingProfileImage').value.trim();const intro=document.getElementById('settingIntro').value.trim();const settings={...getAccountSettings(),profile_image,intro};const {data,error}=await db.from('bc_accounts').update({nickname,settings,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);flashMessage('profileSaveMessage','저장 실패');return}currentAccount=data;if(nickname){await db.from('bc_players').update({profile_image:profile_image||null,intro:intro||null}).eq('nickname',nickname)}await loadPlayers();renderAccountPage();flashMessage('profileSaveMessage','저장 완료')}
 async function saveUiSettings(type='all'){
     if(!currentAccount)return;
@@ -2343,8 +2725,9 @@ async function saveUiSettings(type='all'){
         return;
     }
     currentAccount=data;
-    applyUiSettings(st);
-    if(msg)flashMessage(msg,'저장 완료');
+    localStorage.setItem('bandleAccountId',data.id);
+    applyUiSettings(data.settings);
+    renderAccountPage();
 }
 async function changeAccountLogin(){if(!currentAccount)return;const newUsername=document.getElementById('changeUsername').value.trim();const currentPw=document.getElementById('currentPassword').value;const newPw=document.getElementById('changePassword').value;const msg=document.getElementById('accountChangeMessage');const check=await hashPassword(currentPw,currentAccount.password_salt);if(check!==currentAccount.password_hash){flashMessage(msg,'현재 비밀번호가 틀림');return}const update={updated_at:new Date().toISOString()};if(newUsername)update.username=newUsername;if(newPw){const salt=makeSalt();update.password_salt=salt;update.password_hash=await hashPassword(newPw,salt)}const {data,error}=await db.from('bc_accounts').update(update).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);flashMessage(msg,'변경 실패');return}currentAccount=data;renderAccountPage();flashMessage('accountChangeMessage','저장 완료')}
 function getIntroHtml(p){return p?.intro?`<div class="intro-box">${escapeHtml(p.intro)}</div>`:''}
@@ -2418,35 +2801,64 @@ async function changeAdminPassword(){
     document.getElementById("adminNewPassword").value="";
     flashMessage(msg,"관리자 비밀번호 변경 완료");
 }
-function getPatchNotes(){
-    try{return JSON.parse(localStorage.getItem(PATCH_NOTES_KEY)||"[]")}catch(e){return []}
+async function getPatchNotes(){
+
+    const { data, error } =
+        await db
+            .from("patch_notes")
+            .select("*")
+            .order(
+                "created_at",
+                { ascending:false }
+            );
+
+    if(error){
+        console.error(error);
+        return [];
+    }
+
+    return data || [];
 }
-function savePatchNotes(list){
-    localStorage.setItem(PATCH_NOTES_KEY,JSON.stringify(list));
-}
-function uploadPatchNote(){
+async function uploadPatchNote(){
     const title=document.getElementById("patchTitleInput").value.trim();
     const body=document.getElementById("patchBodyInput").value.trim();
     const msg=document.getElementById("patchUploadMessage");
     if(!title||!body){flashMessage(msg,"제목과 내용을 모두 입력해줘.");return}
-    const list=getPatchNotes();
-    list.unshift({title,body,createdAt:new Date().toISOString()});
-    savePatchNotes(list);
+    const { error } =
+        await db
+            .from("patch_notes")
+            .insert({
+                title,
+                body
+            });
+
+    if(error){
+
+        flashMessage(
+            msg,
+            "업로드 실패"
+        );
+
+        console.error(error);
+
+        return;
+    }
     document.getElementById("patchTitleInput").value="";
     document.getElementById("patchBodyInput").value="";
     renderPatchNotes();
     flashMessage(msg,"업로드 완료");
 }
-function openPatchNotes(btn){
+async function openPatchNotes(btn){
     showPage("patchNotes",btn);
-    renderPatchNotes();
+    await renderPatchNotes();
 }
-function renderPatchNotes(){
+async function renderPatchNotes(){
     const area=document.getElementById("patchNotesList");
     if(!area)return;
-    const list=getPatchNotes();
+    const list =
+        await getPatchNotes();
     if(!list.length){area.innerHTML='<div class="empty-box">등록된 패치노트가 없습니다.</div>';return}
-    area.innerHTML=list.map(n=>`<div class="patch-card"><div class="patch-card-title">${escapeHtml(n.title)}</div><div class="patch-card-date">${formatDate(n.createdAt)}</div><div class="patch-card-body">${escapeHtml(n.body)}</div></div>`).join("");
+    area.innerHTML=list.map(n=>`<div class="patch-card"><div class="patch-card-title">${escapeHtml(n.title)}</div><div class="patch-card-date">${formatDate(n.created_at)}</div><div class="patch-card-body">${escapeHtml(n.body)}</div></div>`).join("");
 }
 function getManualWatchPlayers(){
     try{return JSON.parse(localStorage.getItem(WATCH_PLAYERS_KEY)||"[]")}catch(e){return []}
