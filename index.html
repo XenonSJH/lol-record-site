@@ -1549,6 +1549,14 @@ function championRankingRow(c,rank){
     const wr=getChampionWinrate(c).toFixed(1);
     const laneText=escapeHtml(c.lane);
 
+    const totalGames = championStatsCache
+        .filter(x => c.lane === 'ALL' ? x.lane === 'ALL' : x.lane === c.lane)
+        .reduce((sum,x)=>sum + Number(x.games||0),0);
+
+    const pickrate = totalGames > 0
+        ? (Number(c.games||0) / totalGames * 100).toFixed(1)
+        : '0.0';
+
     return `
         <div class="ranking-row" onclick="openChampionDetail('${escapeJs(c.champion_name)}','${escapeJs(c.lane)}')">
             <div class="rank-num">#${rank}</div>
@@ -1566,12 +1574,12 @@ function championRankingRow(c,rank){
 
             <div class="rank-stat-block">
                 <div>승률 ${wr}%</div>
-                <div class="stat-sub">픽률 ${c.games}판</div>
+                <div class="stat-sub">${c.games}판</div>
             </div>
 
             <div class="rank-stat-block">
                 <div>벤율 ${Number(c.ban_rate||0).toFixed(1)}%</div>
-                <div class="stat-sub">픽률 ${c.games}판</div>
+                <div class="stat-sub">티어 ${tier}</div>
             </div>
 
             <div class="rank-stat-block">
