@@ -1236,8 +1236,7 @@ let navStack=["home"], navIndex=0, suppressNav=false;
 let championIconMap={}, championJsonLoaded=false;
 let currentAccount=null, currentTheme="purple";
 
-const ADMIN_PASSWORD = "1234";
-const ADMIN_PASSWORD_KEY = "bandleAdminPassword";
+
 const WATCH_PLAYERS_KEY = "bandleWatchPlayers";
 const PATCH_NOTES_KEY = "bandlePatchNotes";
 let adminMenuButton = null;
@@ -2351,40 +2350,67 @@ function openAdminLogin(btn){
     showPage("adminLogin", btn);
 }
 
-function getAdminPassword(){
-    return localStorage.getItem(ADMIN_PASSWORD_KEY) || ADMIN_PASSWORD;
+async function getAdminPassword(){
+    const {data,error}=await db
+        .from("bc_settings")
+        .select("value")
+        .eq("key","admin_password")
+        .maybeSingle();
+
+    if(error){
+        console.error(error);
+        return "1234";
+    }
+
+    return data?.value?.password || "1234";
 }
-function checkAdminPassword(){
-    const input =
-        document.getElementById("adminPassword").value;
 
-    const msg =
-        document.getElementById("adminLoginMessage");
+async function checkAdminPassword(){
+    const input=document.getElementById("adminPassword").value;
+    const msg=document.getElementById("adminLoginMessage");
 
-    if(input === getAdminPassword()){
+    const adminPassword=await getAdminPassword();
 
-        showPage(
-            "adminPage",
-            adminMenuButton
-        );
+    if(input===adminPassword){
+        showPage("adminPage",adminMenuButton);
         renderWatchList();
         renderPatchNotes();
-
     }else{
-
-        msg.innerText =
-            "비밀번호가 틀렸습니다.";
-
+        msg.innerText="비밀번호가 틀렸습니다.";
     }
 }
 
-function changeAdminPassword(){
+async function changeAdminPassword(){
     const oldPw=document.getElementById("adminOldPassword").value;
     const newPw=document.getElementById("adminNewPassword").value;
     const msg=document.getElementById("adminPasswordChangeMessage");
-    if(oldPw!==getAdminPassword()){flashMessage(msg,"현재 비밀번호가 틀렸습니다.");return}
-    if(!newPw.trim()){flashMessage(msg,"새 비밀번호를 입력해줘.");return}
-    localStorage.setItem(ADMIN_PASSWORD_KEY,newPw);
+
+    const adminPassword=await getAdminPassword();
+
+    if(oldPw!==adminPassword){
+        flashMessage(msg,"현재 비밀번호가 틀렸습니다.");
+        return;
+    }
+
+    if(!newPw.trim()){
+        flashMessage(msg,"새 비밀번호를 입력해줘.");
+        return;
+    }
+
+    const {error}=await db
+        .from("bc_settings")
+        .upsert({
+            key:"admin_password",
+            value:{password:newPw},
+            updated_at:new Date().toISOString()
+        });
+
+    if(error){
+        console.error(error);
+        flashMessage(msg,"비밀번호 변경 실패");
+        return;
+    }
+
     document.getElementById("adminOldPassword").value="";
     document.getElementById("adminNewPassword").value="";
     flashMessage(msg,"관리자 비밀번호 변경 완료");
