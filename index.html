@@ -1222,6 +1222,20 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
         <br><br>
         <button class="sort-btn active" onclick="uploadPatchNote()">작성 & 업로드</button>
         <p class="stat" id="patchUploadMessage"></p>
+        <br>
+
+        <div class="card">
+            <h2>전적 초기화</h2>
+
+            <br>
+
+            <button
+                class="sort-btn"
+                style="background:#dc2626;color:white"
+                onclick="resetAllRecords()">
+                모든 전적 초기화
+            </button>
+        </div>
     </div>
 </div>
 </div>
@@ -1575,8 +1589,8 @@ function championRankingRow(c,rank){
             </div>
 
             <div class="rank-stat-block">
-                <div>승률</div>
-                <div class="stat-sub">${wr}%</div>
+                <div>픽률</div>
+                <div class="stat-sub">${pickRate}%</div>
             </div>
         </div>
     `;
@@ -2535,6 +2549,27 @@ function applySeasonToUI(season){
     if(endInput) endInput.value = end;
 }
 restoreAccount().then(()=>{loadPlayers();loadSeasonSetting();});
+async function resetAllRecords(){
+
+    if(!confirm("정말 모든 전적을 초기화할까요?")){
+        return;
+    }
+
+    const { error } = await supabase.rpc(
+        'reset_bandle_records'
+    );
+
+    if(error){
+        alert('실패 : ' + error.message);
+        return;
+    }
+
+    alert('초기화 완료');
+
+    await loadPlayers();
+    await loadChampions();
+    await loadMatches();
+}
 </script>
 </body>
 </html>
