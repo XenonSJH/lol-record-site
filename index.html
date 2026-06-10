@@ -284,6 +284,16 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
     color:#CBD5E1;
     font-weight:800;
 }
+.champion-main-stat,
+.champion-main-stat strong{
+    font-size:20px;
+    font-weight:800;
+}
+
+.card .stat strong{
+    font-weight:800;
+    color:#fff;
+}
 .rank-kda .kda-line{
     gap:56px;
     font-size:18px;
@@ -1893,20 +1903,20 @@ function openChampionDetail(name,lane='ALL'){
 
         <br>
 
-        <p class="stat">
-            ${champ.games}전 ${champ.wins}승 ${champ.games-champ.wins}패
+        <p class="stat champion-main-stat">
+            ⚔️ <strong>${champ.games}전 ${champ.wins}승 ${champ.games-champ.wins}패</strong>
         </p>
 
         <p class="stat">
-            승률 ${getChampionWinrate(champ).toFixed(1)}%
+            🏆 승률 ${getChampionWinrate(champ).toFixed(1)}%
         </p>
 
         <p class="stat">
-            픽률 ${pickRate}%
+            🎯 픽률 ${pickRate}%
         </p>
 
         <p class="stat">
-            벤율 ${Number(champ.ban_rate||0).toFixed(1)}%
+            🚫 벤율 ${Number(champ.ban_rate||0).toFixed(1)}%
         </p>
 
         <br>
@@ -1970,7 +1980,9 @@ function championTopPlayerRow(p,rank){
 
 async function openPlayer(id){
     const p=playersCache.find(x=>Number(x.id)===Number(id));if(!p)return;
-    document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}<h1>${escapeHtml(p.nickname)}</h1>${getIntroHtml(p)}<br>${getTierBadge(p)}<p class="stat">⚔️ ${p.total_games}전</p><p class="stat">🏆 ${p.wins}승 ${p.losses}패</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p></div><div><div class="card"><h2>모스트 챔피언</h2><br><div class="detail-loading">전적 데이터를 불러오는 중...</div></div><br><div class="card"><h2>최근 전적</h2><br><div class="detail-loading">최근 전적을 불러오는 중...</div></div></div></div>`;
+    document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}<h1>${escapeHtml(p.nickname)}</h1>${getIntroHtml(p)}<br>${getTierBadge(p)}<p class="stat">
+    ⚔️ <strong>${p.total_games}전 ${p.wins}승 ${p.losses}패</strong>
+</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p></div><div><div class="card"><h2>모스트 챔피언</h2><br><div class="detail-loading">전적 데이터를 불러오는 중...</div></div><br><div class="card"><h2>최근 전적</h2><br><div class="detail-loading">최근 전적을 불러오는 중...</div></div></div></div>`;
     showPage('playerDetail');await loadPlayerDetail(p);
 }
 async function loadPlayerDetail(p){
@@ -1978,7 +1990,9 @@ async function loadPlayerDetail(p){
     if(error){console.error(error);return renderPlayerDetailError(p)}renderPlayerDetail(p,data||[])
 }
 function renderPlayerDetail(p,records){
-    document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}<h1>${escapeHtml(p.nickname)}</h1>${getIntroHtml(p)}<br>${getTierBadge(p)}<p class="stat">⚔️ ${p.total_games}전</p><p class="stat">🏆 ${p.wins}승 ${p.losses}패</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p><br><p class="stat">승리 시 예상 LP : +${getWinPointChange(p,'win')}</p><p class="stat">패배 시 예상 LP : ${getWinPointChange(p,'lose')}</p></div><div><div class="card"><h2>모스트 챔피언</h2><br>${buildMostChampions(records)}</div><br><div class="card"><h2>최근 전적</h2><br>${buildRecentMatches(p,records)}</div></div></div>`;
+    document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}<h1>${escapeHtml(p.nickname)}</h1>${getIntroHtml(p)}<br>${getTierBadge(p)}<p class="stat">
+    ⚔️ <strong>${p.total_games}전 ${p.wins}승 ${p.losses}패</strong>
+</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p><br><p class="stat">승리 시 예상 LP : +${getWinPointChange(p,'win')}</p><p class="stat">패배 시 예상 LP : ${getWinPointChange(p,'lose')}</p></div><div><div class="card"><h2>모스트 챔피언</h2><br>${buildMostChampions(records)}</div><br><div class="card"><h2>최근 전적</h2><br>${buildRecentMatches(p,records)}</div></div></div>`;
 }
 function buildMostChampions(records){
     if(!records.length)return '<div class="empty-box">아직 전적 데이터가 없습니다.</div>';
