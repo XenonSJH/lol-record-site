@@ -448,7 +448,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     min-height:118px;
 }
 #championsContainer .ranking-row{
-    grid-template-columns:56px 92px minmax(210px,1.65fr) minmax(118px,.72fr) minmax(160px,.95fr) minmax(150px,.9fr) minmax(110px,.7fr)!important;
+    grid-template-columns:56px 92px minmax(210px,1.65fr) repeat(4,minmax(120px,1fr))!important;
 }
 #championsContainer .rank-main{padding-left:18px}
 .rank-stat-block{display:flex;flex-direction:column;gap:8px;font-size:17px;font-weight:1000;color:#E2E8F0;min-width:0}
@@ -479,7 +479,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 .plain-stat.sub{color:#CBD5E1;font-size:14px}
 .champion-top-row{
     display:grid!important;
-    grid-template-columns:56px minmax(140px,1.2fr) minmax(135px,1fr) minmax(120px,.8fr) minmax(115px,.8fr) minmax(120px,.85fr);
+    grid-template-columns:56px minmax(160px,1.2fr) minmax(150px,1fr) minmax(120px,.8fr) minmax(120px,.8fr);
     align-items:center;
     gap:14px;
 }
@@ -585,7 +585,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 .sort-dir-btn.asc span:first-child,.sort-dir-btn.desc span:last-child{background:var(--bc-accent,#8B5CF6)}
 .player-most-list .champion-row{
     display:grid!important;
-    grid-template-columns:minmax(230px,1.4fr) minmax(150px,.85fr) minmax(105px,.7fr) minmax(130px,.75fr) minmax(190px,1fr);
+    grid-template-columns:minmax(230px,1.4fr) minmax(150px,.85fr) minmax(105px,.7fr) minmax(130px,.75fr);
     gap:26px!important;
 }
 .bot-grid{display:grid;grid-template-columns:1fr;gap:20px;overflow:auto;min-height:0;padding-right:8px}
@@ -739,8 +739,8 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 }
 
 .player-most-list .champion-row{
-    grid-template-columns:54px minmax(210px,1.35fr) minmax(120px,.72fr) minmax(92px,.55fr) minmax(130px,.72fr) minmax(112px,.62fr)!important;
-    min-width:780px;
+    grid-template-columns:54px minmax(210px,1.35fr) minmax(120px,.72fr) minmax(92px,.55fr) minmax(130px,.72fr)!important;
+    min-width:640px;
     gap:20px!important;
 }
 
@@ -926,7 +926,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
         grid-template-columns:1fr!important;
     }
     .player-most-list .champion-row{
-        min-width:680px;
+        min-width:560px;
     }
     #matchesContainer.player-grid{
         grid-template-columns:1fr!important;
@@ -1543,9 +1543,6 @@ function renderChampions(champs){
     container.innerHTML=champs.map((c,i)=>championRankingRow(c,i+1)).join('');
 }
 function championRankingRow(c,rank){
-    const tier=getChampionTier(c);
-    const kda=avgKdaText(c);
-    const kdar=getChampionKdaRatio(c).toFixed(1);
     const wr=getChampionWinrate(c).toFixed(1);
     const laneText=escapeHtml(c.lane);
 
@@ -1573,13 +1570,13 @@ function championRankingRow(c,rank){
             </div>
 
             <div class="rank-stat-block">
-                <div>승률 ${wr}%</div>
-                <div class="stat-sub">${c.games}판</div>
+                <div>승률</div>
+                <div class="stat-sub">${wr}%</div>
             </div>
 
             <div class="rank-stat-block">
-                <div>벤율 ${Number(c.ban_rate||0).toFixed(1)}%</div>
-                <div class="stat-sub">티어 ${tier}</div>
+                <div>벤율</div>
+                <div class="stat-sub">${Number(c.ban_rate||0).toFixed(1)}%</div>
             </div>
 
             <div class="rank-stat-block">
@@ -1972,20 +1969,16 @@ function championTopPlayerRow(p,rank){
     const losses=p.games-p.wins;
     const wr=p.games?p.wins/p.games*100:0;
     const kdaText=p.games?`${(p.kills/p.games).toFixed(1)}/${(p.deaths/p.games).toFixed(1)}/${(p.assists/p.games).toFixed(1)}`:'0/0/0';
-    const ratio=((p.kills+p.assists)/Math.max(1,p.deaths)).toFixed(1);
-    const kp=p.games?(p.kp/p.games).toFixed(1):'0.0';
     return `<div class="champion-row champion-top-row">
         <div class="most-rank">#${rank}</div>
         <div class="champion-main">
             <div class="champion-name">${escapeHtml(p.name)}</div>
         </div>
-        <div class="plain-stat">${p.games}판 ${p.wins}승 ${losses}패</div>
+        <div class="plain-stat">${p.games}전 ${p.wins}승 ${losses}패</div>
         <div class="plain-stat sub">승률 ${wr.toFixed(1)}%</div>
-        <div class="plain-stat">${kdaText} <span class="plain-stat sub">${ratio}</span></div>
-        <div class="plain-stat sub">킬관여율 ${kp}%</div>
+        <div class="plain-stat">${kdaText}</div>
     </div>`;
 }
-
 async function openPlayer(id){
     const p=playersCache.find(x=>Number(x.id)===Number(id));if(!p)return;
     document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}<h1>${escapeHtml(p.nickname)}</h1>${getIntroHtml(p)}<br>${getTierBadge(p)}<p class="stat">⚔️ ${p.total_games}전</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p></div><div><div class="card"><h2>모스트 챔피언</h2><br><div class="detail-loading">전적 데이터를 불러오는 중...</div></div><br><div class="card"><h2>최근 전적</h2><br><div class="detail-loading">최근 전적을 불러오는 중...</div></div></div></div>`;
@@ -2020,8 +2013,6 @@ function buildMostChampions(records){
     });
     return `<div class="champion-list player-most-list">${Object.values(map).sort((a,b)=>champPerformanceScore(b)-champPerformanceScore(a)).slice(0,5).map((c,i)=>{
         const wr=(c.wins/c.games*100).toFixed(1);
-        const kda=`${(c.kills/c.games).toFixed(1)} / ${(c.deaths/c.games).toFixed(1)} / ${(c.assists/c.games).toFixed(1)}`;
-        const ratio=((c.kills+c.assists)/Math.max(1,c.deaths)).toFixed(1);
         const kp=(c.kp/c.games).toFixed(1);
         return `<div class="champion-row" onclick="openChampionDetail('${escapeJs(c.champion_name)}','${escapeJs(c.lane)}')">
             <div class="most-rank">#${i+1}</div>
@@ -2034,8 +2025,7 @@ function buildMostChampions(records){
             </div>
             <div class="plain-stat">${c.games}전 ${c.wins}승 ${c.games-c.wins}패</div>
             <div class="plain-stat sub">승률 ${wr}%</div>
-            <div class="plain-stat">${kda}</div>
-            <div class="plain-stat kp-stack">KDA ${ratio}<br>${kp}%</div>
+            <div class="plain-stat">킬관여율 ${kp}%</div>
         </div>`;
     }).join('')}</div>`;
 }
