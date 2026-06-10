@@ -1713,8 +1713,11 @@ function buildDetailRecords(records){
     return records.map(r=>{
         const p=playersCache.find(x=>x.id===r.player_id);
         const ratio=kdaRatio(r).toFixed(2);
-        const lp=getWinPointChange(p||{},r.result);
-        const lpText=lp>=0?`+${lp}`:`${lp}`;
+        const lp = r.lp_change !== null && r.lp_change !== undefined
+            ? Number(r.lp_change)
+            : 0;
+
+        const lpText = lp >= 0 ? `+${lp}` : `${lp}`;
 
         return `
             <div class="record-row" onclick="openPlayer(${r.player_id})">
