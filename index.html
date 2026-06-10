@@ -788,6 +788,41 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     grid-template-columns:52px minmax(72px,1fr) 82px 54px 66px 64px!important;
     gap:7px!important;
 }
+.ban-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+}
+.ban-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+.ban-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--bc-card2,#111827);
+    border:1px solid var(--bc-border,#334155);
+    border-radius:14px;
+    padding:10px 12px;
+    min-height:56px;
+}
+.ban-item .champion-icon.small{
+    width:36px!important;
+    height:36px!important;
+}
+.ban-name{
+    font-weight:1000;
+    color:#E2E8F0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+.ban-empty{
+    color:#94A3B8;
+    font-weight:800;
+}
 .record-ui-grid{
     display:grid;
     grid-template-columns:minmax(320px,420px) minmax(0,1fr);
@@ -854,6 +889,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 @media(max-width:900px){
     .record-ui-grid{grid-template-columns:1fr}
     .record-id-row{grid-template-columns:1fr}
+    .ban-grid{grid-template-columns:1fr}
 }
 
 @media(max-width:900px){
@@ -1634,12 +1670,13 @@ function buildCompRows(records){
     }).join('')}</div>`;
 }
 async function openMatchById(id){if(!matchesCache.length)await loadMatches();openMatch(id)}
-function openMatch(id){
+async function openMatch(id){
     const m=matchesCache.find(x=>Number(x.id)===Number(id));if(!m)return;
     const blue=m.records.filter(r=>r.team==='blue').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
     const red=m.records.filter(r=>r.team==='red').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
-    document.getElementById('matchDetailContent').innerHTML=`<div class="section"><div class="card"><div class="match-card-top"><div><h1>${escapeHtml(m.match_code||'MATCH-'+m.id)}</h1><div class="match-detail-date">${formatDate(m.played_at)}</div></div></div><div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div></div><div class="team-grid"><div class="team-card"><div class="team-title blue">BLUE TEAM</div>${buildDetailRecords(blue)}</div><div class="team-card"><div class="team-title red">RED TEAM</div>${buildDetailRecords(red)}</div></div></div>`;
+    document.getElementById('matchDetailContent').innerHTML=`<div class="section"><div class="card"><div class="match-card-top"><div><h1>${escapeHtml(m.match_code||'MATCH-'+m.id)}</h1><div class="match-detail-date">${formatDate(m.played_at)}</div></div></div><div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div></div><div class="team-grid"><div class="team-card"><div class="team-title blue">BLUE TEAM</div>${buildDetailRecords(blue)}</div><div class="team-card"><div class="team-title red">RED TEAM</div>${buildDetailRecords(red)}</div></div><br><div class="card"><h2>밴 목록</h2><br><div id="matchBanContent">${buildMatchBans(m.bans||[])}</div></div></div>`;
     showPage('matchDetail');
+    loadMatchBans(m);
 }
 function buildDetailRecords(records){
     if(!records.length)return '<div class="empty-box">기록 없음</div>';
@@ -1668,6 +1705,67 @@ function buildDetailRecords(records){
     }).join('');
 }
 function kdaRatio(r){return (Number(r.kills||0)+Number(r.assists||0))/Math.max(1,Number(r.deaths||0))}
+
+async function loadMatchBans(match){
+    const box=document.getElementById('matchBanContent');
+    if(!box||!db)return;
+    if(Array.isArray(match.bans)){box.innerHTML=buildMatchBans(match.bans);return}
+    try{
+        const {data,error}=await db.from('bc_bans').select('*').eq('match_id',match.id);
+        if(error){console.warn('밴 기록 로드 실패',error);box.innerHTML=buildMatchBans([]);return}
+        match.bans=data||[];
+        box.innerHTML=buildMatchBans(match.bans);
+    }catch(e){
+        console.warn('밴 기록 로드 실패',e);
+        box.innerHTML=buildMatchBans([]);
+    }
+}
+
+function buildMatchBans(bans){
+    const list=Array.isArray(bans)?bans:[];
+    let blue=list.filter(b=>isBlueBan(b));
+    let red=list.filter(b=>isRedBan(b));
+    if(list.length&&(blue.length+red.length)===0){
+        blue=list.slice(0,5);
+        red=list.slice(5,10);
+    }
+    return `<div class="ban-grid">
+        <div>
+            <div class="team-title blue">BLUE BAN</div>
+            <div class="ban-list">${buildBanItems(blue)}</div>
+        </div>
+        <div>
+            <div class="team-title red">RED BAN</div>
+            <div class="ban-list">${buildBanItems(red)}</div>
+        </div>
+    </div>`;
+}
+
+function buildBanItems(items){
+    if(!items.length)return '<div class="ban-empty">밴 기록 없음</div>';
+    return items.map(b=>{
+        const name=getBanChampionName(b);
+        return `<div class="ban-item">${champIcon(name,'champion-icon small',true)}<div class="ban-name">${escapeHtml(name)}</div></div>`;
+    }).join('');
+}
+
+function getBanChampionName(b){
+    return b.champion_name||b.champion||b.name||b.champ_name||b.ban_champion||b.banned_champion||'알 수 없음';
+}
+
+function getBanTeamValue(b){
+    return String(b.team||b.side||b.team_name||b.team_id||b.teamId||'').toLowerCase();
+}
+
+function isBlueBan(b){
+    const v=getBanTeamValue(b);
+    return v==='blue'||v==='100'||v==='1';
+}
+
+function isRedBan(b){
+    const v=getBanTeamValue(b);
+    return v==='red'||v==='200'||v==='2';
+}
 
 function openChampionDetail(name,lane='ALL'){
     const champ=championStatsCache.find(c=>c.champion_name===name&&c.lane===lane)||championStatsCache.find(c=>c.champion_name===name&&c.lane==='ALL');if(!champ)return;
