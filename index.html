@@ -244,6 +244,10 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
     border-color:#8B5CF6;
     box-shadow:0 12px 30px rgba(0,0,0,.18);
 }
+button:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+}
 .rank-num{
     grid-row:1 / span 2;
     font-size:30px;
@@ -363,6 +367,17 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
     background:#312E81;
     color:#EDE9FE;
     white-space:nowrap;
+}
+.desktop-app-notice{
+    margin-top:12px;
+    padding:12px;
+    border-radius:12px;
+    background:rgba(239,68,68,.12);
+    border:1px solid rgba(239,68,68,.35);
+    color:#fca5a5;
+    text-align:center;
+    font-size:14px;
+    line-height:1.5;
 }
 .honey-pill{
     border-color:#FACC15;
@@ -1147,10 +1162,14 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     <div class="card record-register-card">
         <div class="record-id-row">
             <input class="search-input" id="recordMatchIdInput" placeholder="게임 ID 입력" oninput="updateRecordPreview()" onkeydown="if(event.key==='Enter')fakeRecordSubmit()">
-            <button class="sort-btn active" onclick="fakeRecordSubmit()">전적 등록</button>
+            <button class="sort-btn active" disabled="disabled" onclick="fakeRecordSubmit()">전적 등록</button>
             <button class="sort-btn" onclick="cancelRecordForm()">등록 취소</button>
         </div>
         <p class="record-hint" id="recordFormMessage">매치 ID를 입력하면 아래에 등록될 매치 내용이 미리 표시됩니다.</p>
+        <div class="desktop-app-notice">
+            ⚠️ 웹사이트에서는 전적 등록이 불가능합니다.<br>
+            BANDLE.GG 데스크톱 앱을 이용해주세요.
+        </div>
         <div class="record-preview" id="recordPreviewBox"></div>
     </div>
 </div>
@@ -1650,8 +1669,35 @@ function champPerformanceScore(c){
 }
 function renderChampionsView(){
     const q=(document.getElementById('championSearch')?.value||'').toLowerCase().trim();
-    let data=championStatsCache.filter(c=>(championLaneKey==='ALL'?c.lane!=='ALL':c.lane===championLaneKey)&&(!q||String(c.champion_name||'').toLowerCase().includes(q)));
-    data.sort((a,b)=>{const r=championSortKey==='winrate'?getChampionWinrate(a)-getChampionWinrate(b):championSortKey==='kda'?getChampionKdaRatio(a)-getChampionKdaRatio(b):championSortKey==='tier'?getChampionTierRank(a)-getChampionTierRank(b):championSortKey==='games'?a.games-b.games:Number(a.honey_score||0)-Number(b.honey_score||0);return championSortAsc?r:-r});
+
+    let data=championStatsCache.filter(c=>
+        (championLaneKey==='ALL'?c.lane!=='ALL':c.lane===championLaneKey)
+        &&(!q||String(c.champion_name||'').toLowerCase().includes(q))
+    );
+
+    data.sort((a,b)=>{
+
+        let r;
+
+        if(championSortKey==='winrate'){
+            r=getChampionWinrate(a)-getChampionWinrate(b);
+        }
+        else if(championSortKey==='kda'){
+            r=getChampionKdaRatio(a)-getChampionKdaRatio(b);
+        }
+        else if(championSortKey==='tier'){
+            r=getChampionTierRank(b)-getChampionTierRank(a); // ← 반대로
+        }
+        else if(championSortKey==='games'){
+            r=a.games-b.games;
+        }
+        else{
+            r=Number(a.honey_score||0)-Number(b.honey_score||0);
+        }
+
+        return championSortAsc ? r : -r;
+    });
+
     renderChampions(data);
 }
 function renderChampions(champs){
@@ -2608,7 +2654,33 @@ function getRankProfileHtml(p){
     return `<img class="rank-avatar round" src="${escapeAttribute(u)}" onerror="this.src='${escapeAttribute(DEFAULT_PROFILE_IMAGE)}'">`;
 }
 function getProfileHtml(p,size='normal'){const cls=size==='big'?'big-profile':'profile';const u=p.profile_image||DEFAULT_PROFILE_IMAGE;return `<img class="${cls}" src="${escapeAttribute(u)}" onerror="this.src='${escapeAttribute(DEFAULT_PROFILE_IMAGE)}'">`}
-function getWinPointChange(p,result){const g=p.total_games||0,w=p.wins||0;if(g<5)return result==='win'?250:40;if(result==='lose')return -15;const wr=g?w/g*100:50;let v=20;if(wr<50)v=20-Math.ceil((50-wr)/5)*2;return Math.max(v,4)}
+function getWinPointChange(p,result){
+
+    const games = Number(p.total_games || 0);
+    const wins  = Number(p.wins || 0);
+
+    // 배치고사 5판
+    if(games < 5){
+        return result === 'win' ? 60 : 0;
+    }
+
+    // 패배
+    if(result === 'lose'){
+        return -20;
+    }
+
+    const winRate =
+        games > 0
+            ? (wins / games * 100)
+            : 50;
+
+    // 승리 LP
+    if(winRate >= 70) return 30;
+    if(winRate >= 60) return 26;
+    if(winRate >= 50) return 22;
+
+    return 18;
+}
 function formatDate(v){if(!v)return '-';return new Date(v).toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
 function escapeHtml(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')}
 function escapeAttribute(v){return escapeHtml(v).replaceAll('`','&#096;')}
