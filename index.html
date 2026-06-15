@@ -1641,7 +1641,7 @@ async function loadChampions(){
     const storedMap={};(stored||[]).forEach(c=>storedMap[c.champion_name]=c);
     championStatsCache=buildChampionStats(championRecordsCache,storedMap);
     renderChampionsView();
-}z
+}
 function setChampionLane(key,btn){championLaneKey=key;document.querySelectorAll('[data-champion-lane]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderChampionsView()}
 function setChampionSort(key,btn){championSortKey=key;document.querySelectorAll('[data-champion-sort]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderChampionsView()}
 function buildChampionStats(records,storedMap={}){
