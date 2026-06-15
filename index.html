@@ -1638,10 +1638,12 @@ async function loadChampions(){
     if(recordError){console.error(recordError);container.innerHTML='<div class="empty-box">챔피언 데이터를 불러오지 못했습니다.</div>';return}
     championRecordsCache=records||[];
     const {data:stored}=await db.from('bc_champions').select('*');
+    console.log("stored", stored?.[0]);
     const storedMap={};(stored||[]).forEach(c=>storedMap[c.champion_name]=c);
     championStatsCache=buildChampionStats(championRecordsCache,storedMap);
     renderChampionsView();
 }
+
 function setChampionLane(key,btn){championLaneKey=key;document.querySelectorAll('[data-champion-lane]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderChampionsView()}
 function setChampionSort(key,btn){championSortKey=key;document.querySelectorAll('[data-champion-sort]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderChampionsView()}
 function buildChampionStats(records,storedMap={}){
