@@ -1163,7 +1163,6 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
         <div class="record-id-row">
             <input class="search-input" id="recordMatchIdInput" placeholder="게임 ID 입력" oninput="updateRecordPreview()" onkeydown="if(event.key==='Enter')fakeRecordSubmit()">
             <button class="sort-btn active" disabled="disabled" onclick="fakeRecordSubmit()">전적 등록</button>
-            <button class="sort-btn" onclick="cancelRecordForm()">등록 취소</button>
         </div>
         <p class="record-hint" id="recordFormMessage">매치 ID를 입력하면 아래에 등록될 매치 내용이 미리 표시됩니다.</p>
         <div class="desktop-app-notice">
@@ -1304,30 +1303,58 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 <div id="adminPage" class="page">
     <h2 style="margin-bottom:20px;">🛠️ 관리자</h2>
 
+    <div class="admin-top-grid">
+
     <div class="card admin-season-card">
-        <h2>시즌 설정</h2>
+            <h2>시즌 설정</h2>
 
-        <br>
+            <br>
 
-        <input class="search-input" id="seasonNameInput" placeholder="시즌 이름">
+            <input class="search-input" id="seasonNameInput" placeholder="시즌 이름">
 
-        <br><br>
+            <br><br>
 
-        <input class="search-input" id="seasonStartInput" type="date">
+            <input class="search-input" id="seasonStartInput" type="date">
 
-        <br><br>
+            <br><br>
 
-        <input class="search-input" id="seasonEndInput" type="date">
+            <input class="search-input" id="seasonEndInput" type="date">
 
-        <br><br>
+            <br><br>
 
-        <button class="sort-btn active" onclick="saveSeasonSetting()">
-            시즌 저장
-        </button>
-        <p class="stat" id="seasonSaveMessage"></p>
+            <button class="sort-btn active" onclick="saveSeasonSetting()">
+                시즌 저장
+            </button>
+
+            <p class="stat" id="seasonSaveMessage"></p>
+        </div>
+
+        <div class="card">
+            <h2>전적 취소</h2>
+
+            <br>
+
+            <input
+                class="search-input"
+                id="rollbackMatchId"
+                placeholder="매치 ID 입력">
+
+            <br><br>
+
+            <button
+                class="sort-btn active"
+                onclick="rollbackMatch()">
+                전적 취소
+            </button>
+
+            <p class="stat" id="rollbackMessage"></p>
+        </div>
+
     </div>
+
     <br>
-    <div class="card admin-auth-card">
+
+    <div class="card admin-patch-card">
         <h2>관리자 비번 변경</h2>
         <br>
         <input class="search-input" id="adminOldPassword" type="password" placeholder="현재 관리자 비밀번호">
@@ -1413,6 +1440,100 @@ async function loadChampionJson(){
         const data=await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/ko_KR/champion.json`).then(r=>r.json());
         Object.values(data.data).forEach(c=>{championIconMap[c.name]={id:c.id,version}});
     }catch(e){console.warn('챔피언 아이콘 로드 실패',e)}
+}
+async function rollbackMatch(){
+
+    const matchId =
+        document
+            .getElementById("rollbackMatchId")
+            .value
+            .trim();
+
+    const msg =
+        document.getElementById("rollbackMessage");
+
+    if(!matchId){
+        msg.innerText="매치 ID를 입력하세요.";
+        return;
+    }
+
+    try{
+
+        const { data: records }
+            = await db
+                .from("bc_records")
+                .select("*")
+                .eq("match_id", matchId);
+
+        if(!records || !records.length){
+            msg.innerText="해당 전적을 찾을 수 없습니다.";
+            return;
+        }
+
+        for(const r of records){
+
+            const { data: player }
+                = await db
+                    .from("bc_players")
+                    .select("*")
+                    .eq("id", r.player_id)
+                    .single();
+
+            if(!player) continue;
+
+            const newWins =
+                player.wins -
+                (r.result==="win" ? 1 : 0);
+
+            const newLosses =
+                player.losses -
+                (r.result==="lose" ? 1 : 0);
+
+            const newGames =
+                Math.max(
+                    0,
+                    player.total_games - 1
+                );
+
+            const newLp =
+                (player.lp || 0) -
+                (r.lp_change || 0);
+
+            await db
+                .from("bc_players")
+                .update({
+                    wins:newWins,
+                    losses:newLosses,
+                    total_games:newGames,
+                    lp:newLp
+                })
+                .eq("id", r.player_id);
+        }
+
+        await db
+            .from("bc_records")
+            .delete()
+            .eq("match_id", matchId);
+
+        await db
+            .from("bc_matches")
+            .delete()
+            .eq("id", matchId);
+
+        msg.innerText =
+            "전적 취소 완료";
+
+        await loadPlayers();
+        await loadMatches();
+        await loadChampions();
+
+    }catch(e){
+
+        console.error(e);
+
+        msg.innerText =
+            "전적 취소 실패";
+    }
 }
 function getChampionIconUrl(name){const c=championIconMap[name];return c?`https://ddragon.leagueoflegends.com/cdn/${c.version}/img/champion/${c.id}.png`:''}
 function champIcon(name,cls='champion-icon',click=true){
