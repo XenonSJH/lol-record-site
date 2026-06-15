@@ -1655,6 +1655,24 @@ async function loadChampions(){
     console.log(
         championStatsCache.find(x => x.champion_name === "가렌")
     );
+    console.log(
+    championRecordsCache
+        .map(x=>x.champion_name)
+        .filter(x=>String(x).includes("가"))
+        .slice(0,20)
+    );
+    console.log(
+        Object.keys(
+            Object.fromEntries(
+            Object.entries(
+                championStatsCache.reduce((a,c)=>{
+                a[c.champion_name]=1;
+                return a;
+                },{})
+            )
+            )
+        ).slice(0,30)
+    );
     championStatsCache=buildChampionStats(championRecordsCache,storedMap);
     renderChampionsView();
 }
