@@ -1656,6 +1656,32 @@ function buildChampionStats(records,storedMap={}){
     Object.values(total).forEach(t=>{const s=storedMap[t.champion_name]||{};t.bans=s.bans||0;t.ban_rate=Number(s.ban_rate||0);t.honey_score=Number(s.honey_score||calculateHoneyLocal(t))});
     Object.values(map).forEach(m=>{m.honey_score=calculateHoneyLocal(m);m.ban_rate=0;m.bans=0});
     return [...Object.values(total),...Object.values(map)];
+    Object.values(storedMap).forEach(s => {
+
+        if(total[s.champion_name]) return;
+
+        total[s.champion_name] = {
+            champion_name: s.champion_name,
+            lane: 'ALL',
+
+            games: 0,
+            wins: 0,
+
+            kills: 0,
+            deaths: 0,
+            assists: 0,
+
+            kp: 0,
+            score: 0,
+
+            records: [],
+
+            bans: Number(s.bans || 0),
+            ban_rate: Number(s.ban_rate || 0),
+
+            honey_score: 0
+        };
+    });
 }
 function calculateHoneyLocal(c){const wr=getChampionWinrate(c), avgS=getChampionAvgScore(c), kda=getChampionKdaRatio(c);const kdaScore=Math.min(kda/5*100,100);const sample=Math.min(1,c.games/10);return Math.round((wr*.45+avgS*.30+kdaScore*.25)*sample*10)/10}
 function champPerformanceScore(c){
