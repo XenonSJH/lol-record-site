@@ -1654,7 +1654,13 @@ function buildChampionStats(records,storedMap={}){
     });
     const total={};Object.values(map).forEach(m=>{if(!total[m.champion_name])total[m.champion_name]={...m,lane:'ALL',records:[]};else{const t=total[m.champion_name];['games','wins','kills','deaths','assists','kp','score'].forEach(k=>t[k]+=m[k]);}total[m.champion_name].records.push(...m.records)});
     Object.values(total).forEach(t=>{const s=storedMap[t.champion_name]||{};t.bans=s.bans||0;t.ban_rate=Number(s.ban_rate||0);t.honey_score=Number(s.honey_score||calculateHoneyLocal(t))});
-    Object.values(map).forEach(m=>{m.honey_score=calculateHoneyLocal(m);m.ban_rate=0;m.bans=0});
+    Object.values(map).forEach(m=>{
+        const s = storedMap[m.champion_name] || {};
+
+        m.honey_score = calculateHoneyLocal(m);
+        m.ban_rate = Number(s.ban_rate || 0);
+        m.bans = Number(s.bans || 0);
+    });
     return [...Object.values(total),...Object.values(map)];
     Object.values(storedMap).forEach(s => {
 
@@ -1765,7 +1771,7 @@ function championRankingRow(c,rank){
             </div>
 
             <div class="rank-stat-block">
-                <div>벤율 ${Number(s.ban_rate||0).toFixed(1)}%</div>
+                <div>벤율 ${Number(c.ban_rate||0).toFixed(1)}%</div>
             </div>
 
             <div class="rank-stat-block">
