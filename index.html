@@ -1633,12 +1633,12 @@ function renderPlayers(data){
 async function loadChampions(){
     if(!db)return;
     await loadChampionJson();
+    console.log("stored", stored?.[0]);
     const container=document.getElementById('championsContainer');container.innerHTML='<div class="loading">챔피언 데이터 불러오는 중...</div>';
     const {data:records,error:recordError}=await db.from('bc_records').select('*');
     if(recordError){console.error(recordError);container.innerHTML='<div class="empty-box">챔피언 데이터를 불러오지 못했습니다.</div>';return}
     championRecordsCache=records||[];
     const {data:stored}=await db.from('bc_champions').select('*');
-    console.log("stored", stored?.[0]);
     const storedMap={};(stored||[]).forEach(c=>storedMap[c.champion_name]=c);
     championStatsCache=buildChampionStats(championRecordsCache,storedMap);
     renderChampionsView();
