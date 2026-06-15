@@ -1677,6 +1677,8 @@ async function loadChampions(){
     console.log(championStatsCache[0]);
     console.log(championStatsCache.slice(0,5));
     console.log(Object.keys(championStatsCache[0] || {}));
+    console.log("records", championRecordsCache.length);
+    console.log("records0", championRecordsCache[0]);
     championStatsCache=buildChampionStats(championRecordsCache,storedMap);
     renderChampionsView();
 }
