@@ -1647,6 +1647,14 @@ async function loadChampions(){
     console.log(
         stored.filter(x => Number(x.ban_rate || 0) > 0)
     );
+    console.log(
+    championStatsCache
+        .filter(x => x.lane === 'ALL' && Number(x.ban_rate||0) > 0)
+        .slice(0,10)
+    );
+    console.log(
+        championStatsCache.find(x => x.champion_name === "가렌")
+    );
     championStatsCache=buildChampionStats(championRecordsCache,storedMap);
     renderChampionsView();
 }
