@@ -244,6 +244,10 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
     border-color:#8B5CF6;
     box-shadow:0 12px 30px rgba(0,0,0,.18);
 }
+button:disabled{
+    opacity:0.5;
+    cursor:not-allowed;
+}
 .rank-num{
     grid-row:1 / span 2;
     font-size:30px;
@@ -363,6 +367,17 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
     background:#312E81;
     color:#EDE9FE;
     white-space:nowrap;
+}
+.desktop-app-notice{
+    margin-top:12px;
+    padding:12px;
+    border-radius:12px;
+    background:rgba(239,68,68,.12);
+    border:1px solid rgba(239,68,68,.35);
+    color:#fca5a5;
+    text-align:center;
+    font-size:14px;
+    line-height:1.5;
 }
 .honey-pill{
     border-color:#FACC15;
@@ -1147,10 +1162,14 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     <div class="card record-register-card">
         <div class="record-id-row">
             <input class="search-input" id="recordMatchIdInput" placeholder="게임 ID 입력" oninput="updateRecordPreview()" onkeydown="if(event.key==='Enter')fakeRecordSubmit()">
-            <button class="sort-btn active" onclick="fakeRecordSubmit()">전적 등록</button>
+            <button class="sort-btn active" disabled="disabled" onclick="fakeRecordSubmit()">전적 등록</button>
             <button class="sort-btn" onclick="cancelRecordForm()">등록 취소</button>
         </div>
         <p class="record-hint" id="recordFormMessage">매치 ID를 입력하면 아래에 등록될 매치 내용이 미리 표시됩니다.</p>
+        <div class="desktop-app-notice">
+            ⚠️ 웹사이트에서는 전적 등록이 불가능합니다.<br>
+            BANDLE.GG 데스크톱 앱을 이용해주세요.
+        </div>
         <div class="record-preview" id="recordPreviewBox"></div>
     </div>
 </div>
