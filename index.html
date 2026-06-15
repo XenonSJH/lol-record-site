@@ -1653,7 +1653,7 @@ function buildChampionStats(records,storedMap={}){
         const m=map[key];m.games++;if(r.result==='win')m.wins++;m.kills+=Number(r.kills||0);m.deaths+=Number(r.deaths||0);m.assists+=Number(r.assists||0);m.kp+=Number(r.kp||0);m.score+=Number(r.score||0);m.records.push(r);
     });
     const total={};Object.values(map).forEach(m=>{if(!total[m.champion_name])total[m.champion_name]={...m,lane:'ALL',records:[]};else{const t=total[m.champion_name];['games','wins','kills','deaths','assists','kp','score'].forEach(k=>t[k]+=m[k]);}total[m.champion_name].records.push(...m.records)});
-    Object.values(total).forEach(t=>{const s=storedMap[t.champion_name]||{};t.bans=s.bans||0;t.ban_rate=Number(ban_rate||0);t.honey_score=Number(s.honey_score||calculateHoneyLocal(t))});
+    Object.values(total).forEach(t=>{const s=storedMap[t.champion_name]||{};t.bans=s.bans||0;t.ban_rate=Number(s.ban_rate||0);t.honey_score=Number(s.honey_score||calculateHoneyLocal(t))});
     Object.values(map).forEach(m=>{m.honey_score=calculateHoneyLocal(m);m.ban_rate=0;m.bans=0});
     return [...Object.values(total),...Object.values(map)];
 }
