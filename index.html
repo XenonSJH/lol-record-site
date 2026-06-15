@@ -1644,6 +1644,9 @@ async function loadChampions(){
     const storedMap={};(stored||[]).forEach(c=>storedMap[c.champion_name]=c);
     console.log("아리", storedMap["아리"]);
     console.log("가렌", storedMap["가렌"]);
+    console.log(
+        stored.filter(x => Number(x.ban_rate || 0) > 0)
+    );
     championStatsCache=buildChampionStats(championRecordsCache,storedMap);
     renderChampionsView();
 }
