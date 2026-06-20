@@ -19,6 +19,31 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
 .menu button.active{background:#8B5CF6}
 .main{flex:1;overflow:auto;min-width:0}
 .header{height:80px;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between;padding:0 30px;gap:12px;position:sticky;top:0;background:#0F172A;z-index:20}
+.mode-switch{
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+
+.mode-btn{
+    background:#1E293B;
+    border:1px solid #334155;
+    color:white;
+    padding:12px 18px;
+    border-radius:12px;
+    font-weight:900;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.mode-btn:hover{
+    background:#334155;
+}
+
+.mode-btn.active{
+    background:#8B5CF6;
+    border-color:#A78BFA;
+}
 .header-actions{display:flex;gap:10px;align-items:center}
 .header button,.sort-btn,.nav-btn{background:#8B5CF6;color:white;border:none;border-radius:12px;padding:12px 16px;cursor:pointer;font-weight:700}
 .header button:hover,.sort-btn:hover,.nav-btn:hover{background:#A78BFA}
@@ -244,10 +269,6 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
     border-color:#8B5CF6;
     box-shadow:0 12px 30px rgba(0,0,0,.18);
 }
-button:disabled{
-    opacity:0.5;
-    cursor:not-allowed;
-}
 .rank-num{
     grid-row:1 / span 2;
     font-size:30px;
@@ -367,17 +388,6 @@ button:disabled{
     background:#312E81;
     color:#EDE9FE;
     white-space:nowrap;
-}
-.desktop-app-notice{
-    margin-top:12px;
-    padding:12px;
-    border-radius:12px;
-    background:rgba(239,68,68,.12);
-    border:1px solid rgba(239,68,68,.35);
-    color:#fca5a5;
-    text-align:center;
-    font-size:14px;
-    line-height:1.5;
 }
 .honey-pill{
     border-color:#FACC15;
@@ -1074,7 +1084,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
         <div class="logo-mark"><span>BD</span><span>GG</span></div>
         <span>BANDLE.GG</span>
     </div>
-    <div class="menu">
+    <div class="menu" id="sidebarMenu">
         <button data-page="home" class="active" onclick="showPage('home',this)">🏠 홈</button>
         <button data-page="players" onclick="showPage('players',this); renderPlayersView();">👤 플레이어</button>
         <button data-page="champions" onclick="showPage('champions',this); loadChampions();">⚔️ 챔피언</button>
@@ -1087,13 +1097,37 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     </div>
 </div>
 <div class="main">
+<div class="main">
 <div class="header">
-    <h1>BANDLE.GG</h1>
+
+    <div class="mode-switch">
+
+        <button
+            id="bandleModeBtn"
+            class="mode-btn active"
+            onclick="switchMode('bandle')">
+
+            BANDLE.GG
+
+        </button>
+
+        <button
+            id="leagueModeBtn"
+            class="mode-btn"
+            onclick="switchMode('league')">
+
+            BANDLE LEAGUE
+
+        </button>
+
+    </div>
+
     <div class="header-actions">
         <button class="nav-btn" id="backBtn" onclick="goBack()">←</button>
         <button class="nav-btn" id="forwardBtn" onclick="goForward()">→</button>
         <button onclick="refreshCurrentPage()">🔄 새로고침</button>
     </div>
+
 </div>
 <div id="home" class="page active">
     <div class="cards">
@@ -1162,13 +1196,9 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     <div class="card record-register-card">
         <div class="record-id-row">
             <input class="search-input" id="recordMatchIdInput" placeholder="게임 ID 입력" oninput="updateRecordPreview()" onkeydown="if(event.key==='Enter')fakeRecordSubmit()">
-            <button class="sort-btn active" disabled="disabled" onclick="fakeRecordSubmit()">전적 등록</button>
+            <button class="sort-btn active" onclick="fakeRecordSubmit()">전적 등록</button>
         </div>
         <p class="record-hint" id="recordFormMessage">매치 ID를 입력하면 아래에 등록될 매치 내용이 미리 표시됩니다.</p>
-        <div class="desktop-app-notice">
-            ⚠️ 웹사이트에서는 전적 등록이 불가능합니다.<br>
-            BANDLE.GG 데스크톱 앱을 이용해주세요.
-        </div>
         <div class="record-preview" id="recordPreviewBox"></div>
     </div>
 </div>
@@ -1389,6 +1419,23 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     </div>
 </div>
 </div>
+<div id="league" class="page">
+    <h2>🏆 벤들리그 순위</h2>
+    <br>
+    <div id="leagueStandingsContainer"></div>
+</div>
+
+<div id="leagueTeams" class="page">
+    <h2>👥 팀</h2>
+    <br>
+    <div id="leagueTeamsContainer"></div>
+</div>
+
+<div id="leagueBracket" class="page">
+    <h2>📅 대진표</h2>
+    <br>
+    <div id="leagueBracketContainer"></div>
+</div>
 <script>
 const SUPABASE_URL = "https://ehligpqxjczgcggjpzwn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_QHDiR1qAWGVaKSDZguc0qg_fE_eVCwZ";
@@ -1399,7 +1446,8 @@ let playerSortAsc=false, championSortAsc=false;
 let navStack=["home"], navIndex=0, suppressNav=false;
 let championIconMap={}, championJsonLoaded=false;
 let currentAccount=null, currentTheme="purple";
-
+let currentMode="bandle";
+let originalSidebarMenu="";
 
 const WATCH_PLAYERS_KEY = "bandleWatchPlayers";
 const PATCH_NOTES_KEY = "bandlePatchNotes";
@@ -1408,7 +1456,73 @@ let adminMenuButton = null;
 if(SUPABASE_URL&&SUPABASE_KEY){
     db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
 }
+function switchMode(mode){
 
+    currentMode = mode;
+
+    document
+        .getElementById("bandleModeBtn")
+        .classList
+        .toggle(
+            "active",
+            mode==="bandle"
+        );
+
+    document
+        .getElementById("leagueModeBtn")
+        .classList
+        .toggle(
+            "active",
+            mode==="league"
+        );
+
+    const menu =
+        document.getElementById(
+            "sidebarMenu"
+        );
+
+    if(!menu) return;
+
+    if(mode==="league"){
+
+        menu.innerHTML = `
+
+<button onclick="showPage('league')">
+🏆 순위
+</button>
+
+<button onclick="showPage('leagueTeams')">
+👥 팀
+</button>
+
+<button onclick="showPage('leagueBracket')">
+📅 대진표
+</button>
+
+<button onclick="showPage('leagueMvp')">
+⭐ MVP
+</button>
+
+<button onclick="showPage('leagueRegister')">
+📝 대전등록
+</button>
+
+<button onclick="showPage('leagueAdmin')">
+🔒 관리자
+</button>
+
+`;
+
+        showPage('league');
+
+    }else{
+
+        menu.innerHTML =
+            originalSidebarMenu;
+
+        showPage('home');
+    }
+}
 function showPage(id,btn=null,push=true){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById(id)?.classList.add('active');
@@ -1430,17 +1544,6 @@ function updateNavButtons(){
 function goBack(){if(navIndex<=0)return;navIndex--;suppressNav=true;showPage(navStack[navIndex],null,false);suppressNav=false;updateNavButtons()}
 function goForward(){if(navIndex>=navStack.length-1)return;navIndex++;suppressNav=true;showPage(navStack[navIndex],null,false);suppressNav=false;updateNavButtons()}
 function refreshCurrentPage(){const id=document.querySelector('.page.active')?.id;if(id==='champions'||id==='championDetail')return loadChampions();if(id==='matches'||id==='matchDetail')return loadMatches();return loadPlayers()}
-
-async function loadChampionJson(){
-    if(championJsonLoaded) return;
-    championJsonLoaded=true;
-    try{
-        const versions=await fetch('https://ddragon.leagueoflegends.com/api/versions.json').then(r=>r.json());
-        const version=versions[0];
-        const data=await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/ko_KR/champion.json`).then(r=>r.json());
-        Object.values(data.data).forEach(c=>{championIconMap[c.name]={id:c.id,version}});
-    }catch(e){console.warn('챔피언 아이콘 로드 실패',e)}
-}
 async function rollbackMatch(){
 
     const matchId =
@@ -1543,6 +1646,16 @@ async function rollbackMatch(){
         msg.innerText =
             "전적 취소 실패";
     }
+}
+async function loadChampionJson(){
+    if(championJsonLoaded) return;
+    championJsonLoaded=true;
+    try{
+        const versions=await fetch('https://ddragon.leagueoflegends.com/api/versions.json').then(r=>r.json());
+        const version=versions[0];
+        const data=await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/ko_KR/champion.json`).then(r=>r.json());
+        Object.values(data.data).forEach(c=>{championIconMap[c.name]={id:c.id,version}});
+    }catch(e){console.warn('챔피언 아이콘 로드 실패',e)}
 }
 function getChampionIconUrl(name){const c=championIconMap[name];return c?`https://ddragon.leagueoflegends.com/cdn/${c.version}/img/champion/${c.id}.png`:''}
 function champIcon(name,cls='champion-icon',click=true){
@@ -1772,7 +1885,6 @@ async function loadChampions(){
     championStatsCache=buildChampionStats(championRecordsCache,storedMap);
     renderChampionsView();
 }
-
 function setChampionLane(key,btn){championLaneKey=key;document.querySelectorAll('[data-champion-lane]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderChampionsView()}
 function setChampionSort(key,btn){championSortKey=key;document.querySelectorAll('[data-champion-sort]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderChampionsView()}
 function buildChampionStats(records,storedMap={}){
@@ -1792,32 +1904,6 @@ function buildChampionStats(records,storedMap={}){
         m.bans = Number(s.bans || 0);
     });
     return [...Object.values(total),...Object.values(map)];
-    Object.values(storedMap).forEach(s => {
-
-        if(total[s.champion_name]) return;
-
-        total[s.champion_name] = {
-            champion_name: s.champion_name,
-            lane: 'ALL',
-
-            games: 0,
-            wins: 0,
-
-            kills: 0,
-            deaths: 0,
-            assists: 0,
-
-            kp: 0,
-            score: 0,
-
-            records: [],
-
-            bans: Number(s.bans || 0),
-            ban_rate: Number(s.ban_rate || 0),
-
-            honey_score: 0
-        };
-    });
 }
 function calculateHoneyLocal(c){const wr=getChampionWinrate(c), avgS=getChampionAvgScore(c), kda=getChampionKdaRatio(c);const kdaScore=Math.min(kda/5*100,100);const sample=Math.min(1,c.games/10);return Math.round((wr*.45+avgS*.30+kdaScore*.25)*sample*10)/10}
 function champPerformanceScore(c){
@@ -3215,6 +3301,19 @@ function applySeasonToUI(season){
     if(startInput) startInput.value = start;
     if(endInput) endInput.value = end;
 }
+window.addEventListener("DOMContentLoaded",()=>{
+
+    const menu =
+        document.getElementById(
+            "sidebarMenu"
+        );
+
+    if(menu){
+        originalSidebarMenu =
+            menu.innerHTML;
+    }
+
+});
 restoreAccount().then(()=>{loadPlayers();loadSeasonSetting();});
 </script>
 </body>
