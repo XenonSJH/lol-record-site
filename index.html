@@ -51,6 +51,19 @@ body{background:#0F172A;color:white;display:flex;height:100vh}
 .nav-btn:disabled{opacity:.4;cursor:not-allowed}
 .page{display:none;padding:30px}
 .page.active{display:block}
+.most-champs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+}
+
+.tag{
+    background:#27272A;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:13px;
+}
 .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
 .card{background:#1E293B;border-radius:20px;padding:25px;border:1px solid #334155}
 .card-title{color:#94A3B8;margin-bottom:10px}
@@ -1419,22 +1432,334 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     </div>
 </div>
 </div>
-<div id="league" class="page">
-    <h2>🏆 벤들리그 순위</h2>
-    <br>
-    <div id="leagueStandingsContainer"></div>
+<div id="leagueApply" class="page">
+    <div class="card">
+        <h2>📝 참가 신청</h2>
+
+        <input class="search-input" id="applyNickname" placeholder="닉네임">
+        <br><br>
+
+        <select class="search-input" id="applyLane">
+            <option>TOP</option>
+            <option>JUG</option>
+            <option>MID</option>
+            <option>ADC</option>
+            <option>SUP</option>
+        </select>
+
+        <br><br>
+
+        <input class="search-input" id="applyChamp1" placeholder="모스트 챔피언 1">
+        <br><br>
+        <input class="search-input" id="applyChamp2" placeholder="모스트 챔피언 2">
+        <br><br>
+        <input class="search-input" id="applyChamp3" placeholder="모스트 챔피언 3">
+        <br><br>
+        <input class="search-input" id="applyChamp4" placeholder="모스트 챔피언 4">
+        <br><br>
+        <input class="search-input" id="applyChamp5" placeholder="모스트 챔피언 5">
+
+        <br><br>
+
+        <textarea
+            class="search-input"
+            id="applyMessage"
+            rows="5"
+            placeholder="각오 한마디"></textarea>
+
+        <br><br>
+
+        <button class="sort-btn active"
+                onclick="submitLeagueApply()">
+
+            참가 신청
+
+        </button>
+
+        <p id="leagueApplyMessage"></p>
+    </div>
 </div>
 
 <div id="leagueTeams" class="page">
     <h2>👥 팀</h2>
-    <br>
     <div id="leagueTeamsContainer"></div>
 </div>
 
 <div id="leagueBracket" class="page">
     <h2>📅 대진표</h2>
-    <br>
     <div id="leagueBracketContainer"></div>
+</div>
+
+<div id="leagueHall" class="page">
+    <h2>⭐ 명예의 전당</h2>
+    <div id="leagueHallContainer"></div>
+</div>
+
+<div id="leagueRecord" class="page">
+    <h2>📝 대전 등록</h2>
+
+    <div class="card">
+        <input
+            class="search-input"
+            id="leagueMatchId"
+            placeholder="매치 ID">
+
+        <br><br>
+
+        <button
+            class="sort-btn active"
+            onclick="registerLeagueMatch()">
+
+            등록
+
+        </button>
+
+        <p id="leagueRecordMessage"></p>
+    </div>
+</div>
+
+<div id="leagueAdmin" class="page">
+    <div id="leagueMatchDetail" class="page">
+
+        <button
+            class="sort-btn"
+            onclick="goBack()">
+
+            ← 대진표로
+
+        </button>
+
+        <br><br>
+
+        <div id="leagueMatchDetailContent">
+
+        </div>
+
+    </div>
+    <h2>🔒 관리자</h2>
+    <div class="card">
+
+        <h3>참가 신청 현황</h3>
+
+        <br>
+
+        <button
+            class="sort-btn active"
+            onclick="loadLeagueApplicants()">
+
+            새로고침
+
+        </button>
+
+        <br><br>
+
+        <div id="leagueApplicantsContainer">
+
+        </div>
+
+    </div>
+
+    <br>
+    <div class="card">
+        <h3>시즌 생성</h3>
+
+        <input
+            class="search-input"
+            id="seasonName"
+            placeholder="시즌 이름">
+
+        <br><br>
+
+        <button
+            class="sort-btn active"
+            onclick="createLeagueSeason()">
+
+            시즌 생성
+
+        </button>
+
+        <br><br>
+
+        <div id="seasonCreateMessage"></div>
+    </div>
+
+    <br>
+
+    <div class="card">
+        <h3>팀 생성</h3>
+
+        <input
+            class="search-input"
+            id="newTeamName"
+            placeholder="팀 이름">
+
+        <br><br>
+
+        <button
+            class="sort-btn active"
+            onclick="createLeagueTeam()">
+
+            팀 생성
+
+        </button>
+
+        <p id="teamCreateMessage"></p>
+    </div>
+
+    <br>
+
+    <div class="card">
+        <h3>팀 편집</h3>
+
+        <input
+            class="search-input"
+            id="editTeamName"
+            placeholder="팀 이름">
+
+        <br><br>
+
+        <input
+            class="search-input"
+            id="editTop"
+            placeholder="TOP">
+
+        <br><br>
+
+        <input
+            class="search-input"
+            id="editJg"
+            placeholder="JG">
+
+        <br><br>
+
+        <input
+            class="search-input"
+            id="editMid"
+            placeholder="MID">
+
+        <br><br>
+
+        <input
+            class="search-input"
+            id="editAdc"
+            placeholder="ADC">
+
+        <br><br>
+
+        <input
+            class="search-input"
+            id="editSup"
+            placeholder="SUP">
+
+        <br><br>
+
+        <button
+            class="sort-btn active"
+            onclick="saveLeagueTeamMembers()">
+
+            저장
+
+        </button>
+
+        <p id="teamEditMessage"></p>
+    </div>
+
+    <br>
+
+    <div class="card">
+        <h3>대진 추가</h3>
+
+        <input class="search-input"
+            id="matchRound"
+            placeholder="라운드 (예: 4강, 결승)">
+
+        <br><br>
+
+        <input class="search-input"
+            id="matchTeam1"
+            placeholder="팀1">
+
+        <br><br>
+
+        <input class="search-input"
+            id="matchTeam2"
+            placeholder="팀2">
+
+        <br><br>
+
+        <input class="search-input"
+            id="matchOrder"
+            placeholder="순서 (1,2,3...)">
+
+        <br><br>
+
+        <input
+            class="search-input"
+            id="matchCode"
+            placeholder="매치 ID (선택)">
+
+        <br><br>
+
+        <button
+            class="sort-btn active"
+            onclick="createLeagueMatch()">
+
+            대진 생성
+
+        </button>
+
+        <p id="leagueMatchCreateMessage"></p>
+    </div>
+
+    <br>
+
+    <div class="card">
+        <h3>대진 수정</h3>
+    </div>
+
+    <br>
+
+    <div class="card">
+        <h3>명예의 전당 수정</h3>
+
+        <input
+            class="search-input"
+            id="hallSeason"
+            placeholder="시즌명">
+
+        <br><br>
+
+        <input
+            class="search-input"
+            id="hallWinner"
+            placeholder="우승팀">
+
+        <br><br>
+
+        <input
+            class="search-input"
+            id="hallSeasonMvp"
+            placeholder="시즌 MVP">
+
+        <br><br>
+
+        <input
+            class="search-input"
+            id="hallFinalMvp"
+            placeholder="결승 MVP">
+
+        <br><br>
+
+        <button
+            class="sort-btn active"
+            onclick="saveLeagueHall()">
+
+            저장
+
+        </button>
+
+        <p id="hallSaveMessage"></p>
+    </div>
 </div>
 <script>
 const SUPABASE_URL = "https://ehligpqxjczgcggjpzwn.supabase.co";
@@ -1447,6 +1772,7 @@ let navStack=["home"], navIndex=0, suppressNav=false;
 let championIconMap={}, championJsonLoaded=false;
 let currentAccount=null, currentTheme="purple";
 let currentMode="bandle";
+let activeLeagueSeason = null;
 let originalSidebarMenu="";
 
 const WATCH_PLAYERS_KEY = "bandleWatchPlayers";
@@ -1510,7 +1836,29 @@ function switchMode(mode){
 <button onclick="showPage('leagueAdmin')">
 🔒 관리자
 </button>
+<button onclick="showPage('leagueApply',this)" data-page="leagueApply">
+📝 참가 신청
+</button>
 
+<button onclick="showPage('leagueTeams',this)" data-page="leagueTeams">
+👥 팀
+</button>
+
+<button onclick="showPage('leagueBracket',this)" data-page="leagueBracket">
+📅 대진표
+</button>
+
+<button onclick="showPage('leagueHall',this)" data-page="leagueHall">
+⭐ 명예의 전당
+</button>
+
+<button onclick="showPage('leagueRecord',this)" data-page="leagueRecord">
+📝 대전 등록
+</button>
+
+<button onclick="showPage('leagueAdmin',this)" data-page="leagueAdmin">
+🔒 관리자
+</button>
 `;
 
         showPage('league');
@@ -1526,6 +1874,18 @@ function switchMode(mode){
 function showPage(id,btn=null,push=true){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById(id)?.classList.add('active');
+    if(id==="leagueTeams"){
+        loadLeagueTeams();
+    }
+    if(id==="leagueAdmin"){
+        loadLeagueApplicants();
+    }
+    if(id==="leagueBracket"){
+        loadLeagueBracket();
+    }
+    if(id==="leagueHall"){
+        loadLeagueHall();
+    }
     setActiveMenu(id,btn);
     if(id==='recordDisabled')setTimeout(updateRecordPreview,0);
     if(push&&!suppressNav){navStack=navStack.slice(0,navIndex+1);navStack.push(id);navIndex=navStack.length-1;updateNavButtons()}
@@ -3314,7 +3674,783 @@ window.addEventListener("DOMContentLoaded",()=>{
     }
 
 });
-restoreAccount().then(()=>{loadPlayers();loadSeasonSetting();});
+async function submitLeagueApply(){
+
+    const nickname =
+        document
+        .getElementById("applyNickname")
+        .value
+        .trim();
+
+    const lane =
+        document
+        .getElementById("applyLane")
+        .value;
+
+    if(!nickname){
+        return;
+    }
+
+    await db
+        .from("bl_league_apply")
+        .insert({
+            nickname,
+            lane,
+            champ1:document.getElementById("applyChamp1").value,
+            champ2:document.getElementById("applyChamp2").value,
+            champ3:document.getElementById("applyChamp3").value,
+            champ4:document.getElementById("applyChamp4").value,
+            champ5:document.getElementById("applyChamp5").value,
+            message:document.getElementById("applyMessage").value,
+            season_id:activeLeagueSeason?.id
+        });
+
+    document
+        .getElementById(
+            "leagueApplyMessage"
+        ).innerText =
+            "신청 완료";
+}
+async function loadLeagueTeams(){
+
+    const container =
+        document.getElementById(
+            "leagueTeamsContainer"
+        );
+
+    if(!container) return;
+
+    const { data, error } =
+        await db
+            .from("bl_league_teams")
+            .select("*");
+
+    if(error){
+        container.innerHTML =
+            '<div class="empty-box">팀 정보를 불러올 수 없습니다.</div>';
+        return;
+    }
+
+    if(!data || !data.length){
+        container.innerHTML =
+            '<div class="empty-box">등록된 팀이 없습니다.</div>';
+        return;
+    }
+
+    container.innerHTML =
+        data.map(team=>`
+            <div class="card">
+
+                <h2>${escapeHtml(team.team_name)}</h2>
+
+                <br>
+
+                <p>TOP : ${escapeHtml(team.top_player||'-')}</p>
+                <p>JG : ${escapeHtml(team.jg_player||'-')}</p>
+                <p>MID : ${escapeHtml(team.mid_player||'-')}</p>
+                <p>ADC : ${escapeHtml(team.adc_player||'-')}</p>
+                <p>SUP : ${escapeHtml(team.sup_player||'-')}</p>
+
+            </div>
+
+            <br>
+        `).join('');
+}
+async function loadLeagueBracket(){
+
+    const container =
+        document.getElementById(
+            "leagueBracketContainer"
+        );
+
+    if(!container) return;
+
+    const { data, error } =
+        await db
+            .from("bl_league_matches")
+            .select("*")
+            .order("match_order");
+
+    if(error){
+        container.innerHTML =
+            '<div class="empty-box">대진표를 불러올 수 없습니다.</div>';
+        return;
+    }
+
+    if(!data || !data.length){
+        container.innerHTML =
+            '<div class="empty-box">등록된 대진이 없습니다.</div>';
+        return;
+    }
+
+    container.innerHTML =
+        data.map(match=>`
+
+        <div class="card"
+            onclick="openLeagueMatch(${match.id})"
+            style="cursor:pointer;">
+
+            <h2>
+                ${match.round_name}
+            </h2>
+
+            <br>
+
+            <div style="text-align:center">
+
+                <h3>
+                    ${match.team1}
+                </h3>
+
+                <p>VS</p>
+
+                <h3>
+                    ${match.team2}
+                </h3>
+
+                ${
+                    match.winner
+                    ? `<p>승자 : ${match.winner}</p>`
+                    : ''
+                }
+
+            </div>
+
+        </div>
+
+        <br>
+
+        `).join('');
+}
+async function loadLeagueHall(){
+
+    const container =
+        document.getElementById(
+            "leagueHallContainer"
+        );
+
+    if(!container) return;
+
+    const { data, error } =
+        await db
+            .from("bl_league_hall")
+            .select("*")
+            .order(
+                "id",
+                { ascending:false }
+            );
+
+    if(error){
+
+        container.innerHTML =
+            '<div class="empty-box">불러오기 실패</div>';
+
+        return;
+    }
+
+    if(!data || !data.length){
+
+        container.innerHTML =
+            '<div class="empty-box">기록 없음</div>';
+
+        return;
+    }
+
+    container.innerHTML =
+        data.map(h=>`
+
+        <div class="card">
+
+            <h2>
+                ${escapeHtml(
+                    h.season
+                )}
+            </h2>
+
+            <br>
+
+            <p>
+                🏆 우승팀
+            </p>
+
+            <h3>
+                ${escapeHtml(
+                    h.winner_team
+                )}
+            </h3>
+
+            <br>
+
+            <p>
+                👑 시즌 MVP
+            </p>
+
+            <h3>
+                ${escapeHtml(
+                    h.season_mvp
+                )}
+            </h3>
+
+            <br>
+
+            <p>
+                ⭐ 결승 MVP
+            </p>
+
+            <h3>
+                ${escapeHtml(
+                    h.final_mvp
+                )}
+            </h3>
+
+        </div>
+
+        <br>
+
+        `).join('');
+}
+async function openLeagueMatch(id){
+
+    const container =
+        document.getElementById(
+            "leagueMatchDetailContent"
+        );
+
+    container.innerHTML =
+        '<div class="loading">불러오는 중...</div>';
+
+    showPage(
+        "leagueMatchDetail"
+    );
+
+    const { data: match } =
+        await db
+            .from(
+                "bl_league_matches"
+            )
+            .select("*")
+            .eq("id",id)
+            .single();
+
+    let records = [];
+
+    if(match.match_code){
+
+        const matchResult =
+            await db
+                .from("bc_matches")
+                .select("*")
+                .eq(
+                    "match_code",
+                    match.match_code
+                )
+                .single();
+
+        if(matchResult.data){
+
+            const recResult =
+                await db
+                    .from("bc_records")
+                    .select("*")
+                    .eq(
+                        "match_id",
+                        matchResult.data.id
+                    );
+
+            records =
+                recResult.data || [];
+        }
+    }
+            await db
+            .from(
+                "bl_league_matches"
+            )
+            .select("*")
+            .eq("id",id)
+            .single();
+
+    if(!match){
+
+        container.innerHTML =
+            '<div class="empty-box">경기 정보를 찾을 수 없습니다.</div>';
+
+        return;
+    }
+
+    container.innerHTML = `
+
+    <div class="card">
+
+        <h1>
+            ${match.team1}
+            VS
+            ${match.team2}
+        </h1>
+
+        <br>
+
+        <p>
+            라운드 :
+            ${match.round_name}
+        </p>
+
+        <p>
+            승자 :
+            ${match.winner || '-'}
+        </p>
+
+    </div>
+
+    <br>
+
+    <div class="card">
+
+        <h2>
+            경기 정보
+        </h2>
+
+        <br>
+
+        <p>
+            상세 전적 연동 예정
+        </p>
+
+    </div>
+    <br>
+    ${buildLeagueMatchPlayers(records)}
+
+    `;
+}
+async function createLeagueTeam(){
+
+    const name =
+        document
+            .getElementById("newTeamName")
+            .value
+            .trim();
+
+    if(!name) return;
+
+    const { error } =
+        await db
+            .from("bl_league_teams")
+            .insert({
+                team_name:name
+            });
+
+    document
+        .getElementById(
+            "teamCreateMessage"
+        ).innerText =
+        error
+            ? "생성 실패"
+            : "생성 완료";
+}
+async function createLeagueMatch(){
+
+    const round =
+        document
+        .getElementById("matchRound")
+        .value
+        .trim();
+
+    const team1 =
+        document
+        .getElementById("matchTeam1")
+        .value
+        .trim();
+
+    const team2 =
+        document
+        .getElementById("matchTeam2")
+        .value
+        .trim();
+
+    const order =
+        Number(
+            document
+            .getElementById("matchOrder")
+            .value || 1
+        );
+
+    const { error } =
+        await db
+            .from("bl_league_matches")
+            .insert({
+                round_name:round,
+                team1,
+                team2,
+                match_order:order,
+
+                match_code:
+                    document
+                    .getElementById("matchCode")
+                    .value
+                    .trim()
+            });
+
+    document
+        .getElementById(
+            "leagueMatchCreateMessage"
+        ).innerText =
+            error
+            ? "생성 실패"
+            : "생성 완료";
+}
+async function saveLeagueTeamMembers(){
+
+    const teamName =
+        document
+            .getElementById("editTeamName")
+            .value
+            .trim();
+
+    if(!teamName) return;
+
+    const { error } =
+        await db
+            .from("bl_league_teams")
+            .update({
+
+                top_player:
+                    document.getElementById("editTop").value,
+
+                jg_player:
+                    document.getElementById("editJg").value,
+
+                mid_player:
+                    document.getElementById("editMid").value,
+
+                adc_player:
+                    document.getElementById("editAdc").value,
+
+                sup_player:
+                    document.getElementById("editSup").value
+
+            })
+            .eq(
+                "team_name",
+                teamName
+            );
+
+    document
+        .getElementById(
+            "teamEditMessage"
+        ).innerText =
+            error
+            ? "저장 실패"
+            : "저장 완료";
+}
+async function loadLeagueApplicants(){
+
+    const container =
+        document.getElementById(
+            "leagueApplicantsContainer"
+        );
+
+    if(!container) return;
+
+    container.innerHTML =
+        '<div class="loading">불러오는 중...</div>';
+
+    const { data, error } =
+        await db
+            .from("bl_league_apply")
+            .select("*")
+            .eq(
+                "season_id",
+                activeLeagueSeason?.id
+            )
+            .order(
+                "created_at",
+                { ascending:false }
+            );
+
+    if(error){
+
+        container.innerHTML =
+            '<div class="empty-box">불러오기 실패</div>';
+
+        return;
+    }
+
+    if(!data || !data.length){
+
+        container.innerHTML =
+            '<div class="empty-box">신청자가 없습니다.</div>';
+
+        return;
+    }
+    const topCount =
+        data.filter(x=>x.lane==="TOP").length;
+
+    const jgCount =
+        data.filter(x=>x.lane==="JUG").length;
+
+    const midCount =
+        data.filter(x=>x.lane==="MID").length;
+
+    const adcCount =
+        data.filter(x=>x.lane==="ADC").length;
+
+    const supCount =
+        data.filter(x=>x.lane==="SUP").length;
+    container.innerHTML =`
+    <div class="card">
+
+        <h2>참가 현황</h2>
+
+        <br>
+
+        총 신청자 : ${data.length}
+
+        <br><br>
+
+        TOP : ${topCount}<br>
+        JG : ${jgCount}<br>
+        MID : ${midCount}<br>
+        ADC : ${adcCount}<br>
+        SUP : ${supCount}
+
+    </div>
+
+    <br>
+
+    ` +
+        data.map(p=>`
+
+        <div class="card">
+
+            <h2>
+                ${escapeHtml(
+                    p.nickname
+                )}
+            </h2>
+
+            <p>
+                주라인 :
+                ${escapeHtml(
+                    p.lane || "-"
+                )}
+            </p>
+
+            <br>
+
+            <p>
+                모스트 챔피언
+            </p>
+
+            <div class="most-champs">
+
+            ${[
+                p.champ1,
+                p.champ2,
+                p.champ3,
+                p.champ4,
+                p.champ5
+            ]
+            .filter(Boolean)
+            .map(ch=>`
+
+                <span
+                    class="tag">
+
+                    ${escapeHtml(ch)}
+
+                </span>
+
+            `)
+            .join('')}
+
+        </div>
+
+        <br>
+
+        `).join('');
+}
+async function deleteLeagueApplicant(id){
+
+    if(!confirm("삭제하시겠습니까?")){
+        return;
+    }
+
+    const { error } =
+        await db
+            .from("bl_league_apply")
+            .delete()
+            .eq("id",id);
+
+    if(!error){
+        loadLeagueApplicants();
+    }
+}
+async function saveLeagueHall(){
+
+    const season =
+        document
+            .getElementById("hallSeason")
+            .value
+            .trim();
+
+    if(!season) return;
+
+    const { error } =
+        await db
+            .from("bl_league_hall")
+            .insert({
+
+                season,
+
+                winner_team:
+                    document
+                    .getElementById("hallWinner")
+                    .value,
+
+                season_mvp:
+                    document
+                    .getElementById("hallSeasonMvp")
+                    .value,
+
+                final_mvp:
+                    document
+                    .getElementById("hallFinalMvp")
+                    .value
+
+            });
+
+    document
+        .getElementById(
+            "hallSaveMessage"
+        ).innerText =
+            error
+            ? "저장 실패"
+            : "저장 완료";
+}
+async function createLeagueSeason(){
+
+    const seasonName =
+        document
+        .getElementById("seasonName")
+        .value
+        .trim();
+
+    if(!seasonName){
+        return;
+    }
+
+    await db
+        .from("bl_league_seasons")
+        .update({
+            is_active:false
+        })
+        .neq("id",0);
+
+    const { error } =
+        await db
+            .from("bl_league_seasons")
+            .insert({
+                season_name:seasonName,
+                is_active:true
+            });
+
+    document
+        .getElementById(
+            "seasonCreateMessage"
+        ).innerText =
+            error
+            ? "생성 실패"
+            : "생성 완료";
+}
+function registerLeagueMatch(){
+
+    document
+        .getElementById(
+            "leagueRecordMessage"
+        ).innerText =
+            "준비중";
+}
+function buildLeagueMatchPlayers(records){
+
+    if(!records.length){
+
+        return `
+        <div class="card">
+            경기 전적이 연결되지 않았습니다.
+        </div>`;
+    }
+
+    return `
+
+    <div class="card">
+
+        <h2>
+            선수 전적
+        </h2>
+
+        <br>
+
+        ${records.map(r=>`
+
+        <div
+            style="
+                padding:10px;
+                border-bottom:
+                1px solid #333;
+            ">
+
+            <strong>
+                ${escapeHtml(
+                    r.champion_name
+                )}
+            </strong>
+
+            <br>
+
+            ${r.kills}
+            /
+            ${r.deaths}
+            /
+            ${r.assists}
+
+            <br>
+
+            KP :
+            ${r.kp || 0}%
+
+            <br>
+
+            점수 :
+            ${r.score || 0}
+
+        </div>
+
+        `).join('')}
+
+    </div>
+
+    `;
+}
+async function loadActiveSeason(){
+
+    const { data } =
+        await db
+            .from("bl_league_seasons")
+            .select("*")
+            .eq("is_active",true)
+            .single();
+
+    activeLeagueSeason = data || null;
+}
+loadActiveSeason().then(()=>{
+
+    restoreAccount().then(()=>{
+
+        loadPlayers();
+        loadSeasonSetting();
+
+    });
+
+});
 </script>
 </body>
 </html>
