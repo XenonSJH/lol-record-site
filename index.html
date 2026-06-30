@@ -2002,6 +2002,11 @@ function renderMatches(matches){
     `).join('') || '<div class="empty-box">검색 결과가 없습니다.</div>';
 }
 function buildCompRows(records){
+    console.table(records.map(r => ({
+        champ: r.champion_name,
+        lane: r.lane,
+        team: r.team
+    })));
     const blue=records.filter(r=>r.team==='blue').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
     const red=records.filter(r=>r.team==='red').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
     const lanes=['TOP','JUG','MID','ADC','SUP'];
