@@ -2375,6 +2375,32 @@ function buildMostChampions(records){
     const map={};records.forEach(r=>{const c=r.champion_name||'알 수 없음';if(!map[c])map[c]={champion_name:c,lane:normalizeLane(r.lane),games:0,wins:0,kills:0,deaths:0,assists:0,kp:0,score:0,lanes:{}};const m=map[c];m.games++;if(recordWin(r))m.wins++;m.kills+=Number(r.kills||0);m.deaths+=Number(r.deaths||0);m.assists+=Number(r.assists||0);m.kp+=Number(r.kp||0);m.score+=Number(r.score||0);const lane=normalizeLane(r.lane);m.lanes[lane]=(m.lanes[lane]||0)+1;m.lane=Object.entries(m.lanes).sort((a,b)=>b[1]-a[1])[0]?.[0]||lane;});
     return `<div class="champion-list player-most-list phase2-most">${Object.values(map).sort((a,b)=>champPerformanceScore(b)-champPerformanceScore(a)).slice(0,8).map((c,i)=>{const wr=(c.wins/c.games*100).toFixed(1),kda=((c.kills+c.assists)/Math.max(1,c.deaths)).toFixed(2),kp=(c.kp/c.games).toFixed(1),score=(c.score/c.games).toFixed(1);return `<div class="champion-row" onclick="openChampionDetail('${escapeJs(c.champion_name)}','${escapeJs(c.lane)}')"><div class="most-rank">#${i+1}</div><div class="detail-row-main">${recordChampIcon(c.champion_name,c.lane)}<div class="detail-row-text"><div class="champion-name">${escapeHtml(c.champion_name)}</div><div class="champion-sub">${escapeHtml(c.lane)}</div></div></div><div class="plain-stat">${c.games}판</div><div class="plain-stat sub">승률 ${wr}%</div><div class="plain-stat">KDA ${kda}</div><div class="plain-stat sub">KP ${kp}%</div><div class="plain-stat sub">점수 ${score}</div></div>`}).join('')}</div>`;
 }
+function detailRecentRow(r,p=null,showPlayer=false){
+    const win=recordWin(r);
+    const matchId=Number(r.match_id||r.id||0);
+    const kills=Number(r.kills||0),deaths=Number(r.deaths||0),assists=Number(r.assists||0);
+    const kdaRatio=((kills+assists)/Math.max(1,deaths)).toFixed(1);
+    const kp=Number(r.kp||0).toFixed(1);
+    const score=Number(r.score||0).toFixed(1);
+    const lp=Number(r.lp_change||0);
+    const playerName=showPlayer?playerNameById(r.player_id):(p?.nickname||playerNameById(r.player_id));
+    const open=matchId?` onclick="openMatchById(${matchId})"`:'';
+    return `<div class="match-row detail-match-row ${win?'win':'lose'}"${open}>
+        <div class="result ${win?'win':'lose'}">${win?'승리':'패배'}</div>
+        <div class="detail-row-main">
+            ${recordChampIcon(r.champion_name||'알 수 없음',r.lane)}
+            <div class="detail-row-text">
+                <div class="champion-name">${escapeHtml(showPlayer?playerName:(r.champion_name||'알 수 없음'))}</div>
+                <div class="champion-sub">${escapeHtml(r.champion_name||'알 수 없음')} · ${escapeHtml(normalizeLane(r.lane))}</div>
+            </div>
+        </div>
+        <div class="plain-stat">${kills}/${deaths}/${assists}</div>
+        <div class="plain-stat sub">KDA ${kdaRatio}</div>
+        <div class="plain-stat sub">킬관여율 ${kp}%</div>
+        <div class="plain-stat sub">점수 ${score}</div>
+        <div class="plain-stat ${lp>=0?'win-text':'lose-text'}">${lp>=0?'+':''}${lp} LP</div>
+    </div>`;
+}
 function buildRecentMatches(p,records,stateKey){if(!records.length)return '<div class="empty-box">아직 최근 전적 데이터가 없습니다.</div>';const page=detailRecentState[stateKey]||1,pageSize=15,totalPages=Math.max(1,Math.ceil(records.length/pageSize)),safePage=Math.min(Math.max(1,page),totalPages);detailRecentState[stateKey]=safePage;const items=records.slice((safePage-1)*pageSize,safePage*pageSize);return `<div class="match-list">${items.map(r=>detailRecentRow(r,p,false)).join('')}</div>${renderDetailRecentPager(stateKey,records.length,totalPages,safePage)}`}
 function buildChampionRecentMatches(records,stateKey='championRecent'){if(!records.length)return '<div class="empty-box">아직 최근 전적 데이터가 없습니다.</div>';records=[...records].sort((a,b)=>getRecordTimeValue(b)-getRecordTimeValue(a));const page=detailRecentState[stateKey]||1,pageSize=15,totalPages=Math.max(1,Math.ceil(records.length/pageSize)),safePage=Math.min(Math.max(1,page),totalPages);detailRecentState[stateKey]=safePage;const items=records.slice((safePage-1)*pageSize,safePage*pageSize);return `<div id="${stateKey}Area"><div class="match-list">${items.map(r=>detailRecentRow(r,null,true)).join('')}</div>${renderDetailRecentPager(stateKey,records.length,totalPages,safePage)}</div>`}
 function renderDetailRecentPager(stateKey,total,totalPages,page){if(totalPages<=1)return `<div class="detail-recent-pager"><span class="page-summary">전체 ${total}경기</span></div>`;return `<div class="detail-recent-pager"><button class="page-btn" onclick="setDetailRecentPage('${escapeJs(stateKey)}',${page-1})" ${page<=1?'disabled':''}>◀ 이전</button><span class="page-summary">${page}/${totalPages}페이지 · 전체 ${total}경기</span><button class="page-btn" onclick="setDetailRecentPage('${escapeJs(stateKey)}',${page+1})" ${page>=totalPages?'disabled':''}>다음 ▶</button></div>`}
