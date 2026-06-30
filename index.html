@@ -1080,6 +1080,43 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 .page-summary{width:100%;text-align:center;color:#94A3B8;font-size:13px;font-weight:800;margin-top:2px}
 .detail-recent-pager{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}
 @media(max-width:900px){.match-toolbar{align-items:stretch}.match-toolbar .search-input{width:100%!important}}
+
+/* ===== PHASE 2 player detail renewal ===== */
+.detail-recent-pager .page-summary{width:auto!important;margin:0 8px;white-space:nowrap}
+.player-detail-dashboard{display:grid;grid-template-columns:minmax(280px,.8fr) minmax(0,1.45fr);gap:18px;margin-top:20px;align-items:start}
+.player-detail-stack{display:flex;flex-direction:column;gap:18px;min-width:0}
+.player-profile-card{position:sticky;top:8px}
+.player-profile-head{display:flex;gap:16px;align-items:center;margin-bottom:16px}
+.player-profile-head .big-profile{width:96px!important;height:96px!important;margin:0!important}
+.player-profile-name{font-size:30px;font-weight:1000;line-height:1.1}
+.player-badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.info-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--bc-border,#334155);background:var(--bc-card2,#111827);border-radius:999px;padding:6px 10px;color:#E2E8F0;font-size:13px;font-weight:1000}
+.profile-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.profile-stat-box{background:var(--bc-card2,#111827);border:1px solid var(--bc-border,#334155);border-radius:14px;padding:12px;min-width:0}
+.profile-stat-label{color:#94A3B8;font-size:12px;font-weight:900;margin-bottom:5px}
+.profile-stat-value{font-size:18px;font-weight:1000;color:#F8FAFC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.form-dots{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.form-dot{width:22px;height:22px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:1000}.form-dot.win{background:#1D4ED8;color:#DBEAFE}.form-dot.lose{background:#991B1B;color:#FEE2E2}
+.player-section-card{background:var(--bc-card,#1E293B);border:1px solid var(--bc-border,#334155);border-radius:20px;padding:20px;min-width:0}
+.player-section-title{font-size:22px;font-weight:1000;margin-bottom:14px;color:#F8FAFC}
+.line-stat-grid{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:10px;overflow:auto;padding-bottom:4px}
+.line-stat-card{background:var(--bc-card2,#111827);border:1px solid var(--bc-border,#334155);border-radius:16px;padding:14px;min-width:150px}
+.line-stat-title{font-size:17px;font-weight:1000;color:#EDE9FE;margin-bottom:8px}.line-stat-text{color:#CBD5E1;font-size:13px;font-weight:800;line-height:1.6}.line-stars{letter-spacing:1px;color:#FACC15;font-size:14px;font-weight:1000;margin-top:6px}
+.player-most-list.phase2-most .champion-row{grid-template-columns:52px minmax(210px,1.2fr) repeat(5,minmax(86px,.7fr))!important;min-width:820px!important;gap:16px!important}
+.mini-table{display:flex;flex-direction:column;gap:8px}.mini-row{display:grid;grid-template-columns:minmax(0,1fr) 90px 70px;gap:10px;align-items:center;background:var(--bc-card2,#111827);border:1px solid var(--bc-border,#334155);border-radius:14px;padding:10px 12px}.mini-name{font-weight:1000;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mini-sub{color:#CBD5E1;font-size:13px;font-weight:900;text-align:right}.mini-rate{font-weight:1000;color:#86EFAC;text-align:right}
+.graph-bars{display:flex;align-items:end;gap:8px;height:110px;padding:12px;background:var(--bc-card2,#111827);border:1px solid var(--bc-border,#334155);border-radius:14px;overflow:hidden}.graph-bar{flex:1;min-width:12px;background:linear-gradient(180deg,var(--bc-accent,#8B5CF6),var(--bc-accent2,#A78BFA));border-radius:8px 8px 3px 3px}.graph-legend{display:flex;gap:12px;color:#CBD5E1;font-size:12px;font-weight:900;margin-top:8px;flex-wrap:wrap}
+@media(max-width:1200px){.player-detail-dashboard{grid-template-columns:1fr}.player-profile-card{position:static}.line-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.profile-stat-grid{grid-template-columns:1fr}.line-stat-grid{grid-template-columns:1fr}.mini-row{grid-template-columns:1fr 70px 60px}}
+
+/* ===== PHASE 3 champion renewal ===== */
+.champion-detail-grid{display:grid;grid-template-columns:minmax(280px,.8fr) minmax(0,1.45fr);gap:18px;margin-top:20px;align-items:start}
+.champion-detail-stack{display:flex;flex-direction:column;gap:18px;min-width:0}
+.champion-metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.champion-metric{background:var(--bc-card2,#111827);border:1px solid var(--bc-border,#334155);border-radius:14px;padding:12px}.champion-metric-label{color:#94A3B8;font-size:12px;font-weight:900;margin-bottom:5px}.champion-metric-value{font-size:18px;font-weight:1000;color:#F8FAFC}
+.champion-presence{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.presence-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--bc-border,#334155);background:var(--bc-card2,#111827);border-radius:999px;padding:6px 10px;color:#E2E8F0;font-size:13px;font-weight:1000}
+.champion-analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.champion-analysis-card{background:var(--bc-card2,#111827);border:1px solid var(--bc-border,#334155);border-radius:16px;padding:14px}.analysis-title{font-size:18px;font-weight:1000;margin-bottom:10px;color:#EDE9FE}.analysis-row{display:grid;grid-template-columns:minmax(0,1fr) 72px 64px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bc-border,#334155)}.analysis-row:last-child{border-bottom:none}.analysis-name{font-weight:1000;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.analysis-rate{text-align:right;font-weight:1000}.analysis-games{text-align:right;color:#CBD5E1;font-size:13px;font-weight:900}
+.champion-top-row.phase3-top{grid-template-columns:56px minmax(130px,1.1fr) repeat(5,minmax(86px,.7fr))!important;min-width:760px!important}
+@media(max-width:1100px){.champion-detail-grid{grid-template-columns:1fr}.champion-analysis-grid{grid-template-columns:1fr}}
+@media(max-width:720px){.champion-metric-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1800,59 +1837,69 @@ function setChampionSort(key,btn){championSortKey=key;document.querySelectorAll(
 function buildChampionStats(records,storedMap={}){
     const map={};
     records.forEach(r=>{
-        const champ=r.champion_name||'알 수 없음';const lane=normalizeLane(r.lane);const key=`${champ}__${lane}`;
-        if(!map[key])map[key]={champion_name:champ,lane,games:0,wins:0,kills:0,deaths:0,assists:0,kp:0,score:0,records:[],bans:0,ban_rate:0,honey_score:0};
-        const m=map[key];m.games++;if(r.result==='win')m.wins++;m.kills+=Number(r.kills||0);m.deaths+=Number(r.deaths||0);m.assists+=Number(r.assists||0);m.kp+=Number(r.kp||0);m.score+=Number(r.score||0);m.records.push(r);
+        const champ=r.champion_name||'알 수 없음';
+        const lane=normalizeLane(r.lane);
+        const key=`${champ}__${lane}`;
+        if(!map[key])map[key]={champion_name:champ,lane,games:0,wins:0,kills:0,deaths:0,assists:0,kp:0,score:0,records:[],bans:0,ban_rate:0,honey_score:0,pick_rate:0,presence:0,tier:'5'};
+        const m=map[key];
+        m.games++;
+        if(r.result==='win')m.wins++;
+        m.kills+=Number(r.kills||0);
+        m.deaths+=Number(r.deaths||0);
+        m.assists+=Number(r.assists||0);
+        m.kp+=Number(r.kp||0);
+        m.score+=Number(r.score||0);
+        m.records.push(r);
     });
-    const total={};Object.values(map).forEach(m=>{if(!total[m.champion_name])total[m.champion_name]={...m,lane:'ALL',records:[]};else{const t=total[m.champion_name];['games','wins','kills','deaths','assists','kp','score'].forEach(k=>t[k]+=m[k]);}total[m.champion_name].records.push(...m.records)});
-    Object.values(total).forEach(t=>{const s=storedMap[t.champion_name]||{};t.bans=s.bans||0;t.ban_rate=Number(s.ban_rate||0);t.honey_score=Number(s.honey_score||calculateHoneyLocal(t))});
+    const total={};
     Object.values(map).forEach(m=>{
-        const s = storedMap[m.champion_name] || {};
-
-        m.honey_score = calculateHoneyLocal(m);
-        m.ban_rate = Number(s.ban_rate || 0);
-        m.bans = Number(s.bans || 0);
+        if(!total[m.champion_name])total[m.champion_name]={...m,lane:'ALL',records:[]};
+        else{const t=total[m.champion_name];['games','wins','kills','deaths','assists','kp','score'].forEach(k=>t[k]+=m[k]);}
+        total[m.champion_name].records.push(...m.records);
     });
-    return [...Object.values(total),...Object.values(map)];
-    Object.values(storedMap).forEach(s => {
-
-        if(total[s.champion_name]) return;
-
-        total[s.champion_name] = {
-            champion_name: s.champion_name,
-            lane: 'ALL',
-
-            games: 0,
-            wins: 0,
-
-            kills: 0,
-            deaths: 0,
-            assists: 0,
-
-            kp: 0,
-            score: 0,
-
-            records: [],
-
-            bans: Number(s.bans || 0),
-            ban_rate: Number(s.ban_rate || 0),
-
-            honey_score: 0
-        };
+    Object.values(storedMap).forEach(s=>{
+        if(total[s.champion_name])return;
+        total[s.champion_name]={champion_name:s.champion_name,lane:'ALL',games:0,wins:0,kills:0,deaths:0,assists:0,kp:0,score:0,records:[],bans:Number(s.bans||0),ban_rate:Number(s.ban_rate||0),honey_score:0,pick_rate:0,presence:Number(s.ban_rate||0),tier:'5'};
+    });
+    const all=[...Object.values(total),...Object.values(map)];
+    const totalGamesByLane={};
+    all.forEach(c=>{totalGamesByLane[c.lane]=(totalGamesByLane[c.lane]||0)+Number(c.games||0)});
+    all.forEach(c=>{
+        const s=storedMap[c.champion_name]||{};
+        c.bans=Number(s.bans||c.bans||0);
+        c.ban_rate=Number(s.ban_rate||c.ban_rate||0);
+        c.pick_rate=totalGamesByLane[c.lane]?Number(c.games||0)/totalGamesByLane[c.lane]*100:0;
+        c.honey_score=calculateChampionPower(c);
+        c.presence=Number(c.pick_rate||0)+Number(c.ban_rate||0);
+    });
+    assignRelativeChampionTiers(all);
+    return all;
+}
+function calculateChampionPower(c){
+    if(!c.games)return 0;
+    const wr=getChampionWinrate(c);
+    const avgS=getChampionAvgScore(c);
+    const kdaScore=Math.min(getChampionKdaRatio(c)/5*100,100);
+    const kp=getChampionAvgKP(c);
+    const pick=Math.min(Number(c.pick_rate||0)*4,100);
+    const sample=Math.min(1,Number(c.games||0)/5);
+    return Math.round((wr*.35+avgS*.25+kdaScore*.15+kp*.15+pick*.10)*sample*10)/10;
+}
+function assignRelativeChampionTiers(list){
+    const groups={};
+    list.forEach(c=>{if(!groups[c.lane])groups[c.lane]=[];groups[c.lane].push(c)});
+    Object.values(groups).forEach(group=>{
+        const valid=group.filter(c=>Number(c.games||0)>=5).sort((a,b)=>Number(b.honey_score||0)-Number(a.honey_score||0));
+        const n=valid.length||1;
+        group.forEach(c=>{c.tier=Number(c.games||0)>=5?'5':'6'});
+        valid.forEach((c,i)=>{
+            const p=(i+1)/n;
+            c.tier=p<=.02?'OP':p<=.10?'1':p<=.25?'2':p<=.50?'3':p<=.80?'4':'5';
+        });
     });
 }
-function calculateHoneyLocal(c){const wr=getChampionWinrate(c), avgS=getChampionAvgScore(c), kda=getChampionKdaRatio(c);const kdaScore=Math.min(kda/5*100,100);const sample=Math.min(1,c.games/10);return Math.round((wr*.45+avgS*.30+kdaScore*.25)*sample*10)/10}
-function champPerformanceScore(c){
-    const games=Number(c.games||0);
-    if(!games)return 0;
-    const wr=Number(c.wins||0)/games*100;
-    const kda=getKdaRatioFromTotals(c.kills,c.deaths,c.assists);
-    const kp=Number(c.kp||0)/games;
-    const avgScore=Number(c.score||0)/games;
-    const sample=Math.min(1,games/5);
-    return (wr*.38+Math.min(kda/5*100,100)*.30+kp*.22+avgScore*.10)*sample;
-}
-function renderChampionsView(){
+function calculateHoneyLocal(c){return calculateChampionPower(c)}
+function champPerformanceScore(c){return calculateChampionPower(c)}function renderChampionsView(){
     const q=(document.getElementById('championSearch')?.value||'').toLowerCase().trim();
 
     let data=championStatsCache.filter(c=>
@@ -1871,7 +1918,7 @@ function renderChampionsView(){
             r=getChampionKdaRatio(a)-getChampionKdaRatio(b);
         }
         else if(championSortKey==='tier'){
-            r=getChampionTierRank(b)-getChampionTierRank(a); // ← 반대로
+            r=getChampionTierRank(b)-getChampionTierRank(a)||Number(a.honey_score||0)-Number(b.honey_score||0);
         }
         else if(championSortKey==='games'){
             r=a.games-b.games;
@@ -1944,7 +1991,7 @@ function champRankIcon(c){
     return `<span class="rank-avatar-wrap">${tierHtml}${inner}</span>`;
 }
 function mainLaneForChampion(name){const lanes=championStatsCache.filter(c=>c.champion_name===name&&c.lane!=='ALL').sort((a,b)=>b.games-a.games);return lanes[0]?.lane||'-'}
-function getChampionTier(c){if(c.games<3)return '6';const s=Number(c.honey_score||0);if(s>=85)return 'OP';if(s>=72)return '1';if(s>=60)return '2';if(s>=48)return '3';if(s>=36)return '4';return '5'}
+function getChampionTier(c){return c?.tier||'5'}
 function getChampionTierRank(c){const t=getChampionTier(c);return {'OP':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6}[t]??9}
 function getChampionTierClass(t){return t==='OP'?'champ-tier-op':`champ-tier-${t}`}
 function getChampionStatByLane(champion, lane){
@@ -1991,7 +2038,7 @@ async function loadMatches(options={}){
     const keepPage=options.keepPage===true;
     const container=document.getElementById('matchesContainer');
     container.innerHTML='<div class="loading">전체 전적 불러오는 중...</div>';
-    const {data:matches,error:matchError}=await db.from('bc_matches').select('*').order('id',{ascending:false});
+    const {data:matches,error:matchError}=await db.from('bc_matches').select('*').order('id',{ascending:false}).limit(20);
     if(matchError){console.error(matchError);container.innerHTML='<div class="empty-box">내전 기록을 불러오지 못했습니다.</div>';return}
     if(!matches.length){container.innerHTML='<div class="empty-box">아직 내전 기록이 없습니다.</div>';return}
     const ids=matches.map(m=>m.id);
@@ -2189,155 +2236,51 @@ function isRedBan(b){
 }
 
 function openChampionDetail(name,lane='ALL'){
-    const champ =
-        championStatsCache.find(c=>c.champion_name===name&&c.lane===lane) ||
-        championStatsCache.find(c=>c.champion_name===name&&c.lane==='ALL');
-
-    if(!champ) return;
-
+    const champ=championStatsCache.find(c=>c.champion_name===name&&c.lane===lane)||championStatsCache.find(c=>c.champion_name===name&&c.lane==='ALL');
+    if(!champ)return;
     const topMap={};
-
-    champ.records.forEach(r=>{
-        const p=playersCache.find(x=>x.id===r.player_id);
-        const n=p?.nickname||'알 수 없음';
-
-        if(!topMap[n]){
-            topMap[n]={
-                name:n,
-                games:0,
-                wins:0,
-                kills:0,
-                deaths:0,
-                assists:0,
-                kp:0
-            };
-        }
-
-        const t=topMap[n];
-
-        t.games++;
-        if(r.result==='win') t.wins++;
-
-        t.kills+=Number(r.kills||0);
-        t.deaths+=Number(r.deaths||0);
-        t.assists+=Number(r.assists||0);
-        t.kp+=Number(r.kp||0);
-    });
-
-    const top = Object.values(topMap)
-        .sort((a,b)=>champPerformanceScore(b)-champPerformanceScore(a))
-        .slice(0,5);
-
-    const totalChampionGames =
-        championStatsCache
-            .filter(x=>x.lane==='ALL')
-            .reduce((s,x)=>s + Number(x.games||0),0);
-
-    const pickRate =
-        totalChampionGames > 0
-            ? ((Number(champ.games||0) / totalChampionGames) * 100).toFixed(1)
-            : '0.0';
-
-    document.getElementById('championDetailContent').innerHTML = `
-<div class="detail-layout">
-
-    <div class="card champion-detail-card">
-
-        <div class="champion-detail-portrait">
-            <span class="champion-detail-tier ${getChampionTierClass(getChampionTier(champ))}">
-                ${getChampionTier(champ)}
-            </span>
-
-            ${champIcon(name,'champion-icon big',false)}
-        </div>
-
-        <h1>${escapeHtml(name)}</h1>
-
-        <p class="stat">
-            ${lane==='ALL' ? '전체' : escapeHtml(lane)}
-        </p>
-
-        <div class="champion-detail-honey">
-            🍯 ${Number(champ.honey_score||0).toFixed(1)}
-        </div>
-
-        <br>
-
-        <p class="stat champion-main-stat">
-            ⚔️ <strong>${champ.games}전 ${champ.wins}승 ${champ.games-champ.wins}패</strong>
-        </p>
-
-        <p class="stat">
-            🏆 승률 ${getChampionWinrate(champ).toFixed(1)}%
-        </p>
-
-        <p class="stat">
-            🎯 픽률 ${pickRate}%
-        </p>
-
-        <p class="stat">
-            🚫 벤율 ${Number(champ.ban_rate||0).toFixed(1)}%
-        </p>
-
-        <br>
-
-        <div class="kda-vertical">
-            <div>${avgKdaText(champ)}</div>
-            <div>KDA ${getChampionKdaRatio(champ).toFixed(1)}</div>
-        </div>
-
-        <br>
-
-        <p class="stat">
-            킬관여율 ${getChampionAvgKP(champ).toFixed(1)}%
-        </p>
-
-    </div>
-
-    <div>
-
-        <div class="card">
-            <h2>TOP 플레이어</h2>
-            <br>
-            <div class="champion-list">
-                ${top.map((p,i)=>championTopPlayerRow(p,i+1)).join('')}
+    champ.records.forEach(r=>{const p=playersCache.find(x=>Number(x.id)===Number(r.player_id));const n=p?.nickname||'알 수 없음';if(!topMap[n])topMap[n]={name:n,games:0,wins:0,kills:0,deaths:0,assists:0,kp:0,score:0};const t=topMap[n];t.games++;if(recordWin(r))t.wins++;t.kills+=Number(r.kills||0);t.deaths+=Number(r.deaths||0);t.assists+=Number(r.assists||0);t.kp+=Number(r.kp||0);t.score+=Number(r.score||0)});
+    const top=Object.values(topMap).sort((a,b)=>champPerformanceScore(b)-champPerformanceScore(a)).slice(0,5);
+    const counters=getChampionCounterStats(champ);
+    const synergy=getChampionSynergyStats(champ);
+    window.__activeChampionRecentRecords=champ.records||[];
+    detailRecentState.championRecent=detailRecentState.championRecent||1;
+    document.getElementById('championDetailContent').innerHTML=`<div class="champion-detail-grid">
+        <div class="champion-detail-stack">
+            <div class="card champion-detail-card">
+                <div class="champion-detail-portrait"><span class="champion-detail-tier ${getChampionTierClass(getChampionTier(champ))}">${getChampionTier(champ)}</span>${champIcon(name,'champion-icon big',false)}</div>
+                <h1>${escapeHtml(name)}</h1>
+                <p class="stat">${lane==='ALL'?'전체':escapeHtml(lane)}</p>
+                <div class="champion-detail-honey">🍯 ${Number(champ.honey_score||0).toFixed(1)}</div>
+                <div class="champion-presence"><span class="presence-pill">픽률 ${Number(champ.pick_rate||0).toFixed(1)}%</span><span class="presence-pill">밴율 ${Number(champ.ban_rate||0).toFixed(1)}%</span><span class="presence-pill">존재감 ${Number(champ.presence||0).toFixed(1)}%</span></div>
+                <div class="champion-metric-grid">${championMetric('전적',`${champ.games}전 ${champ.wins}승 ${champ.games-champ.wins}패`)}${championMetric('승률',`${getChampionWinrate(champ).toFixed(1)}%`)}${championMetric('평균 라인점수',getChampionAvgScore(champ).toFixed(1))}${championMetric('평균 KP',`${getChampionAvgKP(champ).toFixed(1)}%`)}${championMetric('평균 KDA',getChampionKdaRatio(champ).toFixed(2))}${championMetric('평균 킬',champ.games?(champ.kills/champ.games).toFixed(1):'0.0')}${championMetric('평균 데스',champ.games?(champ.deaths/champ.games).toFixed(1):'0.0')}${championMetric('평균 어시',champ.games?(champ.assists/champ.games).toFixed(1):'0.0')}</div>
             </div>
+            <div class="card"><h2>카운터 정보</h2><br>${buildChampionCounterCards(counters)}</div>
+            <div class="card"><h2>시너지</h2><br>${buildChampionAnalysisList(synergy,'같이 이긴 챔피언')}</div>
         </div>
-
-        <br>
-
-        <div class="card">
-            <h2>최근 사용 경기</h2>
-            <br>
-            ${(()=>{window.__activeChampionRecentRecords=champ.records||[];detailRecentState.championRecent=detailRecentState.championRecent||1;return buildChampionRecentMatches(window.__activeChampionRecentRecords,'championRecent')})()}
+        <div class="champion-detail-stack">
+            <div class="card"><h2>TOP 플레이어</h2><br><div class="champion-list">${top.map((p,i)=>championTopPlayerRow(p,i+1)).join('')}</div></div>
+            <div class="card"><h2>최근 사용 경기</h2><br>${buildChampionRecentMatches(window.__activeChampionRecentRecords,'championRecent')}</div>
         </div>
-
-    </div>
-
-</div>
-`;
-
+    </div>`;
     showPage('championDetail');
 }
-
-function championTopPlayerRow(p,rank){
-    const losses=p.games-p.wins;
-    const wr=p.games?p.wins/p.games*100:0;
-    const kdaText=p.games?`${(p.kills/p.games).toFixed(1)}/${(p.deaths/p.games).toFixed(1)}/${(p.assists/p.games).toFixed(1)}`:'0/0/0';
-    const ratio=((p.kills+p.assists)/Math.max(1,p.deaths)).toFixed(1);
-    const kp=p.games?(p.kp/p.games).toFixed(1):'0.0';
-    return `<div class="champion-row champion-top-row">
-        <div class="most-rank">#${rank}</div>
-        <div class="champion-main">
-            <div class="champion-name">${escapeHtml(p.name)}</div>
-        </div>
-        <div class="plain-stat">${p.games}판 ${p.wins}승 ${losses}패</div>
-        <div class="plain-stat sub">승률 ${wr.toFixed(1)}%</div>
-        <div class="plain-stat">${kdaText} <span class="plain-stat sub">${ratio}</span></div>
-        <div class="plain-stat sub">킬관여율 ${kp}%</div>
-    </div>`;
+function championMetric(label,value){return `<div class="champion-metric"><div class="champion-metric-label">${escapeHtml(label)}</div><div class="champion-metric-value">${escapeHtml(value)}</div></div>`}
+function getChampionCounterStats(champ){
+    const map={};
+    (champ.records||[]).forEach(r=>{const group=matchRecordMap.get(Number(r.match_id))||[];group.filter(o=>o.team!==r.team).forEach(o=>{const n=o.champion_name||'알 수 없음';if(!map[n])map[n]={name:n,wins:0,games:0};map[n].games++;if(recordWin(r))map[n].wins++;})});
+    const list=Object.values(map).filter(x=>x.games>=1).map(x=>({...x,wr:x.games?x.wins/x.games*100:0}));
+    return {strong:[...list].sort((a,b)=>b.wr-a.wr||b.games-a.games).slice(0,5),weak:[...list].sort((a,b)=>a.wr-b.wr||b.games-a.games).slice(0,5)};
 }
-
+function getChampionSynergyStats(champ){const map={};(champ.records||[]).forEach(r=>{const group=matchRecordMap.get(Number(r.match_id))||[];group.filter(o=>o.team===r.team&&o.champion_name!==r.champion_name).forEach(o=>{const n=o.champion_name||'알 수 없음';if(!map[n])map[n]={name:n,wins:0,games:0};map[n].games++;if(recordWin(r))map[n].wins++;})});return Object.values(map).filter(x=>x.games>=1).map(x=>({...x,wr:x.games?x.wins/x.games*100:0})).sort((a,b)=>b.wr-a.wr||b.games-a.games).slice(0,8)}
+function buildChampionCounterCards(data){return `<div class="champion-analysis-grid"><div class="champion-analysis-card"><div class="analysis-title">약한 상대</div>${buildChampionAnalysisRows(data.weak)}</div><div class="champion-analysis-card"><div class="analysis-title">강한 상대</div>${buildChampionAnalysisRows(data.strong)}</div></div>`}
+function buildChampionAnalysisList(list,title){return `<div class="champion-analysis-card"><div class="analysis-title">${escapeHtml(title)}</div>${buildChampionAnalysisRows(list)}</div>`}
+function buildChampionAnalysisRows(list){if(!list.length)return '<div class="ban-empty">데이터 없음</div>';return list.map(x=>`<div class="analysis-row"><div class="analysis-name">${escapeHtml(x.name)}</div><div class="analysis-rate">${x.wr.toFixed(1)}%</div><div class="analysis-games">${x.games}판</div></div>`).join('')}function championTopPlayerRow(p,rank){
+    const losses=p.games-p.wins,wr=p.games?p.wins/p.games*100:0;
+    const kdaText=p.games?`${(p.kills/p.games).toFixed(1)}/${(p.deaths/p.games).toFixed(1)}/${(p.assists/p.games).toFixed(1)}`:'0/0/0';
+    const ratio=((p.kills+p.assists)/Math.max(1,p.deaths)).toFixed(1),kp=p.games?(p.kp/p.games).toFixed(1):'0.0',score=p.games?(p.score/p.games).toFixed(1):'0.0';
+    return `<div class="champion-row champion-top-row phase3-top"><div class="most-rank">#${rank}</div><div class="champion-main"><div class="champion-name">${escapeHtml(p.name)}</div></div><div class="plain-stat">${p.games}전 ${p.wins}승 ${losses}패</div><div class="plain-stat sub">승률 ${wr.toFixed(1)}%</div><div class="plain-stat">${kdaText}</div><div class="plain-stat sub">KDA ${ratio}</div><div class="plain-stat sub">KP ${kp}%</div><div class="plain-stat sub">점수 ${score}</div></div>`;
+}
 async function openPlayer(id){
     const p=playersCache.find(x=>Number(x.id)===Number(id));if(!p)return;
     document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}<h1>${escapeHtml(p.nickname)}</h1>${getIntroHtml(p)}<br>${getTierBadge(p)}<p class="stat">⚔️ ${p.total_games}전</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p></div><div><div class="card"><h2>모스트 챔피언</h2><br><div class="detail-loading">전적 데이터를 불러오는 중...</div></div><br><div class="card"><h2>최근 전적</h2><br><div class="detail-loading">최근 전적을 불러오는 중...</div></div></div></div>`;
@@ -2348,124 +2291,67 @@ async function loadPlayerDetail(p){
     const records=getPlayerAllRecords(p.id);
     renderPlayerDetail(p,records);
 }
-function getPlayerAllRecords(playerId){
-    return [...allMatchRecordsCache]
-        .filter(r=>Number(r.player_id)===Number(playerId))
-        .sort((a,b)=>getRecordTimeValue(b)-getRecordTimeValue(a));
+function getPlayerAllRecords(playerId){return [...allMatchRecordsCache].filter(r=>Number(r.player_id)===Number(playerId)).sort((a,b)=>getRecordTimeValue(b)-getRecordTimeValue(a))}
+function getRecordTimeValue(r){return new Date(r.bc_matches?.played_at||r.played_at||r.created_at||0).getTime()||0}
+function avg(nums){return nums.length?nums.reduce((a,b)=>a+Number(b||0),0)/nums.length:0}
+function sum(nums){return nums.reduce((a,b)=>a+Number(b||0),0)}
+function recordWin(r){return r.result==='win'}
+function summarizeRecords(records){
+    const games=records.length,wins=records.filter(recordWin).length;
+    const kills=sum(records.map(r=>r.kills)),deaths=sum(records.map(r=>r.deaths)),assists=sum(records.map(r=>r.assists));
+    return {games,wins,losses:games-wins,wr:games?wins/games*100:0,kills,deaths,assists,avgK:games?kills/games:0,avgD:games?deaths/games:0,avgA:games?assists/games:0,kda:(kills+assists)/Math.max(1,deaths),kp:avg(records.map(r=>r.kp)),score:avg(records.map(r=>r.score))};
 }
-function getRecordTimeValue(r){
-    return new Date(r.bc_matches?.played_at||r.played_at||r.created_at||0).getTime()||0;
-}
+function getLineStats(records){return ['TOP','JUG','MID','ADC','SUP'].map(lane=>{const list=records.filter(r=>normalizeLane(r.lane)===lane);return {lane,...summarizeRecords(list)}})}
+function getMostLine(records){const lines=getLineStats(records).sort((a,b)=>b.games-a.games||b.score-a.score);return lines[0]?.games?lines[0].lane:'-'}
+function getMostChampionName(records){const map={};records.forEach(r=>{const c=r.champion_name||'알 수 없음';map[c]=(map[c]||0)+1});return Object.entries(map).sort((a,b)=>b[1]-a[1])[0]?.[0]||'-'}
+function getMvpCount(playerId,records){return records.filter(r=>{const group=matchRecordMap.get(Number(r.match_id))||[];const maxScore=Math.max(...group.map(x=>Number(x.score||0)),0);return Number(r.player_id)===Number(playerId)&&Number(r.score||0)>=maxScore&&maxScore>0}).length}
+function getMainLaneBadges(records){return getLineStats(records).filter(x=>x.games).sort((a,b)=>b.games-a.games||b.score-a.score).slice(0,2).map((x,i)=>`<span class="info-pill">${i===0?'🥇':'🥈'} ${x.lane}</span>`).join('')||'<span class="info-pill">라인 기록 없음</span>'}
+function getPlayStyle(summary){if(summary.games===0)return '기록 없음';if(summary.kp>=70&&summary.kda>=3.2)return '캐리형';if(summary.kda>=4)return '안정형';if(summary.kp>=68)return '교전형';if(summary.score>=75)return '운영형';if(summary.avgA>=summary.avgK*1.8)return '서포터형';return '밸런스형'}
+function lineStars(score){const n=Math.max(1,Math.min(5,Math.round(Number(score||0)/20)));return '★'.repeat(n)+'☆'.repeat(5-n)}
 function renderPlayerDetail(p,records){
-    const key=`player-${p.id}`;
-    detailRecentState[key]=detailRecentState[key]||1;
-    document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}<h1>${escapeHtml(p.nickname)}</h1>${getIntroHtml(p)}<br>${getTierBadge(p)}<p class="stat">
-    ⚔️ <strong>${p.total_games}전 ${p.wins}승 ${p.losses}패</strong>
-</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p><br><p class="stat">승리 시 예상 LP : +${getWinPointChange(p,'win')}</p><p class="stat">패배 시 예상 LP : ${getWinPointChange(p,'lose')}</p></div><div><div class="card"><h2>모스트 챔피언</h2><br>${buildMostChampions(records)}</div><br><div class="card"><h2>최근 전적</h2><br><div id="playerRecentArea-${p.id}">${buildRecentMatches(p,records,key)}</div></div></div></div>`;
-}
-function buildMostChampions(records){
-    if(!records.length)return '<div class="empty-box">아직 전적 데이터가 없습니다.</div>';
-    const map={};
-    records.forEach(r=>{
-        const c=r.champion_name||'알 수 없음';
-        if(!map[c])map[c]={champion_name:c,lane:normalizeLane(r.lane),games:0,wins:0,kills:0,deaths:0,assists:0,kp:0,score:0,lanes:{}};
-        const m=map[c];
-        m.games++;
-        if(r.result==='win')m.wins++;
-        m.kills+=Number(r.kills||0);
-        m.deaths+=Number(r.deaths||0);
-        m.assists+=Number(r.assists||0);
-        m.kp+=Number(r.kp||0);
-        m.score+=Number(r.score||0);
-        const lane=normalizeLane(r.lane);
-        m.lanes[lane]=(m.lanes[lane]||0)+1;
-        m.lane=Object.entries(m.lanes).sort((a,b)=>b[1]-a[1])[0]?.[0]||lane;
-    });
-    return `<div class="champion-list player-most-list">${Object.values(map).sort((a,b)=>champPerformanceScore(b)-champPerformanceScore(a)).slice(0,5).map((c,i)=>{
-        const wr=(c.wins/c.games*100).toFixed(1);
-        const kda=`${(c.kills/c.games).toFixed(1)} / ${(c.deaths/c.games).toFixed(1)} / ${(c.assists/c.games).toFixed(1)}`;
-        const ratio=((c.kills+c.assists)/Math.max(1,c.deaths)).toFixed(1);
-        const kp=(c.kp/c.games).toFixed(1);
-        return `<div class="champion-row" onclick="openChampionDetail('${escapeJs(c.champion_name)}','${escapeJs(c.lane)}')">
-            <div class="most-rank">#${i+1}</div>
-            <div class="detail-row-main">
-                ${recordChampIcon(c.champion_name,c.lane)}
-                <div class="detail-row-text">
-                    <div class="champion-name">${escapeHtml(c.champion_name)}</div>
-                    <div class="champion-sub">${escapeHtml(c.lane)}</div>
+    const key=`player-${p.id}`;detailRecentState[key]=detailRecentState[key]||1;
+    const summary=summarizeRecords(records), lineStats=getLineStats(records), mvp=getMvpCount(p.id,records), mostLine=getMostLine(records), mostChamp=getMostChampionName(records), style=getPlayStyle(summary);
+    const highLp=Math.max(Number(p.max_lp||0),Number(p.lp||0),getPlayerLP(p));
+    document.getElementById('playerDetailContent').innerHTML=`<div class="player-detail-dashboard">
+        <div class="player-detail-stack">
+            <div class="player-section-card player-profile-card">
+                <div class="player-profile-head">${getProfileHtml(p,'big')}<div><div class="player-profile-name">${escapeHtml(p.nickname)}</div><div class="player-badge-row">${getTierBadge(p)}${getMainLaneBadges(records)}<span class="info-pill">${style}</span></div></div></div>
+                ${getIntroHtml(p)}
+                <div class="form-dots">${recentFormDots(records)}</div>
+                <div class="profile-stat-grid">
+                    ${profileStat('현재 티어',getTier(p))}${profileStat('현재 LP',`${getPlayerLP(p)} LP`)}${profileStat('최고 LP',`${highLp} LP`)}${profileStat('평균 KDA',summary.kda.toFixed(2))}${profileStat('평균 KP',`${summary.kp.toFixed(1)}%`)}${profileStat('평균 라인점수',summary.score.toFixed(1))}${profileStat('MVP 횟수',`${mvp}회`)}${profileStat('연승',`${p.current_win_streak||0}연승`)}${profileStat('모스트 라인',mostLine)}${profileStat('모스트 챔피언',mostChamp)}
                 </div>
             </div>
-            <div class="plain-stat">${c.games}전 ${c.wins}승 ${c.games-c.wins}패</div>
-            <div class="plain-stat sub">승률 ${wr}%</div>
-            <div class="plain-stat">${kda}</div>
-            <div class="plain-stat kp-stack">KDA ${ratio}<br>${kp}%</div>
-        </div>`;
-    }).join('')}</div>`;
-}
-function buildRecentMatches(p,records,stateKey){
-    if(!records.length)return '<div class="empty-box">아직 최근 전적 데이터가 없습니다.</div>';
-    const page=detailRecentState[stateKey]||1;
-    const pageSize=15;
-    const totalPages=Math.max(1,Math.ceil(records.length/pageSize));
-    const safePage=Math.min(Math.max(1,page),totalPages);
-    detailRecentState[stateKey]=safePage;
-    const items=records.slice((safePage-1)*pageSize,safePage*pageSize);
-    return `<div class="match-list">${items.map(r=>detailRecentRow(r,p,false)).join('')}</div>${renderDetailRecentPager(stateKey,records.length,totalPages,safePage)}`;
-}
-function buildChampionRecentMatches(records,stateKey='championRecent'){
-    if(!records.length)return '<div class="empty-box">아직 최근 전적 데이터가 없습니다.</div>';
-    records=[...records].sort((a,b)=>getRecordTimeValue(b)-getRecordTimeValue(a));
-    const page=detailRecentState[stateKey]||1;
-    const pageSize=15;
-    const totalPages=Math.max(1,Math.ceil(records.length/pageSize));
-    const safePage=Math.min(Math.max(1,page),totalPages);
-    detailRecentState[stateKey]=safePage;
-    const items=records.slice((safePage-1)*pageSize,safePage*pageSize);
-    return `<div id="${stateKey}Area"><div class="match-list">${items.map(r=>detailRecentRow(r,null,true)).join('')}</div>${renderDetailRecentPager(stateKey,records.length,totalPages,safePage)}</div>`;
-}
-function renderDetailRecentPager(stateKey,total,totalPages,page){
-    if(totalPages<=1)return `<div class="page-summary">전체 ${total}경기</div>`;
-    return `<div class="detail-recent-pager"><button class="page-btn" onclick="setDetailRecentPage('${escapeJs(stateKey)}',${page-1})" ${page<=1?'disabled':''}>◀ 이전</button><span class="page-summary">${page}/${totalPages}페이지 · 전체 ${total}경기</span><button class="page-btn" onclick="setDetailRecentPage('${escapeJs(stateKey)}',${page+1})" ${page>=totalPages?'disabled':''}>다음 ▶</button></div>`;
-}
-function setDetailRecentPage(stateKey,page){
-    detailRecentState[stateKey]=page;
-    const active=document.querySelector('.page.active')?.id;
-    if(active==='playerDetail'){
-        const id=Number(stateKey.replace('player-',''));
-        const p=playersCache.find(x=>Number(x.id)===id);
-        if(p)renderPlayerDetail(p,getPlayerAllRecords(id));
-    }else if(active==='championDetail'){
-        const area=document.getElementById(`${stateKey}Area`);
-        const records=window.__activeChampionRecentRecords||[];
-        if(area)area.outerHTML=buildChampionRecentMatches(records,stateKey);
-    }
-}function detailRecentRow(r,p=null,showPlayer=false){
-    const player=p||playersCache.find(x=>Number(x.id)===Number(r.player_id))||{};
-    const pc = r.lp_change !== null && r.lp_change !== undefined
-        ? Number(r.lp_change)
-        : 0;
-
-    const cls = pc >= 0 ? 'point-plus' : 'point-minus';
-    const resultText=r.result==='win'?'승리':'패배';
-    const title=showPlayer?escapeHtml(player.nickname||'알 수 없음'):escapeHtml(r.champion_name||'-');
-    const sub=showPlayer?`${escapeHtml(r.champion_name||'-')} · ${normalizeLane(r.lane)}`:`${normalizeLane(r.lane)}`;
-    return `<div class="match-row detail-match-row" onclick="openMatchById(${r.match_id})">
-        <div class="${r.result==='win'?'result-win':'result-lose'}">${resultText}</div>
-        <div class="detail-row-main">
-            ${recordChampIcon(r.champion_name,r.lane)}
-            <div class="detail-row-text">
-                <strong>${title}</strong>
-                <div class="champion-sub">${sub}</div>
-            </div>
+            <div class="player-section-card"><div class="player-section-title">라인별 통계</div>${buildLineStatCards(lineStats)}</div>
+            <div class="player-section-card"><div class="player-section-title">라인 숙련도</div>${buildLineMastery(lineStats)}</div>
+            <div class="player-section-card"><div class="player-section-title">흐름 그래프</div>${buildPlayerGraph(records)}</div>
         </div>
-        <div class="plain-stat">${r.kills||0}/${r.deaths||0}/${r.assists||0}</div>
-        <div class="plain-stat sub">KDA ${kdaRatio(r).toFixed(1)}</div>
-        <div class="plain-stat sub">킬관여율 ${r.kp??0}%</div>
-        <div class="${cls}">${pc>=0?`+${pc}`:pc} LP</div>
+        <div class="player-detail-stack">
+            <div class="player-section-card"><div class="player-section-title">최근 전적</div><div id="playerRecentArea-${p.id}">${buildRecentMatches(p,records,key)}</div></div>
+            <div class="player-section-card"><div class="player-section-title">모스트 챔피언</div>${buildMostChampions(records)}</div>
+            <div class="player-section-card"><div class="player-section-title">상대전적</div>${buildOpponentStats(p.id)}</div>
+            <div class="player-section-card"><div class="player-section-title">시너지</div>${buildSynergyStats(p.id)}</div>
+        </div>
     </div>`;
 }
-
-function recordPreviewSection(title,body){
+function profileStat(label,value){return `<div class="profile-stat-box"><div class="profile-stat-label">${escapeHtml(label)}</div><div class="profile-stat-value">${escapeHtml(value)}</div></div>`}
+function recentFormDots(records){const list=records.slice(0,10);if(!list.length)return '<span class="info-pill">최근 기록 없음</span>';return list.map(r=>`<span class="form-dot ${recordWin(r)?'win':'lose'}">${recordWin(r)?'승':'패'}</span>`).join('')}
+function buildLineStatCards(stats){return `<div class="line-stat-grid">${stats.map(s=>`<div class="line-stat-card"><div class="line-stat-title">${s.lane}</div><div class="line-stat-text">${s.games}전 ${s.wins}승 ${s.losses}패<br>승률 ${s.wr.toFixed(1)}%<br>${s.avgK.toFixed(1)} / ${s.avgD.toFixed(1)} / ${s.avgA.toFixed(1)}<br>KDA ${s.kda.toFixed(2)}<br>KP ${s.kp.toFixed(1)}%<br>평균 라인점수 ${s.score.toFixed(1)}</div></div>`).join('')}</div>`}
+function buildLineMastery(stats){return `<div class="line-stat-grid">${stats.map(s=>`<div class="line-stat-card"><div class="line-stat-title">${s.lane}</div><div class="line-stars">${s.games?lineStars(s.score):'☆☆☆☆☆'}</div><div class="line-stat-text">${s.games}판 · ${s.score.toFixed(1)}점</div></div>`).join('')}</div>`}
+function buildPlayerGraph(records){const list=[...records].slice(0,12).reverse();if(!list.length)return '<div class="empty-box">그래프 데이터가 없습니다.</div>';return `<div class="graph-bars">${list.map(r=>`<div class="graph-bar" title="${escapeHtml(r.champion_name||'-')} ${Number(r.score||0).toFixed(1)}점" style="height:${Math.max(8,Math.min(100,Number(r.score||0)))}%"></div>`).join('')}</div><div class="graph-legend"><span>라인점수 기준</span><span>최근 ${list.length}경기</span></div>`}
+function buildMostChampions(records){
+    if(!records.length)return '<div class="empty-box">아직 전적 데이터가 없습니다.</div>';
+    const map={};records.forEach(r=>{const c=r.champion_name||'알 수 없음';if(!map[c])map[c]={champion_name:c,lane:normalizeLane(r.lane),games:0,wins:0,kills:0,deaths:0,assists:0,kp:0,score:0,lanes:{}};const m=map[c];m.games++;if(recordWin(r))m.wins++;m.kills+=Number(r.kills||0);m.deaths+=Number(r.deaths||0);m.assists+=Number(r.assists||0);m.kp+=Number(r.kp||0);m.score+=Number(r.score||0);const lane=normalizeLane(r.lane);m.lanes[lane]=(m.lanes[lane]||0)+1;m.lane=Object.entries(m.lanes).sort((a,b)=>b[1]-a[1])[0]?.[0]||lane;});
+    return `<div class="champion-list player-most-list phase2-most">${Object.values(map).sort((a,b)=>champPerformanceScore(b)-champPerformanceScore(a)).slice(0,8).map((c,i)=>{const wr=(c.wins/c.games*100).toFixed(1),kda=((c.kills+c.assists)/Math.max(1,c.deaths)).toFixed(2),kp=(c.kp/c.games).toFixed(1),score=(c.score/c.games).toFixed(1);return `<div class="champion-row" onclick="openChampionDetail('${escapeJs(c.champion_name)}','${escapeJs(c.lane)}')"><div class="most-rank">#${i+1}</div><div class="detail-row-main">${recordChampIcon(c.champion_name,c.lane)}<div class="detail-row-text"><div class="champion-name">${escapeHtml(c.champion_name)}</div><div class="champion-sub">${escapeHtml(c.lane)}</div></div></div><div class="plain-stat">${c.games}판</div><div class="plain-stat sub">승률 ${wr}%</div><div class="plain-stat">KDA ${kda}</div><div class="plain-stat sub">KP ${kp}%</div><div class="plain-stat sub">점수 ${score}</div></div>`}).join('')}</div>`;
+}
+function buildRecentMatches(p,records,stateKey){if(!records.length)return '<div class="empty-box">아직 최근 전적 데이터가 없습니다.</div>';const page=detailRecentState[stateKey]||1,pageSize=15,totalPages=Math.max(1,Math.ceil(records.length/pageSize)),safePage=Math.min(Math.max(1,page),totalPages);detailRecentState[stateKey]=safePage;const items=records.slice((safePage-1)*pageSize,safePage*pageSize);return `<div class="match-list">${items.map(r=>detailRecentRow(r,p,false)).join('')}</div>${renderDetailRecentPager(stateKey,records.length,totalPages,safePage)}`}
+function buildChampionRecentMatches(records,stateKey='championRecent'){if(!records.length)return '<div class="empty-box">아직 최근 전적 데이터가 없습니다.</div>';records=[...records].sort((a,b)=>getRecordTimeValue(b)-getRecordTimeValue(a));const page=detailRecentState[stateKey]||1,pageSize=15,totalPages=Math.max(1,Math.ceil(records.length/pageSize)),safePage=Math.min(Math.max(1,page),totalPages);detailRecentState[stateKey]=safePage;const items=records.slice((safePage-1)*pageSize,safePage*pageSize);return `<div id="${stateKey}Area"><div class="match-list">${items.map(r=>detailRecentRow(r,null,true)).join('')}</div>${renderDetailRecentPager(stateKey,records.length,totalPages,safePage)}</div>`}
+function renderDetailRecentPager(stateKey,total,totalPages,page){if(totalPages<=1)return `<div class="detail-recent-pager"><span class="page-summary">전체 ${total}경기</span></div>`;return `<div class="detail-recent-pager"><button class="page-btn" onclick="setDetailRecentPage('${escapeJs(stateKey)}',${page-1})" ${page<=1?'disabled':''}>◀ 이전</button><span class="page-summary">${page}/${totalPages}페이지 · 전체 ${total}경기</span><button class="page-btn" onclick="setDetailRecentPage('${escapeJs(stateKey)}',${page+1})" ${page>=totalPages?'disabled':''}>다음 ▶</button></div>`}
+function setDetailRecentPage(stateKey,page){detailRecentState[stateKey]=page;const active=document.querySelector('.page.active')?.id;if(active==='playerDetail'){const id=Number(stateKey.replace('player-',''));const p=playersCache.find(x=>Number(x.id)===id);if(p)renderPlayerDetail(p,getPlayerAllRecords(id));}else if(active==='championDetail'){const area=document.getElementById(`${stateKey}Area`);const records=window.__activeChampionRecentRecords||[];if(area)area.outerHTML=buildChampionRecentMatches(records,stateKey)}}
+function participantName(r){return playerNameById(r.player_id)}
+function buildOpponentStats(playerId){const map={};matchesCache.forEach(m=>{const mine=(m.records||[]).find(r=>Number(r.player_id)===Number(playerId));if(!mine)return;(m.records||[]).filter(r=>r.team!==mine.team).forEach(o=>{const n=participantName(o);if(!map[n])map[n]={name:n,wins:0,losses:0,games:0};map[n].games++;if(recordWin(mine))map[n].wins++;else map[n].losses++;})});return miniStatsTable(Object.values(map).sort((a,b)=>b.games-a.games).slice(0,8))}
+function buildSynergyStats(playerId){const map={};matchesCache.forEach(m=>{const mine=(m.records||[]).find(r=>Number(r.player_id)===Number(playerId));if(!mine)return;(m.records||[]).filter(r=>r.team===mine.team&&Number(r.player_id)!==Number(playerId)).forEach(o=>{const n=participantName(o);if(!map[n])map[n]={name:n,wins:0,losses:0,games:0};map[n].games++;if(recordWin(mine))map[n].wins++;else map[n].losses++;})});return miniStatsTable(Object.values(map).filter(x=>x.games>0).sort((a,b)=>(b.wins/b.games)-(a.wins/a.games)||b.games-a.games).slice(0,8))}
+function miniStatsTable(list){if(!list.length)return '<div class="empty-box">데이터가 없습니다.</div>';return `<div class="mini-table">${list.map(x=>{const wr=x.games?x.wins/x.games*100:0;return `<div class="mini-row"><div class="mini-name">${escapeHtml(x.name)}</div><div class="mini-sub">${x.wins}승 ${x.losses}패</div><div class="mini-rate">${wr.toFixed(1)}%</div></div>`}).join('')}</div>`}function recordPreviewSection(title,body){
     return `<div class="record-preview-section"><div class="record-preview-title">${escapeHtml(title)}</div><div class="record-preview-lines">${escapeHtml(body||'입력 없음')}</div></div>`;
 }
 
