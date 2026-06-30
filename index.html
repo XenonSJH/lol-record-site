@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -1066,6 +1066,20 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     }
 }
 
+
+/* ===== PHASE 1 pagination patch ===== */
+.match-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.page-size-control{display:flex;align-items:center;gap:8px;color:#CBD5E1;font-size:13px;font-weight:900}
+.page-size-select{width:92px!important;min-width:92px!important;padding:10px 12px!important}
+.pagination-bar{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;padding:18px 0 4px}
+.page-btn{min-width:38px;height:38px;border-radius:12px;border:1px solid var(--bc-border,#334155);background:var(--bc-card2,#111827);color:#E2E8F0;font-weight:1000;cursor:pointer;padding:0 12px}
+.page-btn:hover{border-color:var(--bc-accent,#8B5CF6);filter:brightness(1.08)}
+.page-btn.active{background:var(--bc-accent,#8B5CF6);border-color:var(--bc-accent2,#A78BFA);color:white}
+.page-btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.page-ellipsis{color:#94A3B8;font-weight:1000;padding:0 2px}
+.page-summary{width:100%;text-align:center;color:#94A3B8;font-size:13px;font-weight:800;margin-top:2px}
+.detail-recent-pager{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}
+@media(max-width:900px){.match-toolbar{align-items:stretch}.match-toolbar .search-input{width:100%!important}}
 </style>
 </head>
 <body>
@@ -1152,8 +1166,15 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 </div>
 <div id="matches" class="page">
     <h2 style="margin-bottom:20px;">📜 내전 기록</h2>
-    <div class="matches-search-wrap">
-        <input class="search-input" id="matchSearchInput" placeholder="🔍 Match ID 검색" oninput="renderMatches(matchesCache)">
+    <div class="matches-search-wrap match-toolbar">
+        <input class="search-input" id="matchSearchInput" placeholder="🔍 Match ID / 플레이어 / 챔피언 검색" oninput="handleMatchSearchInput()">
+        <label class="page-size-control">표시 개수
+            <select class="search-input page-size-select" id="matchPageSizeSelect" onchange="setMatchPageSize(this.value)">
+                <option value="15" selected>15</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+            </select>
+        </label>
     </div>
     <div id="matchesContainer" class="player-grid"><div class="loading">내전 기록 불러오는 중...</div></div>
 </div>
@@ -1394,6 +1415,7 @@ const SUPABASE_URL = "https://ehligpqxjczgcggjpzwn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_QHDiR1qAWGVaKSDZguc0qg_fE_eVCwZ";
 
 let db=null, playersCache=[], matchesCache=[], championRecordsCache=[], championStatsCache=[], playerRecordStatsMap={};
+let allMatchRecordsCache=[], matchRecordMap=new Map(), matchPage=1, matchPageSize=15, detailRecentState={};
 let playerSortKey="lp", championSortKey="honey", championLaneKey="ALL";
 let playerSortAsc=false, championSortAsc=false;
 let navStack=["home"], navIndex=0, suppressNav=false;
@@ -1429,7 +1451,7 @@ function updateNavButtons(){
 }
 function goBack(){if(navIndex<=0)return;navIndex--;suppressNav=true;showPage(navStack[navIndex],null,false);suppressNav=false;updateNavButtons()}
 function goForward(){if(navIndex>=navStack.length-1)return;navIndex++;suppressNav=true;showPage(navStack[navIndex],null,false);suppressNav=false;updateNavButtons()}
-function refreshCurrentPage(){const id=document.querySelector('.page.active')?.id;if(id==='champions'||id==='championDetail')return loadChampions();if(id==='matches'||id==='matchDetail')return loadMatches();return loadPlayers()}
+function refreshCurrentPage(){const id=document.querySelector('.page.active')?.id;if(id==='champions'||id==='championDetail')return loadChampions();if(id==='matches'||id==='matchDetail')return loadMatches({keepPage:true});return loadPlayers()}
 
 async function loadChampionJson(){
     if(championJsonLoaded) return;
@@ -1962,53 +1984,52 @@ function getChampionAvgScore(c){return c.games?Number(c.score||0)/c.games:0}
 function getChampionKdaRatio(c){return c.games?(Number(c.kills||0)+Number(c.assists||0))/Math.max(1,Number(c.deaths||0)):0}
 function avgKdaText(c){if(!c.games)return '0/0/0';return `${(c.kills/c.games).toFixed(1)}/${(c.deaths/c.games).toFixed(1)}/${(c.assists/c.games).toFixed(1)}`}
 
-async function loadMatches(){
-    if(!db)return;if(!playersCache.length)await loadPlayers();await loadChampionJson();
-    const container=document.getElementById('matchesContainer');container.innerHTML='<div class="loading">내전 기록 불러오는 중...</div>';
-    const {data:matches,error:matchError}=await db.from('bc_matches').select('*').order('id',{ascending:false}).limit(20);
+async function loadMatches(options={}){
+    if(!db)return;
+    if(!playersCache.length)await loadPlayers();
+    await loadChampionJson();
+    const keepPage=options.keepPage===true;
+    const container=document.getElementById('matchesContainer');
+    container.innerHTML='<div class="loading">전체 전적 불러오는 중...</div>';
+    const {data:matches,error:matchError}=await db.from('bc_matches').select('*').order('id',{ascending:false});
     if(matchError){console.error(matchError);container.innerHTML='<div class="empty-box">내전 기록을 불러오지 못했습니다.</div>';return}
     if(!matches.length){container.innerHTML='<div class="empty-box">아직 내전 기록이 없습니다.</div>';return}
     const ids=matches.map(m=>m.id);
-    const {data:records,error:recordError}=await db.from('bc_records').select('*').in('match_id',ids);
+    const {data:records,error:recordError}=await db.from('bc_records').select('*,bc_matches(match_code,played_at)').in('match_id',ids);
     if(recordError){console.error(recordError);container.innerHTML='<div class="empty-box">참가자 기록을 불러오지 못했습니다.</div>';return}
-    matchesCache=matches.map(m=>({...m,records:(records||[]).filter(r=>r.match_id===m.id)}));renderMatches(matchesCache);
-    console.log(matches[0]);
-    console.log(records[0]);
+    allMatchRecordsCache=records||[];
+    matchRecordMap=buildRecordMap(allMatchRecordsCache);
+    matchesCache=matches.map(m=>({...m,records:matchRecordMap.get(Number(m.id))||[]}));
+    if(!keepPage)matchPage=1;
+    renderMatches(matchesCache);
 }
-function playerNameById(id){
-    const p=playersCache.find(x=>Number(x.id)===Number(id));
-    return p?.nickname||p?.lol_name||'-';
-}
+function buildRecordMap(records){const map=new Map();(records||[]).forEach(r=>{const key=Number(r.match_id);if(!map.has(key))map.set(key,[]);map.get(key).push(r)});return map}
+function handleMatchSearchInput(){matchPage=1;renderMatches(matchesCache)}
+function setMatchPageSize(value){matchPageSize=Number(value)||15;matchPage=1;renderMatches(matchesCache)}
+function getMatchSearchQuery(){return (document.getElementById('matchSearchInput')?.value||'').trim().toLowerCase()}
+function matchSearchText(m){const records=m.records||[];return [m.id,m.match_code,'match-'+m.id,...records.map(r=>r.champion_name),...records.map(r=>playerNameById(r.player_id)),...records.map(r=>normalizeLane(r.lane))].filter(Boolean).join(' ').toLowerCase()}
 function renderMatches(matches){
-    const q=(document.getElementById('matchSearchInput')?.value||'').trim().toLowerCase();
-    const list=(matches||[]).filter(m=>{
-        const code=String(m.match_code||'').toLowerCase();
-        const id=String(m.id||'').toLowerCase();
-        return !q || code.includes(q) || id.includes(q) || (`match-${id}`).includes(q);
-    });
-    document.getElementById('matchesContainer').innerHTML=list.map(m=>`
+    const q=getMatchSearchQuery();
+    const list=(matches||[]).filter(m=>!q||matchSearchText(m).includes(q));
+    const total=list.length,totalPages=Math.max(1,Math.ceil(total/matchPageSize));
+    if(!q)matchPage=Math.min(Math.max(1,matchPage),totalPages);
+    const pageItems=q?list:list.slice((matchPage-1)*matchPageSize,matchPage*matchPageSize);
+    document.getElementById('matchesContainer').innerHTML=(pageItems.map(m=>`
         <div class="match-card" onclick="openMatch(${m.id})">
-            <div class="match-card-top">
-                <div>
-                    <div class="match-code">${escapeHtml(m.match_code||'MATCH-'+m.id)}</div>
-                    <div class="match-date">${formatDate(m.played_at)}</div>
-                </div>
-            </div>
-            <div class="score-box">
-                <span class="blue">BLUE ${m.blue_score??0}</span>
-                <span>:</span>
-                <span class="red">${m.red_score??0} RED</span>
-            </div>
-            ${buildCompRows(m.records)}
-        </div>
-    `).join('') || '<div class="empty-box">검색 결과가 없습니다.</div>';
+            <div class="match-card-top"><div><div class="match-code">${escapeHtml(m.match_code||'MATCH-'+m.id)}</div><div class="match-date">${formatDate(m.played_at)}</div></div></div>
+            <div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div>
+            ${buildCompRows(m.records||[])}
+        </div>`).join('') || '<div class="empty-box">검색 결과가 없습니다.</div>') + renderMatchPagination(total,totalPages,q);
 }
-function buildCompRows(records){
-    console.table(records.map(r => ({
-        champ: r.champion_name,
-        lane: r.lane,
-        team: r.team
-    })));
+function renderMatchPagination(total,totalPages,q){
+    if(q)return `<div class="pagination-bar"><div class="page-summary">검색 결과 ${total}경기 · 검색을 지우면 ${matchPage}페이지로 돌아갑니다.</div></div>`;
+    if(totalPages<=1)return `<div class="pagination-bar"><div class="page-summary">전체 ${total}경기</div></div>`;
+    const nums=getPaginationNumbers(matchPage,totalPages);
+    return `<div class="pagination-bar"><button class="page-btn" onclick="setMatchPage(${matchPage-1})" ${matchPage<=1?'disabled':''}>◀ 이전</button>${nums.map(n=>n==='...'?'<span class="page-ellipsis">...</span>':`<button class="page-btn ${n===matchPage?'active':''}" onclick="setMatchPage(${n})">${n}</button>`).join('')}<button class="page-btn" onclick="setMatchPage(${matchPage+1})" ${matchPage>=totalPages?'disabled':''}>다음 ▶</button><div class="page-summary">전체 ${total}경기 · ${matchPage}/${totalPages}페이지 · ${matchPageSize}경기씩 보기</div></div>`;
+}
+function setMatchPage(page){matchPage=page;renderMatches(matchesCache);document.getElementById('matchesContainer')?.scrollTo({top:0,behavior:'smooth'})}
+function getPaginationNumbers(current,total){const set=new Set([1,total,current,current-1,current+1,current-2,current+2]);const arr=[...set].filter(n=>n>=1&&n<=total).sort((a,b)=>a-b);const out=[];arr.forEach(n=>{if(out.length&&n-out[out.length-1]>1)out.push('...');out.push(n)});return out}
+function playerNameById(id){const p=playersCache.find(x=>Number(x.id)===Number(id));return p?.nickname||p?.lol_name||'-'}function buildCompRows(records){
     const blue=records.filter(r=>r.team==='blue').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
     const red=records.filter(r=>r.team==='red').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
     const lanes=['TOP','JUG','MID','ADC','SUP'];
@@ -2032,7 +2053,7 @@ function buildCompRows(records){
         </div>`;
     }).join('')}</div>`;
 }
-async function openMatchById(id){if(!matchesCache.length)await loadMatches();openMatch(id)}
+async function openMatchById(id){if(!matchesCache.length)await loadMatches({keepPage:true});openMatch(id)}
 async function openMatch(id){
     const m=matchesCache.find(x=>Number(x.id)===Number(id));if(!m)return;
     const blue=m.records.filter(r=>r.team==='blue').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
@@ -2288,7 +2309,7 @@ function openChampionDetail(name,lane='ALL'){
         <div class="card">
             <h2>최근 사용 경기</h2>
             <br>
-            ${buildChampionRecentMatches(champ.records.slice(-10).reverse())}
+            ${(()=>{window.__activeChampionRecentRecords=champ.records||[];detailRecentState.championRecent=detailRecentState.championRecent||1;return buildChampionRecentMatches(window.__activeChampionRecentRecords,'championRecent')})()}
         </div>
 
     </div>
@@ -2323,13 +2344,24 @@ async function openPlayer(id){
     showPage('playerDetail');await loadPlayerDetail(p);
 }
 async function loadPlayerDetail(p){
-    const {data,error}=await db.from('bc_records').select('*,bc_matches(match_code,played_at)').eq('player_id',p.id).order('created_at',{ascending:false}).limit(20);
-    if(error){console.error(error);return renderPlayerDetailError(p)}renderPlayerDetail(p,data||[])
+    if(!matchesCache.length)await loadMatches({keepPage:true});
+    const records=getPlayerAllRecords(p.id);
+    renderPlayerDetail(p,records);
+}
+function getPlayerAllRecords(playerId){
+    return [...allMatchRecordsCache]
+        .filter(r=>Number(r.player_id)===Number(playerId))
+        .sort((a,b)=>getRecordTimeValue(b)-getRecordTimeValue(a));
+}
+function getRecordTimeValue(r){
+    return new Date(r.bc_matches?.played_at||r.played_at||r.created_at||0).getTime()||0;
 }
 function renderPlayerDetail(p,records){
+    const key=`player-${p.id}`;
+    detailRecentState[key]=detailRecentState[key]||1;
     document.getElementById('playerDetailContent').innerHTML=`<div class="detail-layout"><div class="card">${getProfileHtml(p,'big')}<h1>${escapeHtml(p.nickname)}</h1>${getIntroHtml(p)}<br>${getTierBadge(p)}<p class="stat">
     ⚔️ <strong>${p.total_games}전 ${p.wins}승 ${p.losses}패</strong>
-</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p><br><p class="stat">승리 시 예상 LP : +${getWinPointChange(p,'win')}</p><p class="stat">패배 시 예상 LP : ${getWinPointChange(p,'lose')}</p></div><div><div class="card"><h2>모스트 챔피언</h2><br>${buildMostChampions(records)}</div><br><div class="card"><h2>최근 전적</h2><br>${buildRecentMatches(p,records)}</div></div></div>`;
+</p><p class="stat">📈 승률 ${getWinrate(p)}%</p><p class="stat">⭐ ${getPlayerLP(p)} LP</p><br><p class="stat">승리 시 예상 LP : +${getWinPointChange(p,'win')}</p><p class="stat">패배 시 예상 LP : ${getWinPointChange(p,'lose')}</p></div><div><div class="card"><h2>모스트 챔피언</h2><br>${buildMostChampions(records)}</div><br><div class="card"><h2>최근 전적</h2><br><div id="playerRecentArea-${p.id}">${buildRecentMatches(p,records,key)}</div></div></div></div>`;
 }
 function buildMostChampions(records){
     if(!records.length)return '<div class="empty-box">아직 전적 데이터가 없습니다.</div>';
@@ -2370,15 +2402,44 @@ function buildMostChampions(records){
         </div>`;
     }).join('')}</div>`;
 }
-function buildRecentMatches(p,records){
+function buildRecentMatches(p,records,stateKey){
     if(!records.length)return '<div class="empty-box">아직 최근 전적 데이터가 없습니다.</div>';
-    return `<div class="match-list">${records.map(r=>detailRecentRow(r,p,false)).join('')}</div>`;
+    const page=detailRecentState[stateKey]||1;
+    const pageSize=15;
+    const totalPages=Math.max(1,Math.ceil(records.length/pageSize));
+    const safePage=Math.min(Math.max(1,page),totalPages);
+    detailRecentState[stateKey]=safePage;
+    const items=records.slice((safePage-1)*pageSize,safePage*pageSize);
+    return `<div class="match-list">${items.map(r=>detailRecentRow(r,p,false)).join('')}</div>${renderDetailRecentPager(stateKey,records.length,totalPages,safePage)}`;
 }
-function buildChampionRecentMatches(records){
+function buildChampionRecentMatches(records,stateKey='championRecent'){
     if(!records.length)return '<div class="empty-box">아직 최근 전적 데이터가 없습니다.</div>';
-    return `<div class="match-list">${records.map(r=>detailRecentRow(r,null,true)).join('')}</div>`;
+    records=[...records].sort((a,b)=>getRecordTimeValue(b)-getRecordTimeValue(a));
+    const page=detailRecentState[stateKey]||1;
+    const pageSize=15;
+    const totalPages=Math.max(1,Math.ceil(records.length/pageSize));
+    const safePage=Math.min(Math.max(1,page),totalPages);
+    detailRecentState[stateKey]=safePage;
+    const items=records.slice((safePage-1)*pageSize,safePage*pageSize);
+    return `<div id="${stateKey}Area"><div class="match-list">${items.map(r=>detailRecentRow(r,null,true)).join('')}</div>${renderDetailRecentPager(stateKey,records.length,totalPages,safePage)}</div>`;
 }
-function detailRecentRow(r,p=null,showPlayer=false){
+function renderDetailRecentPager(stateKey,total,totalPages,page){
+    if(totalPages<=1)return `<div class="page-summary">전체 ${total}경기</div>`;
+    return `<div class="detail-recent-pager"><button class="page-btn" onclick="setDetailRecentPage('${escapeJs(stateKey)}',${page-1})" ${page<=1?'disabled':''}>◀ 이전</button><span class="page-summary">${page}/${totalPages}페이지 · 전체 ${total}경기</span><button class="page-btn" onclick="setDetailRecentPage('${escapeJs(stateKey)}',${page+1})" ${page>=totalPages?'disabled':''}>다음 ▶</button></div>`;
+}
+function setDetailRecentPage(stateKey,page){
+    detailRecentState[stateKey]=page;
+    const active=document.querySelector('.page.active')?.id;
+    if(active==='playerDetail'){
+        const id=Number(stateKey.replace('player-',''));
+        const p=playersCache.find(x=>Number(x.id)===id);
+        if(p)renderPlayerDetail(p,getPlayerAllRecords(id));
+    }else if(active==='championDetail'){
+        const area=document.getElementById(`${stateKey}Area`);
+        const records=window.__activeChampionRecentRecords||[];
+        if(area)area.outerHTML=buildChampionRecentMatches(records,stateKey);
+    }
+}function detailRecentRow(r,p=null,showPlayer=false){
     const player=p||playersCache.find(x=>Number(x.id)===Number(r.player_id))||{};
     const pc = r.lp_change !== null && r.lp_change !== undefined
         ? Number(r.lp_change)
