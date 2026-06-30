@@ -1963,8 +1963,6 @@ function getChampionKdaRatio(c){return c.games?(Number(c.kills||0)+Number(c.assi
 function avgKdaText(c){if(!c.games)return '0/0/0';return `${(c.kills/c.games).toFixed(1)}/${(c.deaths/c.games).toFixed(1)}/${(c.assists/c.games).toFixed(1)}`}
 
 async function loadMatches(){
-    console.log(matches[0]);
-    console.log(records[0]);
     if(!db)return;if(!playersCache.length)await loadPlayers();await loadChampionJson();
     const container=document.getElementById('matchesContainer');container.innerHTML='<div class="loading">내전 기록 불러오는 중...</div>';
     const {data:matches,error:matchError}=await db.from('bc_matches').select('*').order('id',{ascending:false});
@@ -1974,6 +1972,8 @@ async function loadMatches(){
     const {data:records,error:recordError}=await db.from('bc_records').select('*').in('match_id',ids);
     if(recordError){console.error(recordError);container.innerHTML='<div class="empty-box">참가자 기록을 불러오지 못했습니다.</div>';return}
     matchesCache=matches.map(m=>({...m,records:(records||[]).filter(r=>r.match_id===m.id)}));renderMatches(matchesCache);
+    console.log(matches[0]);
+    console.log(records[0]);
 }
 function playerNameById(id){
     const p=playersCache.find(x=>Number(x.id)===Number(id));
