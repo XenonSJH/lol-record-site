@@ -490,6 +490,9 @@ body{background:var(--bc-bg)!important;color:var(--bc-text)!important}
 .theme-swatch{height:34px;border-radius:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,.2)}
 .range-row{display:grid;grid-template-columns:150px 1fr 58px;gap:10px;align-items:center}.range-row input{width:100%}
 .account-status{font-size:14px;color:var(--bc-sub);font-weight:800}.intro-box{margin-top:14px;background:#111827;border:1px solid var(--bc-border);border-radius:14px;padding:12px;color:var(--bc-sub);line-height:1.55;white-space:pre-wrap}
+.mvp-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:linear-gradient(135deg,#FACC15,#F97316);color:#111827;font-size:11px;font-weight:1000;padding:3px 7px;margin-left:6px;box-shadow:0 0 0 1px rgba(255,255,255,.18)}
+.record-row.mvp-record{border-color:#FACC15!important;box-shadow:0 0 0 1px rgba(250,204,21,.28)}
+.comp-side .mvp-badge{font-size:10px;padding:2px 6px;margin-left:4px}
 @media(max-width:1000px){.account-panel{grid-template-columns:1fr}.theme-grid{grid-template-columns:1fr}.range-row{grid-template-columns:1fr}}
 
 
@@ -1306,6 +1309,26 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
                     <input class="search-input" id="settingNickname" placeholder="예: Xenon">
                     <label class="form-label">프로필 사진 URL</label>
                     <input class="search-input" id="settingProfileImage" placeholder="https://...">
+                    <label class="form-label">주라인</label>
+                    <select class="search-input" id="settingMainLane">
+                        <option value="">선택 안 함</option>
+                        <option value="TOP">TOP</option>
+                        <option value="JUG">JUG</option>
+                        <option value="MID">MID</option>
+                        <option value="ADC">ADC</option>
+                        <option value="SUP">SUP</option>
+                    </select>
+                    <label class="form-label">부라인</label>
+                    <select class="search-input" id="settingSubLane">
+                        <option value="">선택 안 함</option>
+                        <option value="TOP">TOP</option>
+                        <option value="JUG">JUG</option>
+                        <option value="MID">MID</option>
+                        <option value="ADC">ADC</option>
+                        <option value="SUP">SUP</option>
+                    </select>
+                    <label class="form-label">즐겨찾기 챔피언</label>
+                    <input class="search-input" id="settingFavoriteChampions" placeholder="예: 아리, 리 신, 이즈리얼">
                     <label class="form-label">소개글</label>
                     <textarea class="search-input" id="settingIntro" rows="5" style="resize:vertical;min-height:110px" placeholder="상세 페이지 프로필 사진 아래에 표시됩니다."></textarea>
                     <button class="sort-btn active" onclick="saveProfileSettings()">프로필 저장</button>
@@ -2108,6 +2131,7 @@ function getPaginationNumbers(current,total){const set=new Set([1,total,current,
 function playerNameById(id){const p=playersCache.find(x=>Number(x.id)===Number(id));return p?.nickname||p?.lol_name||'-'}function buildCompRows(records){
     const blue=records.filter(r=>r.team==='blue').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
     const red=records.filter(r=>r.team==='red').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
+    const mvp=getMatchMvpRecord(records);
     const lanes=['TOP','JUG','MID','ADC','SUP'];
     return `<div class="comp-list">${lanes.map(l=>{
         const b=blue.find(r=>normalizeLane(r.lane)===l);
@@ -2116,30 +2140,39 @@ function playerNameById(id){const p=playersCache.find(x=>Number(x.id)===Number(i
             <div class="comp-side blue-side">
                 ${b?champIcon(b.champion_name,'champion-icon small',true):''}
                 <div class="comp-text">
-                    <div class="comp-duo"><span class="comp-title">${escapeHtml(b?.champion_name||'-')}</span><span class="comp-sub">${b?escapeHtml(playerNameById(b.player_id)):''}</span></div>
+                    <div class="comp-duo"><span class="comp-title">${escapeHtml(b?.champion_name||'-')}${b&&isSameRecord(b,mvp)?'<span class="mvp-badge">MVP</span>':''}</span><span class="comp-sub">${b?escapeHtml(playerNameById(b.player_id)):''}</span></div>
                 </div>
             </div>
             <div class="lane-pill">${l}</div>
             <div class="comp-side red-side">
                 <div class="comp-text">
-                    <div class="comp-duo"><span class="comp-title">${escapeHtml(r?.champion_name||'-')}</span><span class="comp-sub">${r?escapeHtml(playerNameById(r.player_id)):''}</span></div>
+                    <div class="comp-duo"><span class="comp-title">${escapeHtml(r?.champion_name||'-')}${r&&isSameRecord(r,mvp)?'<span class="mvp-badge">MVP</span>':''}</span><span class="comp-sub">${r?escapeHtml(playerNameById(r.player_id)):''}</span></div>
                 </div>
                 ${r?champIcon(r.champion_name,'champion-icon small',true):''}
             </div>
         </div>`;
     }).join('')}</div>`;
 }
+function getMatchMvpRecord(records){
+    const list=(records||[]).filter(r=>Number.isFinite(Number(r.score)));
+    if(!list.length)return null;
+    const max=Math.max(...list.map(r=>Number(r.score||0)));
+    if(max<=0)return null;
+    return list.find(r=>Number(r.score||0)===max)||null;
+}
+function isSameRecord(a,b){return !!a&&!!b&&Number(a.player_id)===Number(b.player_id)&&Number(a.match_id)===Number(b.match_id)}
 async function openMatchById(id){if(!matchesCache.length)await loadMatches({keepPage:true});openMatch(id)}
 async function openMatch(id){
     const m=matchesCache.find(x=>Number(x.id)===Number(id));if(!m)return;
     const blue=m.records.filter(r=>r.team==='blue').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
     const red=m.records.filter(r=>r.team==='red').sort((a,b)=>laneOrder(a.lane)-laneOrder(b.lane));
-    document.getElementById('matchDetailContent').innerHTML=`<div class="section"><div class="card"><div class="match-card-top"><div><h1>${escapeHtml(m.match_code||'MATCH-'+m.id)}</h1><div class="match-detail-date">${formatDate(m.played_at)}</div></div></div><div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div></div><div class="team-grid"><div class="team-card"><div class="team-title blue">BLUE TEAM</div>${buildDetailRecords(blue)}</div><div class="team-card"><div class="team-title red">RED TEAM</div>${buildDetailRecords(red)}</div></div><br><div class="card"><h2>밴 목록</h2><br><div id="matchBanContent">${buildMatchBans(m.bans||[])}</div></div></div>`;
+    document.getElementById('matchDetailContent').innerHTML=`<div class="section"><div class="card"><div class="match-card-top"><div><h1>${escapeHtml(m.match_code||'MATCH-'+m.id)}</h1><div class="match-detail-date">${formatDate(m.played_at)}</div></div></div><div class="score-box"><span class="blue">BLUE ${m.blue_score??0}</span><span>:</span><span class="red">${m.red_score??0} RED</span></div></div><div class="team-grid"><div class="team-card"><div class="team-title blue">BLUE TEAM</div>${buildDetailRecords(blue,m.records)}</div><div class="team-card"><div class="team-title red">RED TEAM</div>${buildDetailRecords(red,m.records)}</div></div><br><div class="card"><h2>밴 목록</h2><br><div id="matchBanContent">${buildMatchBans(m.bans||[])}</div></div></div>`;
     showPage('matchDetail');
     loadMatchBans(m);
 }
-function buildDetailRecords(records){
+function buildDetailRecords(records,allRecords=records){
     if(!records.length)return '<div class="empty-box">기록 없음</div>';
+    const mvp=getMatchMvpRecord(allRecords);
 
     return records.map(r=>{
         const p=playersCache.find(x=>x.id===r.player_id);
@@ -2151,11 +2184,11 @@ function buildDetailRecords(records){
         const lpText = lp >= 0 ? `+${lp}` : `${lp}`;
 
         return `
-            <div class="record-row" onclick="openPlayer(${r.player_id})">
+            <div class="record-row ${isSameRecord(r,mvp)?'mvp-record':''}" onclick="openPlayer(${r.player_id})">
                 ${recordChampIcon(r.champion_name,r.lane)}
 
                 <div>
-                    <div class="record-main-name">${escapeHtml(p?.nickname||'알 수 없음')}</div>
+                    <div class="record-main-name">${escapeHtml(p?.nickname||'알 수 없음')}${isSameRecord(r,mvp)?'<span class="mvp-badge">MVP</span>':''}</div>
                     <div class="record-sub">${escapeHtml(r.champion_name||'-')} · ${normalizeLane(r.lane)}</div>
                 </div>
 
@@ -2276,7 +2309,7 @@ async function openChampionDetail(name,lane='ALL'){
         return;
     }
     const topMap={};
-    champ.records.forEach(r=>{const p=playersCache.find(x=>Number(x.id)===Number(r.player_id));const n=p?.nickname||'알 수 없음';if(!topMap[n])topMap[n]={name:n,games:0,wins:0,kills:0,deaths:0,assists:0,kp:0,score:0};const t=topMap[n];t.games++;if(recordWin(r))t.wins++;t.kills+=Number(r.kills||0);t.deaths+=Number(r.deaths||0);t.assists+=Number(r.assists||0);t.kp+=Number(r.kp||0);t.score+=Number(r.score||0)});
+    champ.records.forEach(r=>{const p=playersCache.find(x=>Number(x.id)===Number(r.player_id));const n=p?.nickname||'알 수 없음';const id=Number(r.player_id||p?.id||0);if(!topMap[n])topMap[n]={id,name:n,games:0,wins:0,kills:0,deaths:0,assists:0,kp:0,score:0};const t=topMap[n];t.id=t.id||id;t.games++;if(recordWin(r))t.wins++;t.kills+=Number(r.kills||0);t.deaths+=Number(r.deaths||0);t.assists+=Number(r.assists||0);t.kp+=Number(r.kp||0);t.score+=Number(r.score||0)});
     const top=Object.values(topMap).sort((a,b)=>champPerformanceScore(b)-champPerformanceScore(a)).slice(0,5);
     const counters=getChampionCounterStats(champ);
     const synergy=getChampionSynergyStats(champ);
@@ -2316,7 +2349,8 @@ function buildChampionAnalysisRows(list){if(!list.length)return '<div class="ban
     const losses=p.games-p.wins,wr=p.games?p.wins/p.games*100:0;
     const kdaText=p.games?`${(p.kills/p.games).toFixed(1)}/${(p.deaths/p.games).toFixed(1)}/${(p.assists/p.games).toFixed(1)}`:'0/0/0';
     const ratio=((p.kills+p.assists)/Math.max(1,p.deaths)).toFixed(1),kp=p.games?(p.kp/p.games).toFixed(1):'0.0',score=p.games?(p.score/p.games).toFixed(1):'0.0';
-    return `<div class="champion-row champion-top-row phase3-top"><div class="most-rank">#${rank}</div><div class="champion-main"><div class="champion-name">${escapeHtml(p.name)}</div></div><div class="plain-stat">${p.games}전 ${p.wins}승 ${losses}패</div><div class="plain-stat sub">승률 ${wr.toFixed(1)}%</div><div class="plain-stat">${kdaText}</div><div class="plain-stat sub">KDA ${ratio}</div><div class="plain-stat sub">KP ${kp}%</div><div class="plain-stat sub">점수 ${score}</div></div>`;
+    const click=p.id?` onclick="openPlayer(${Number(p.id)})"`:'';
+    return `<div class="champion-row champion-top-row phase3-top"${click}><div class="most-rank">#${rank}</div><div class="champion-main"><div class="champion-name">${escapeHtml(p.name)}</div></div><div class="plain-stat">${p.games}전 ${p.wins}승 ${losses}패</div><div class="plain-stat sub">승률 ${wr.toFixed(1)}%</div><div class="plain-stat">${kdaText}</div><div class="plain-stat sub">KDA ${ratio}</div><div class="plain-stat sub">KP ${kp}%</div><div class="plain-stat sub">점수 ${score}</div></div>`;
 }
 async function openPlayer(id){
     const p=playersCache.find(x=>Number(x.id)===Number(id));if(!p)return;
@@ -2703,6 +2737,7 @@ async function openBandleBot(btn){
 async function ensureBotData(){
     if(!playersCache.length)await loadPlayers();
     if(!championStatsCache.length)await loadChampions();
+    if(!matchesCache.length)await loadMatches({keepPage:true});
 }
 function renderBotRecommendations(){
     const area=document.getElementById('botRecommendArea');
@@ -2779,6 +2814,47 @@ function getPlayerLanePower(p,lane){
     const kp=rec.reduce((s,r)=>s+Number(r.kp||0),0)/rec.length;
     return {games:rec.length,score:getPlayerLP(p)*.08+wins/rec.length*35+getKdaRatioFromTotals(kills,deaths,assists)*8+kp*.2+Math.min(rec.length,8)};
 }
+function getRecentPlayerRecords(p,limit=10){
+    return [...allMatchRecordsCache]
+        .filter(r=>Number(r.player_id)===Number(p.id))
+        .sort((a,b)=>getRecordTimeValue(b)-getRecordTimeValue(a))
+        .slice(0,limit);
+}
+function getRecentFormScore(p){
+    const rec=getRecentPlayerRecords(p,10);
+    if(!rec.length)return 0;
+    const wins=rec.filter(recordWin).length/rec.length*100;
+    const avgScore=avg(rec.map(r=>r.score));
+    const avgKda=avg(rec.map(r=>getKdaRatioFromTotals(r.kills,r.deaths,r.assists)));
+    return wins*.45+avgScore*.35+Math.min(avgKda*10,60)*.20;
+}
+function getCarryScore(p){
+    const rec=getRecentPlayerRecords(p,20);
+    if(!rec.length)return getPlayerLP(p)*.02;
+    return avg(rec.map(r=>Number(r.score||0)))*.45+avg(rec.map(r=>Number(r.kp||0)))*.25+avg(rec.map(r=>getKdaRatioFromTotals(r.kills,r.deaths,r.assists)))*8+getPlayerLP(p)*.015;
+}
+function getMvpScoreForTeamPlayer(p){
+    return getMvpCount(p.id,getRecentPlayerRecords(p,30));
+}
+function teamMetric(players,fn){return players.reduce((s,p)=>s+Number(fn(p)||0),0)}
+function recentSameTeamPenalty(blue,red){
+    const blueIds=new Set(blue.map(p=>Number(p.id))),redIds=new Set(red.map(p=>Number(p.id)));
+    let penalty=0;
+    matchesCache.slice(0,5).forEach((m,idx)=>{
+        const weight=5-idx;
+        const groups={blue:[],red:[]};
+        (m.records||[]).forEach(r=>{
+            const pid=Number(r.player_id);
+            if(blueIds.has(pid))groups.blue.push(pid);
+            if(redIds.has(pid))groups.red.push(pid);
+        });
+        penalty+=(Math.max(0,groups.blue.length-1)+Math.max(0,groups.red.length-1))*weight*10;
+    });
+    return penalty;
+}
+function balanceDiff(blue,red,fn,weight=1){
+    return Math.abs(teamMetric(blue,fn)-teamMetric(red,fn))*weight;
+}
 function combinations(arr,k,start=0,prefix=[],out=[]){
     if(prefix.length===k){out.push([...prefix]);return out}
     for(let i=start;i<=arr.length-(k-prefix.length);i++){prefix.push(arr[i]);combinations(arr,k,i+1,prefix,out);prefix.pop()}
@@ -2817,8 +2893,13 @@ function findBestTeamPlan(players){
                 if(diff>1)tierPenalty+=(diff-1)*180;
             });
             const lpDiff=Math.abs(blueLp-redLp);
-            const score=lpDiff+ba.penalty+ra.penalty+tierPenalty-Math.min(ba.power+ra.power,500)*.05;
-            const plan={blue:ba.assign,red:ra.assign,blueLp,redLp,lpDiff,score,maxTierDiff,strict:ba.penalty===0&&ra.penalty===0&&maxTierDiff<=1};
+            const bluePlayers=ba.assign.map(x=>x.player),redPlayers=ra.assign.map(x=>x.player);
+            const formDiff=balanceDiff(bluePlayers,redPlayers,getRecentFormScore,1.4);
+            const carryDiff=balanceDiff(bluePlayers,redPlayers,getCarryScore,1.8);
+            const mvpDiff=balanceDiff(bluePlayers,redPlayers,getMvpScoreForTeamPlayer,35);
+            const repeatPenalty=recentSameTeamPenalty(bluePlayers,redPlayers);
+            const score=lpDiff+ba.penalty+ra.penalty+tierPenalty+formDiff+carryDiff+mvpDiff+repeatPenalty-Math.min(ba.power+ra.power,500)*.05;
+            const plan={blue:ba.assign,red:ra.assign,blueLp,redLp,lpDiff,formDiff,carryDiff,mvpDiff,repeatPenalty,score,maxTierDiff,strict:ba.penalty===0&&ra.penalty===0&&maxTierDiff<=1&&repeatPenalty<60};
             if(!best||score<best.score)best=plan;
         }
     }
@@ -2826,7 +2907,7 @@ function findBestTeamPlan(players){
 }
 function renderTeamPlan(plan){
     const teamHtml=(title,slots,total)=>`<div class="team-result-card"><h2>${title} <span class="champion-sub">총 LP ${total}</span></h2>${slots.map(s=>`<div class="team-slot"><div class="team-slot-lane">${s.lane}</div><div><div class="team-slot-name">${escapeHtml(s.player.nickname)}</div><div class="team-slot-sub">${getTier(s.player)} · ${getPlayerLP(s.player)} LP${s.hasLane?'':' · 미경험 라인'}</div></div><div class="team-slot-sub">라인점수</div><div class="team-slot-sub">${s.lanePower.score.toFixed(1)}</div></div>`).join('')}</div>`;
-    return `<div class="team-result-grid">${teamHtml('BLUE TEAM',plan.blue,plan.blueLp)}${teamHtml('RED TEAM',plan.red,plan.redLp)}</div><div class="champion-sub" style="margin-top:10px;font-weight:900;">LP 차이 ${plan.lpDiff} · 최대 맞라인 티어차 ${plan.maxTierDiff}</div>`;
+    return `<div class="team-result-grid">${teamHtml('BLUE TEAM',plan.blue,plan.blueLp)}${teamHtml('RED TEAM',plan.red,plan.redLp)}</div><div class="champion-sub" style="margin-top:10px;font-weight:900;">LP 차이 ${plan.lpDiff} · 최대 맞라인 티어차 ${plan.maxTierDiff} · 최근폼 차이 ${plan.formDiff.toFixed(1)} · 캐리력 차이 ${plan.carryDiff.toFixed(1)} · MVP 차이 ${plan.mvpDiff.toFixed(1)}</div>`;
 }
 function renderPlayerDetailError(p){document.getElementById('playerDetailContent').innerHTML=`<div class="empty-box">전적 데이터를 불러오지 못했습니다.</div>`}
 
@@ -2908,7 +2989,19 @@ const UI_THEMES={
 };
 const DEFAULT_UI_SETTINGS={theme:'purple',sizeChampion:112,sizePlayer:112,sizeMost:68,sizeRecent:76,sizeMatch:300};
 function openAccountPage(btn){showPage('account',btn);renderAccountPage()}
-function getAccountSettings(){return {...DEFAULT_UI_SETTINGS,...(currentAccount?.settings||{})}}
+function getAccountProfile(){
+    const legacy=currentAccount?.settings||{};
+    const profile=currentAccount?.profile_settings||{};
+    return {
+        nickname:currentAccount?.nickname||'',
+        profile_image:profile.profile_image??currentAccount?.profile_image??legacy.profile_image??'',
+        intro:profile.intro??currentAccount?.intro??legacy.intro??'',
+        main_lane:profile.main_lane??currentAccount?.main_lane??legacy.main_lane??'',
+        sub_lane:profile.sub_lane??currentAccount?.sub_lane??legacy.sub_lane??'',
+        favorite_champions:profile.favorite_champions??currentAccount?.favorite_champions??legacy.favorite_champions??[]
+    };
+}
+function getAccountSettings(){return {...DEFAULT_UI_SETTINGS,...(currentAccount?.settings||{}),...(currentAccount?.ui_settings||{})}}
 function applyUiSettings(settings){
     const st={...DEFAULT_UI_SETTINGS,...settings};
     const theme=UI_THEMES[st.theme]||UI_THEMES.purple;
@@ -2929,7 +3022,7 @@ function previewUiSettings(){
 function updateRangeLabels(st){['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const v=document.getElementById(id+'Value');if(v)v.innerText=(st[id]||DEFAULT_UI_SETTINGS[id])+'px';})}
 function renderThemeGrid(){const grid=document.getElementById('themeGrid');if(!grid)return;grid.innerHTML=Object.entries(UI_THEMES).map(([key,t])=>`<button class="theme-btn ${currentTheme===key?'active':''}" onclick="selectTheme('${key}')"><div class="theme-swatch" style="background:${t.bg.includes('gradient')?t.bg:`linear-gradient(135deg,${t.card},${t.accent})`}"></div>${t.name}</button>`).join('')}
 function selectTheme(key){currentTheme=key;renderThemeGrid();previewUiSettings()}
-function fillSettingsInputs(){const st=getAccountSettings();currentTheme=st.theme||'purple';['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=st[id]||DEFAULT_UI_SETTINGS[id]});updateRangeLabels(st);renderThemeGrid();const nick=document.getElementById('settingNickname');if(nick)nick.value=currentAccount?.nickname||'';const img=document.getElementById('settingProfileImage');if(img)img.value=st.profile_image||'';const intro=document.getElementById('settingIntro');if(intro)intro.value=st.intro||'';const cu=document.getElementById('changeUsername');if(cu)cu.value=''}
+function fillSettingsInputs(){const st=getAccountSettings(),profile=getAccountProfile();currentTheme=st.theme||'purple';['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=st[id]||DEFAULT_UI_SETTINGS[id]});updateRangeLabels(st);renderThemeGrid();const nick=document.getElementById('settingNickname');if(nick)nick.value=profile.nickname||'';const img=document.getElementById('settingProfileImage');if(img)img.value=profile.profile_image||'';const intro=document.getElementById('settingIntro');if(intro)intro.value=profile.intro||'';const main=document.getElementById('settingMainLane');if(main)main.value=profile.main_lane||'';const sub=document.getElementById('settingSubLane');if(sub)sub.value=profile.sub_lane||'';const fav=document.getElementById('settingFavoriteChampions');if(fav)fav.value=Array.isArray(profile.favorite_champions)?profile.favorite_champions.join(', '):(profile.favorite_champions||'');const cu=document.getElementById('changeUsername');if(cu)cu.value=''}
 function renderAccountPage(){const out=document.getElementById('accountLoggedOut'),inn=document.getElementById('accountLoggedIn');if(currentAccount){out.style.display='none';inn.style.display='block';document.getElementById('accountTitle').innerText=`${currentAccount.username} 로그인됨`;document.getElementById('accountSub').innerText=`연결 플레이어: ${currentAccount.nickname||'미설정'}`;fillSettingsInputs()}else{out.style.display='grid';inn.style.display='none'}}
 async function hashPassword(password,salt){const enc=new TextEncoder();const data=enc.encode(password+'|'+salt);const digest=await crypto.subtle.digest('SHA-256',data);return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 function makeSalt(){return crypto.getRandomValues(new Uint32Array(4)).join('-')}
@@ -2940,8 +3033,8 @@ function flashMessage(elOrId,text,ms=1000){
     clearTimeout(el.__flashTimer);
     el.__flashTimer=setTimeout(()=>{el.innerText=''},ms);
 }
-async function signupAccount(){const username=document.getElementById('signupUsername').value.trim();const password=document.getElementById('signupPassword').value;const nickname=document.getElementById('signupNickname').value.trim();const msg=document.getElementById('signupMessage');if(!username||!password){flashMessage(msg,'아이디/비밀번호를 입력해줘.');return}const salt=makeSalt();const password_hash=await hashPassword(password,salt);const {data,error}=await db.from('bc_accounts').insert({username,password_hash,password_salt:salt,nickname,settings:{...DEFAULT_UI_SETTINGS,lp:0}}).select('*').single();if(error){console.error(error);flashMessage(msg,'계정 생성 실패: 이미 있는 아이디일 수 있음');return}currentAccount=data;applyUiSettings(data.settings);renderAccountPage();flashMessage('signupMessage','계정 생성 완료')}
-async function loginAccount(){const username=document.getElementById('loginUsername').value.trim();const password=document.getElementById('loginPassword').value;const msg=document.getElementById('loginMessage');const {data,error}=await db.from('bc_accounts').select('*').eq('username',username).maybeSingle();if(error||!data){msg.innerText='계정을 찾지 못함';return}const h=await hashPassword(password,data.password_salt);if(h!==data.password_hash){msg.innerText='비밀번호가 틀림';return}currentAccount=data;localStorage.setItem('bandleAccountId',data.id);applyUiSettings(data.settings);renderAccountPage();msg.innerText='로그인 완료'}
+async function signupAccount(){const username=document.getElementById('signupUsername').value.trim();const password=document.getElementById('signupPassword').value;const nickname=document.getElementById('signupNickname').value.trim();const msg=document.getElementById('signupMessage');if(!username||!password){flashMessage(msg,'아이디/비밀번호를 입력해줘.');return}const salt=makeSalt();const password_hash=await hashPassword(password,salt);const insert={username,password_hash,password_salt:salt,nickname,settings:{...DEFAULT_UI_SETTINGS,lp:0},ui_settings:{...DEFAULT_UI_SETTINGS},profile_settings:{}};const {data,error}=await db.from('bc_accounts').insert(insert).select('*').single();if(error){console.error(error);flashMessage(msg,'계정 생성 실패: SQL 컬럼 적용 여부 또는 중복 아이디를 확인해줘.');return}currentAccount=data;applyUiSettings(getAccountSettings());renderAccountPage();flashMessage('signupMessage','계정 생성 완료')}
+async function loginAccount(){const username=document.getElementById('loginUsername').value.trim();const password=document.getElementById('loginPassword').value;const msg=document.getElementById('loginMessage');const {data,error}=await db.from('bc_accounts').select('*').eq('username',username).maybeSingle();if(error||!data){msg.innerText='계정을 찾지 못함';return}const h=await hashPassword(password,data.password_salt);if(h!==data.password_hash){msg.innerText='비밀번호가 틀림';return}currentAccount=data;localStorage.setItem('bandleAccountId',data.id);applyUiSettings(getAccountSettings());renderAccountPage();msg.innerText='로그인 완료'}
 function logoutAccount(){currentAccount=null;localStorage.removeItem('bandleAccountId');renderAccountPage()}
 async function restoreAccount(){
 
@@ -2965,28 +3058,49 @@ async function restoreAccount(){
 
     if(data){
         currentAccount = data;
-        applyUiSettings(data.settings || {});
+        applyUiSettings({...DEFAULT_UI_SETTINGS,...(data.settings||{}),...(data.ui_settings||{})});
         renderAccountPage();
         console.log("RESTORE SUCCESS");
     }
 }
-async function saveProfileSettings(){if(!currentAccount)return;const nickname=document.getElementById('settingNickname').value.trim();const profile_image=document.getElementById('settingProfileImage').value.trim();const intro=document.getElementById('settingIntro').value.trim();const settings={...getAccountSettings(),profile_image,intro};const {data,error}=await db.from('bc_accounts').update({nickname,settings,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);flashMessage('profileSaveMessage','저장 실패');return}currentAccount=data;if(nickname){await db.from('bc_players').update({profile_image:profile_image||null,intro:intro||null}).eq('nickname',nickname)}await loadPlayers();renderAccountPage();flashMessage('profileSaveMessage','저장 완료')}
+async function saveProfileSettings(){
+    if(!currentAccount)return;
+    const nickname=document.getElementById('settingNickname').value.trim();
+    const profile_image=document.getElementById('settingProfileImage').value.trim();
+    const intro=document.getElementById('settingIntro').value.trim();
+    const mainRaw=document.getElementById('settingMainLane')?.value||'';
+    const subRaw=document.getElementById('settingSubLane')?.value||'';
+    const main_lane=mainRaw?normalizeLane(mainRaw):'';
+    const sub_lane=subRaw?normalizeLane(subRaw):'';
+    const favorite_champions=(document.getElementById('settingFavoriteChampions')?.value||'').split(',').map(x=>x.trim()).filter(Boolean);
+    const profile_settings={profile_image,intro,main_lane,sub_lane,favorite_champions};
+    const legacy={...(currentAccount.settings||{}),profile_image,intro,main_lane,sub_lane,favorite_champions};
+    const update={nickname,profile_settings,settings:legacy,updated_at:new Date().toISOString()};
+    const {data,error}=await db.from('bc_accounts').update(update).eq('id',currentAccount.id).select('*').single();
+    if(error){console.error(error);flashMessage('profileSaveMessage','저장 실패: SQL 컬럼을 먼저 적용했는지 확인해줘.');return}
+    currentAccount=data;
+    if(nickname){await db.from('bc_players').update({profile_image:profile_image||null,intro:intro||null}).eq('nickname',nickname)}
+    await loadPlayers();
+    renderAccountPage();
+    flashMessage('profileSaveMessage','저장 완료');
+}
 async function saveUiSettings(type='all'){
     if(!currentAccount)return;
     const st={...getAccountSettings(),theme:currentTheme};
     ['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)st[id]=Number(el.value)});
-    const {data,error}=await db.from('bc_accounts').update({settings:st,updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();
+    const {data,error}=await db.from('bc_accounts').update({ui_settings:st,settings:{...(currentAccount.settings||{}),...st},updated_at:new Date().toISOString()}).eq('id',currentAccount.id).select('*').single();
     const msgId=type==='size'?'uiSizeSaveMessage':'uiSaveMessage';
     const msg=document.getElementById(msgId);
     if(error){
         console.error(error);
-        if(msg)flashMessage(msg,'저장 실패');
+        if(msg)flashMessage(msg,'저장 실패: SQL 컬럼을 먼저 적용했는지 확인해줘.');
         return;
     }
     currentAccount=data;
     localStorage.setItem('bandleAccountId',data.id);
-    applyUiSettings(data.settings);
+    applyUiSettings({...DEFAULT_UI_SETTINGS,...(data.settings||{}),...(data.ui_settings||{})});
     renderAccountPage();
+    if(msg)flashMessage(msg,'저장 완료');
 }
 async function changeAccountLogin(){if(!currentAccount)return;const newUsername=document.getElementById('changeUsername').value.trim();const currentPw=document.getElementById('currentPassword').value;const newPw=document.getElementById('changePassword').value;const msg=document.getElementById('accountChangeMessage');const check=await hashPassword(currentPw,currentAccount.password_salt);if(check!==currentAccount.password_hash){flashMessage(msg,'현재 비밀번호가 틀림');return}const update={updated_at:new Date().toISOString()};if(newUsername)update.username=newUsername;if(newPw){const salt=makeSalt();update.password_salt=salt;update.password_hash=await hashPassword(newPw,salt)}const {data,error}=await db.from('bc_accounts').update(update).eq('id',currentAccount.id).select('*').single();if(error){console.error(error);flashMessage(msg,'변경 실패');return}currentAccount=data;renderAccountPage();flashMessage('accountChangeMessage','저장 완료')}
 function getIntroHtml(p){return p?.intro?`<div class="intro-box">${escapeHtml(p.intro)}</div>`:''}
