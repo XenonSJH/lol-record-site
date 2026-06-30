@@ -2031,6 +2031,22 @@ function getChampionAvgScore(c){return c.games?Number(c.score||0)/c.games:0}
 function getChampionKdaRatio(c){return c.games?(Number(c.kills||0)+Number(c.assists||0))/Math.max(1,Number(c.deaths||0)):0}
 function avgKdaText(c){if(!c.games)return '0/0/0';return `${(c.kills/c.games).toFixed(1)}/${(c.deaths/c.games).toFixed(1)}/${(c.assists/c.games).toFixed(1)}`}
 
+async function fetchAllRows(table,select='*',orderColumn='id',ascending=false){
+    const pageSize=1000;
+    let from=0;
+    const rows=[];
+    while(true){
+        let query=db.from(table).select(select).range(from,from+pageSize-1);
+        if(orderColumn)query=query.order(orderColumn,{ascending});
+        const {data,error}=await query;
+        if(error)throw error;
+        rows.push(...(data||[]));
+        if(!data||data.length<pageSize)break;
+        from+=pageSize;
+    }
+    return rows;
+}
+
 async function loadMatches(options={}){
     if(!db)return;
     if(!playersCache.length)await loadPlayers();
@@ -2038,13 +2054,20 @@ async function loadMatches(options={}){
     const keepPage=options.keepPage===true;
     const container=document.getElementById('matchesContainer');
     container.innerHTML='<div class="loading">전체 전적 불러오는 중...</div>';
-    const {data:matches,error:matchError}=await db.from('bc_matches').select('*').order('id',{ascending:false}).limit(20);
-    if(matchError){console.error(matchError);container.innerHTML='<div class="empty-box">내전 기록을 불러오지 못했습니다.</div>';return}
+    let matches=[];
+    let records=[];
+    try{
+        matches=await fetchAllRows('bc_matches','*','id',false);
+        records=await fetchAllRows('bc_records','*,bc_matches(match_code,played_at)','match_id',false);
+    }catch(error){
+        console.error(error);
+        container.innerHTML='<div class="empty-box">내전 기록을 불러오지 못했습니다.</div>';
+        return;
+    }
     if(!matches.length){container.innerHTML='<div class="empty-box">아직 내전 기록이 없습니다.</div>';return}
     const ids=matches.map(m=>m.id);
-    const {data:records,error:recordError}=await db.from('bc_records').select('*,bc_matches(match_code,played_at)').in('match_id',ids);
-    if(recordError){console.error(recordError);container.innerHTML='<div class="empty-box">참가자 기록을 불러오지 못했습니다.</div>';return}
-    allMatchRecordsCache=records||[];
+    const idSet=new Set(ids.map(Number));
+    allMatchRecordsCache=(records||[]).filter(r=>idSet.has(Number(r.match_id)));
     matchRecordMap=buildRecordMap(allMatchRecordsCache);
     matchesCache=matches.map(m=>({...m,records:matchRecordMap.get(Number(m.id))||[]}));
     if(!keepPage)matchPage=1;
@@ -2235,9 +2258,17 @@ function isRedBan(b){
     return v==='red'||v==='200'||v==='2';
 }
 
-function openChampionDetail(name,lane='ALL'){
-    const champ=championStatsCache.find(c=>c.champion_name===name&&c.lane===lane)||championStatsCache.find(c=>c.champion_name===name&&c.lane==='ALL');
-    if(!champ)return;
+async function openChampionDetail(name,lane='ALL'){
+    if(!championStatsCache.length)await loadChampions();
+    const targetLane=normalizeLane(lane);
+    const champ=
+        championStatsCache.find(c=>c.champion_name===name&&normalizeLane(c.lane)===targetLane)||
+        championStatsCache.find(c=>c.champion_name===name&&c.lane==='ALL')||
+        championStatsCache.find(c=>c.champion_name===name);
+    if(!champ){
+        alert(`${name} 챔피언 상세 데이터를 찾지 못했습니다.`);
+        return;
+    }
     const topMap={};
     champ.records.forEach(r=>{const p=playersCache.find(x=>Number(x.id)===Number(r.player_id));const n=p?.nickname||'알 수 없음';if(!topMap[n])topMap[n]={name:n,games:0,wins:0,kills:0,deaths:0,assists:0,kp:0,score:0};const t=topMap[n];t.games++;if(recordWin(r))t.wins++;t.kills+=Number(r.kills||0);t.deaths+=Number(r.deaths||0);t.assists+=Number(r.assists||0);t.kp+=Number(r.kp||0);t.score+=Number(r.score||0)});
     const top=Object.values(topMap).sort((a,b)=>champPerformanceScore(b)-champPerformanceScore(a)).slice(0,5);
