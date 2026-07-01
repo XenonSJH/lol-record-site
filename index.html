@@ -2802,7 +2802,7 @@ function getPlayerLaneSet(player){
 }
 function getPlayerTierRankByLp(p){
     const lp=getPlayerLP(p);
-    if(lp>=2400)return 7;if(lp>=2000)return 6;if(lp>=1600)return 5;if(lp>=1200)return 4;if(lp>=800)return 3;if(lp>=400)return 2;return 1;
+    if(lp>=600)return 7;if(lp>=500)return 6;if(lp>=400)return 5;if(lp>=300)return 4;if(lp>=200)return 3;if(lp>=100)return 2;return 1;
 }
 function getPlayerLanePower(p,lane){
     const rec=championRecordsCache.filter(r=>Number(r.player_id)===Number(p.id)&&normalizeLane(r.lane)===lane);
