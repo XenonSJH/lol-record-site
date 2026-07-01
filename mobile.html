@@ -1158,6 +1158,97 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
     #accountLoggedOut .account-card{margin-bottom:14px}
     #matchesContainer.player-grid,.player-grid{grid-template-columns:1fr!important}
 }
+@media(max-width:760px){
+    html,body{width:100%;max-width:100%;overflow:hidden}
+    .main{width:100%;min-width:0}
+    .page.active{overflow:auto!important;padding:14px 12px 18px!important}
+    .page h2{font-size:20px!important;margin-bottom:14px!important}
+    .header h1{font-size:18px!important;white-space:nowrap}
+    .header-actions button:nth-child(3){width:42px!important;overflow:hidden;color:transparent;position:relative}
+    .header-actions button:nth-child(3)::after{content:"↻";color:white;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+    .toolbar,.toolbar-line{width:100%;gap:8px}
+    .toolbar-line{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}
+    .toolbar-line .search-input{grid-column:1 / -1}
+    .sort-dir-btn{width:100%;min-height:40px}
+    .card-value{font-size:26px}
+    .home-top-player-card{grid-template-columns:42px 58px minmax(0,1fr)!important;min-height:76px!important;padding:12px!important;gap:10px!important}
+    .home-top-player-card .rank-avatar{width:56px!important;height:56px!important}
+    .home-name{font-size:17px!important}
+    .home-sub{font-size:12px!important}
+    .ranking-row{
+        display:grid!important;
+        grid-template-columns:34px 58px minmax(0,1fr)!important;
+        gap:10px!important;
+        min-height:0!important;
+        padding:12px!important;
+        border-radius:16px!important;
+        align-items:center!important;
+    }
+    .rank-num{font-size:18px!important;text-align:center}
+    .rank-avatar-wrap,.rank-avatar-wrap .rank-avatar,.ranking-row .rank-avatar{
+        width:56px!important;
+        height:56px!important;
+        min-width:56px!important;
+        border-radius:14px!important;
+    }
+    .champ-tier-corner{top:-5px!important;left:-5px!important;min-width:22px!important;height:22px!important;font-size:9px!important}
+    .rank-main{min-width:0!important;padding-left:0!important}
+    .rank-name{font-size:18px!important;line-height:1.15!important}
+    .rank-sub{font-size:12px!important;margin-top:5px!important;white-space:normal!important}
+    .rank-highlight,.rank-kda,.rank-stat-block,.mini-champs{
+        grid-column:1 / -1!important;
+        font-size:13px!important;
+        width:100%!important;
+    }
+    .rank-stat-block{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important}
+    .rank-stat-block .stat-sub{font-size:12px!important}
+    .mini-champs{justify-content:flex-start!important;overflow-x:auto;padding-bottom:2px}
+    .mini-champs .champion-icon{width:42px!important;height:42px!important}
+    #championsContainer .ranking-row{grid-template-columns:34px 56px minmax(0,1fr)!important}
+    #championsContainer .rank-avatar-wrap,
+    #championsContainer .rank-avatar-wrap .rank-avatar{width:52px!important;height:52px!important;min-width:52px!important}
+    .match-card{min-width:0!important;min-height:0!important;padding:14px!important;border-radius:16px!important}
+    .match-card-top{align-items:flex-start!important}
+    .match-code{font-size:16px!important}
+    .score-box{font-size:18px!important;gap:10px!important;margin:12px 0!important}
+    .comp-list{gap:8px!important}
+    .comp-row{grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr)!important;gap:6px!important;padding:8px!important;border-radius:12px!important}
+    .lane-pill{font-size:11px!important;padding:4px 3px!important}
+    .comp-side{gap:6px!important}
+    .comp-side .champion-icon.small{width:34px!important;height:34px!important;border-radius:9px!important}
+    .comp-title{font-size:12px!important;max-width:100%}
+    .comp-sub{font-size:11px!important;max-width:100%}
+    .mvp-badge{font-size:9px!important;padding:2px 5px!important;margin:0 4px 0 0!important}
+    .team-grid,.detail-layout,.player-detail-dashboard,.champion-detail-grid,.champion-analysis-grid{grid-template-columns:1fr!important}
+    .team-card{padding:12px!important;border-radius:16px!important}
+    .record-row{
+        grid-template-columns:42px minmax(0,1fr) 72px!important;
+        gap:8px!important;
+        min-height:0!important;
+    }
+    .record-ratio,.record-kp,.record-lp{display:none!important}
+    .detail-match-row{
+        grid-template-columns:52px minmax(0,1fr)!important;
+        gap:8px!important;
+        padding:10px!important;
+    }
+    .detail-match-row .plain-stat{grid-column:2!important;font-size:12px!important}
+    .player-most-list.phase2-most .champion-row,
+    .champion-top-row.phase3-top,
+    .champion-top-row{
+        min-width:0!important;
+        display:grid!important;
+        grid-template-columns:36px minmax(0,1fr)!important;
+        gap:8px!important;
+    }
+    .player-most-list.phase2-most .champion-row .plain-stat,
+    .champion-top-row .plain-stat,
+    .champion-top-row .rank-stat-block{grid-column:2!important;font-size:12px!important}
+    .player-profile-head{align-items:flex-start!important}
+    .player-profile-name{font-size:22px!important}
+    .profile-stat-grid,.champion-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+    .account-panel,.account-layout-fixed{display:grid!important;grid-template-columns:1fr!important}
+}
 </style>
 </head>
 <body>
@@ -2181,7 +2272,7 @@ function playerNameById(id){const p=playersCache.find(x=>Number(x.id)===Number(i
             <div class="lane-pill">${l}</div>
             <div class="comp-side red-side">
                 <div class="comp-text">
-                    <div class="comp-duo"><span class="comp-title">${escapeHtml(r?.champion_name||'-')}${r&&isSameRecord(r,mvp)?'<span class="mvp-badge">MVP</span>':''}</span><span class="comp-sub">${r?escapeHtml(playerNameById(r.player_id)):''}</span></div>
+                    <div class="comp-duo"><span class="comp-title">${r&&isSameRecord(r,mvp)?'<span class="mvp-badge">MVP</span>':''}${escapeHtml(r?.champion_name||'-')}</span><span class="comp-sub">${r?escapeHtml(playerNameById(r.player_id)):''}</span></div>
                 </div>
                 ${r?champIcon(r.champion_name,'champion-icon small',true):''}
             </div>
