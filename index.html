@@ -2912,7 +2912,7 @@ function renderTeamPlan(plan){
 function renderPlayerDetailError(p){document.getElementById('playerDetailContent').innerHTML=`<div class="empty-box">전적 데이터를 불러오지 못했습니다.</div>`}
 
 function getWinrateRaw(p){return p.total_games?p.wins/p.total_games*100:0}function getWinrate(p){return getWinrateRaw(p).toFixed(1)}function getPlayerLP(p){return Number(p.total_games||0)<=0?0:Number(p.lp||0)}
-function getTier(p){if((p.total_games||0)<5)return '배치중!';const lp=getPlayerLP(p);if(lp>=2400)return '다이아몬드';if(lp>=2000)return '에메랄드';if(lp>=1600)return '플래티넘';if(lp>=1200)return '골드';if(lp>=800)return '실버';if(lp>=400)return '브론즈';return '아이언'}
+function getTier(p){if((p.total_games||0)<5)return '배치중!';const lp=getPlayerLP(p);if(lp>=600)return '다이아몬드';if(lp>500)return '에메랄드';if(lp>=400)return '플래티넘';if(lp>=300)return '골드';if(lp>=200)return '실버';if(lp>=100)return '브론즈';return '아이언'}
 function getTierIcon(t){return {'배치중!':'❓','아이언':'⛓️','브론즈':'🥉','실버':'🥈','골드':'🥇','플래티넘':'💠','에메랄드':'💎','다이아몬드':'🔷'}[t]||'🏆'}
 function getTierClass(t){return {'배치중!':'tier-placement','아이언':'tier-iron','브론즈':'tier-bronze','실버':'tier-silver','골드':'tier-gold','플래티넘':'tier-platinum','에메랄드':'tier-emerald','다이아몬드':'tier-diamond'}[t]||''}
 function getTierBadge(p){const t=getTier(p);return `<div class="tier-badge ${getTierClass(t)}">${getTierIcon(t)} ${t}</div>`}
