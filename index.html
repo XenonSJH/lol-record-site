@@ -1327,8 +1327,6 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
                         <option value="ADC">ADC</option>
                         <option value="SUP">SUP</option>
                     </select>
-                    <label class="form-label">즐겨찾기 챔피언</label>
-                    <input class="search-input" id="settingFavoriteChampions" placeholder="예: 아리, 리 신, 이즈리얼">
                     <label class="form-label">소개글</label>
                     <textarea class="search-input" id="settingIntro" rows="5" style="resize:vertical;min-height:110px" placeholder="상세 페이지 프로필 사진 아래에 표시됩니다."></textarea>
                     <button class="sort-btn active" onclick="saveProfileSettings()">프로필 저장</button>
@@ -1478,7 +1476,7 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 const SUPABASE_URL = "https://ehligpqxjczgcggjpzwn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_QHDiR1qAWGVaKSDZguc0qg_fE_eVCwZ";
 
-let db=null, playersCache=[], matchesCache=[], championRecordsCache=[], championStatsCache=[], playerRecordStatsMap={};
+let db=null, playersCache=[], matchesCache=[], championRecordsCache=[], championStatsCache=[], playerRecordStatsMap={}, accountProfilesCache=[];
 let allMatchRecordsCache=[], matchRecordMap=new Map(), matchPage=1, matchPageSize=15, detailRecentState={};
 let playerSortKey="lp", championSortKey="honey", championLaneKey="ALL";
 let playerSortAsc=false, championSortAsc=false;
@@ -1651,6 +1649,8 @@ async function loadPlayers(){
     if(error){console.error(error);return}
 
     playersCache=data||[];
+    const {data:accounts,error:accountError}=await db.from('bc_accounts').select('nickname,profile_settings');
+    accountProfilesCache=accountError?[]:(accounts||[]);
 
     const playerCountEl=document.getElementById('playerCount');
     if(playerCountEl) playerCountEl.innerText=playersCache.length;
@@ -2376,7 +2376,20 @@ function getLineStats(records){return ['TOP','JUG','MID','ADC','SUP'].map(lane=>
 function getMostLine(records){const lines=getLineStats(records).sort((a,b)=>b.games-a.games||b.score-a.score);return lines[0]?.games?lines[0].lane:'-'}
 function getMostChampionName(records){const map={};records.forEach(r=>{const c=r.champion_name||'알 수 없음';map[c]=(map[c]||0)+1});return Object.entries(map).sort((a,b)=>b[1]-a[1])[0]?.[0]||'-'}
 function getMvpCount(playerId,records){return records.filter(r=>{const group=matchRecordMap.get(Number(r.match_id))||[];const maxScore=Math.max(...group.map(x=>Number(x.score||0)),0);return Number(r.player_id)===Number(playerId)&&Number(r.score||0)>=maxScore&&maxScore>0}).length}
-function getMainLaneBadges(records){return getLineStats(records).filter(x=>x.games).sort((a,b)=>b.games-a.games||b.score-a.score).slice(0,2).map((x,i)=>`<span class="info-pill">${i===0?'🥇':'🥈'} ${x.lane}</span>`).join('')||'<span class="info-pill">라인 기록 없음</span>'}
+function getStoredPlayerProfile(player){
+    const account=accountProfilesCache.find(a=>String(a.nickname||'').toLowerCase()===String(player?.nickname||'').toLowerCase());
+    return account?.profile_settings||{};
+}
+function getMainLaneBadges(records,player=null){
+    const profile=getStoredPlayerProfile(player);
+    const main=profile.main_lane?normalizeLane(profile.main_lane):'';
+    const sub=profile.sub_lane?normalizeLane(profile.sub_lane):'';
+    const configured=[main,sub].filter(l=>l&&l!=='-'&&['TOP','JUG','MID','ADC','SUP'].includes(l));
+    if(configured.length){
+        return configured.map((lane,i)=>`<span class="info-pill">${i===0?'🥇':'🥈'} ${lane}</span>`).join('');
+    }
+    return getLineStats(records).filter(x=>x.games).sort((a,b)=>b.games-a.games||b.score-a.score).slice(0,2).map((x,i)=>`<span class="info-pill">${i===0?'🥇':'🥈'} ${x.lane}</span>`).join('')||'<span class="info-pill">라인 기록 없음</span>';
+}
 function getPlayStyle(summary){if(summary.games===0)return '기록 없음';if(summary.kp>=70&&summary.kda>=3.2)return '캐리형';if(summary.kda>=4)return '안정형';if(summary.kp>=68)return '교전형';if(summary.score>=75)return '운영형';if(summary.avgA>=summary.avgK*1.8)return '서포터형';return '밸런스형'}
 function lineStars(score){const n=Math.max(1,Math.min(5,Math.round(Number(score||0)/20)));return '★'.repeat(n)+'☆'.repeat(5-n)}
 function getMaxStreaks(records){
@@ -2394,7 +2407,7 @@ function renderPlayerDetail(p,records){
     document.getElementById('playerDetailContent').innerHTML=`<div class="player-detail-dashboard">
         <div class="player-detail-stack">
             <div class="player-section-card player-profile-card">
-                <div class="player-profile-head">${getProfileHtml(p,'big')}<div><div class="player-profile-name">${escapeHtml(p.nickname)}</div><div class="player-badge-row">${getTierBadge(p)}${getMainLaneBadges(records)}<span class="info-pill">${style}</span></div></div></div>
+                <div class="player-profile-head">${getProfileHtml(p,'big')}<div><div class="player-profile-name">${escapeHtml(p.nickname)}</div><div class="player-badge-row">${getTierBadge(p)}${getMainLaneBadges(records,p)}<span class="info-pill">${style}</span></div></div></div>
                 ${getIntroHtml(p)}
                 <div class="form-dots">${recentFormDots(records)}</div>
                 <div class="profile-stat-grid">
@@ -2837,38 +2850,69 @@ function getMvpScoreForTeamPlayer(p){
     return getMvpCount(p.id,getRecentPlayerRecords(p,30));
 }
 function teamMetric(players,fn){return players.reduce((s,p)=>s+Number(fn(p)||0),0)}
-function recentSameTeamPenalty(blue,red){
+function buildTeamPlanContext(players){
+    const ctx={laneSets:new Map(),lanePowers:new Map(),form:new Map(),carry:new Map(),mvp:new Map(),lp:new Map(),tier:new Map(),recentMatches:matchesCache.slice(0,5).map(m=>(m.records||[]).map(r=>Number(r.player_id)))};
+    players.forEach(p=>{
+        const pid=Number(p.id);
+        const records=[...allMatchRecordsCache].filter(r=>Number(r.player_id)===pid).sort((a,b)=>getRecordTimeValue(b)-getRecordTimeValue(a));
+        const laneSet=new Set(records.map(r=>normalizeLane(r.lane)).filter(l=>['TOP','JUG','MID','ADC','SUP'].includes(l)));
+        ctx.laneSets.set(pid,laneSet);
+        ['TOP','JUG','MID','ADC','SUP'].forEach(lane=>{
+            const rec=records.filter(r=>normalizeLane(r.lane)===lane);
+            let lanePower;
+            if(!rec.length)lanePower={games:0,score:getPlayerLP(p)*.08-80};
+            else{
+                const wins=rec.filter(r=>r.result==='win').length;
+                const kills=rec.reduce((s,r)=>s+Number(r.kills||0),0);
+                const deaths=rec.reduce((s,r)=>s+Number(r.deaths||0),0);
+                const assists=rec.reduce((s,r)=>s+Number(r.assists||0),0);
+                const kp=rec.reduce((s,r)=>s+Number(r.kp||0),0)/rec.length;
+                lanePower={games:rec.length,score:getPlayerLP(p)*.08+wins/rec.length*35+getKdaRatioFromTotals(kills,deaths,assists)*8+kp*.2+Math.min(rec.length,8)};
+            }
+            ctx.lanePowers.set(`${pid}:${lane}`,lanePower);
+        });
+        const recent10=records.slice(0,10),recent20=records.slice(0,20),recent30=records.slice(0,30);
+        const form=recent10.length?recent10.filter(recordWin).length/recent10.length*100*.45+avg(recent10.map(r=>r.score))*.35+Math.min(avg(recent10.map(r=>getKdaRatioFromTotals(r.kills,r.deaths,r.assists)))*10,60)*.20:0;
+        const carry=recent20.length?avg(recent20.map(r=>Number(r.score||0)))*.45+avg(recent20.map(r=>Number(r.kp||0)))*.25+avg(recent20.map(r=>getKdaRatioFromTotals(r.kills,r.deaths,r.assists)))*8+getPlayerLP(p)*.015:getPlayerLP(p)*.02;
+        ctx.form.set(pid,form);
+        ctx.carry.set(pid,carry);
+        ctx.mvp.set(pid,getMvpCount(pid,recent30));
+        ctx.lp.set(pid,getPlayerLP(p));
+        ctx.tier.set(pid,getPlayerTierRankByLp(p));
+    });
+    return ctx;
+}
+function recentSameTeamPenalty(blue,red,ctx=null){
     const blueIds=new Set(blue.map(p=>Number(p.id))),redIds=new Set(red.map(p=>Number(p.id)));
     let penalty=0;
-    matchesCache.slice(0,5).forEach((m,idx)=>{
+    const recent=ctx?.recentMatches||matchesCache.slice(0,5).map(m=>(m.records||[]).map(r=>Number(r.player_id)));
+    recent.forEach((ids,idx)=>{
         const weight=5-idx;
-        const groups={blue:[],red:[]};
-        (m.records||[]).forEach(r=>{
-            const pid=Number(r.player_id);
-            if(blueIds.has(pid))groups.blue.push(pid);
-            if(redIds.has(pid))groups.red.push(pid);
-        });
-        penalty+=(Math.max(0,groups.blue.length-1)+Math.max(0,groups.red.length-1))*weight*10;
+        let blueCount=0,redCount=0;
+        ids.forEach(pid=>{if(blueIds.has(pid))blueCount++;if(redIds.has(pid))redCount++});
+        penalty+=(Math.max(0,blueCount-1)+Math.max(0,redCount-1))*weight*10;
     });
     return penalty;
 }
-function balanceDiff(blue,red,fn,weight=1){
-    return Math.abs(teamMetric(blue,fn)-teamMetric(red,fn))*weight;
+function balanceDiff(blue,red,fnOrMap,weight=1){
+    const read=p=>fnOrMap instanceof Map?Number(fnOrMap.get(Number(p.id))||0):Number(fnOrMap(p)||0);
+    return Math.abs(blue.reduce((s,p)=>s+read(p),0)-red.reduce((s,p)=>s+read(p),0))*weight;
 }
 function combinations(arr,k,start=0,prefix=[],out=[]){
     if(prefix.length===k){out.push([...prefix]);return out}
     for(let i=start;i<=arr.length-(k-prefix.length);i++){prefix.push(arr[i]);combinations(arr,k,i+1,prefix,out);prefix.pop()}
     return out;
 }
-function laneAssignments(team){
+function laneAssignments(team,ctx=null){
     const lanes=['TOP','JUG','MID','ADC','SUP'],res=[];
     function step(i,left,assign,penalty,power){
         if(i===lanes.length){res.push({assign:[...assign],penalty,power});return}
         const lane=lanes[i];
         left.forEach((p,idx)=>{
-            const laneSet=getPlayerLaneSet(p);
+            const pid=Number(p.id);
+            const laneSet=ctx?.laneSets.get(pid)||getPlayerLaneSet(p);
             const has=laneSet.has(lane);
-            const lanePower=getPlayerLanePower(p,lane);
+            const lanePower=ctx?.lanePowers.get(`${pid}:${lane}`)||getPlayerLanePower(p,lane);
             assign.push({lane,player:p,hasLane:has,lanePower});
             step(i+1,left.filter((_,j)=>j!==idx),assign,penalty+(has?0:120),power+lanePower.score);
             assign.pop();
@@ -2878,26 +2922,27 @@ function laneAssignments(team){
     return res.sort((a,b)=>(a.penalty-b.penalty)||(b.power-a.power)).slice(0,36);
 }
 function findBestTeamPlan(players){
+    const ctx=buildTeamPlanContext(players);
     const allCombos=combinations(players,5);
     let best=null;
     for(const blue of allCombos){
         if(!blue.includes(players[0]))continue;
         const red=players.filter(p=>!blue.includes(p));
-        const blueLp=blue.reduce((s,p)=>s+getPlayerLP(p),0),redLp=red.reduce((s,p)=>s+getPlayerLP(p),0);
-        const blueAssigns=laneAssignments(blue),redAssigns=laneAssignments(red);
+        const blueLp=blue.reduce((s,p)=>s+Number(ctx.lp.get(Number(p.id))||0),0),redLp=red.reduce((s,p)=>s+Number(ctx.lp.get(Number(p.id))||0),0);
+        const blueAssigns=laneAssignments(blue,ctx),redAssigns=laneAssignments(red,ctx);
         for(const ba of blueAssigns)for(const ra of redAssigns){
             let tierPenalty=0,maxTierDiff=0;
             ba.assign.forEach((b,i)=>{
-                const diff=Math.abs(getPlayerTierRankByLp(b.player)-getPlayerTierRankByLp(ra.assign[i].player));
+                const diff=Math.abs(Number(ctx.tier.get(Number(b.player.id))||0)-Number(ctx.tier.get(Number(ra.assign[i].player.id))||0));
                 maxTierDiff=Math.max(maxTierDiff,diff);
                 if(diff>1)tierPenalty+=(diff-1)*180;
             });
             const lpDiff=Math.abs(blueLp-redLp);
             const bluePlayers=ba.assign.map(x=>x.player),redPlayers=ra.assign.map(x=>x.player);
-            const formDiff=balanceDiff(bluePlayers,redPlayers,getRecentFormScore,1.4);
-            const carryDiff=balanceDiff(bluePlayers,redPlayers,getCarryScore,1.8);
-            const mvpDiff=balanceDiff(bluePlayers,redPlayers,getMvpScoreForTeamPlayer,35);
-            const repeatPenalty=recentSameTeamPenalty(bluePlayers,redPlayers);
+            const formDiff=balanceDiff(bluePlayers,redPlayers,ctx.form,1.4);
+            const carryDiff=balanceDiff(bluePlayers,redPlayers,ctx.carry,1.8);
+            const mvpDiff=balanceDiff(bluePlayers,redPlayers,ctx.mvp,35);
+            const repeatPenalty=recentSameTeamPenalty(bluePlayers,redPlayers,ctx);
             const score=lpDiff+ba.penalty+ra.penalty+tierPenalty+formDiff+carryDiff+mvpDiff+repeatPenalty-Math.min(ba.power+ra.power,500)*.05;
             const plan={blue:ba.assign,red:ra.assign,blueLp,redLp,lpDiff,formDiff,carryDiff,mvpDiff,repeatPenalty,score,maxTierDiff,strict:ba.penalty===0&&ra.penalty===0&&maxTierDiff<=1&&repeatPenalty<60};
             if(!best||score<best.score)best=plan;
@@ -2997,8 +3042,7 @@ function getAccountProfile(){
         profile_image:profile.profile_image??currentAccount?.profile_image??legacy.profile_image??'',
         intro:profile.intro??currentAccount?.intro??legacy.intro??'',
         main_lane:profile.main_lane??currentAccount?.main_lane??legacy.main_lane??'',
-        sub_lane:profile.sub_lane??currentAccount?.sub_lane??legacy.sub_lane??'',
-        favorite_champions:profile.favorite_champions??currentAccount?.favorite_champions??legacy.favorite_champions??[]
+        sub_lane:profile.sub_lane??currentAccount?.sub_lane??legacy.sub_lane??''
     };
 }
 function getAccountSettings(){return {...DEFAULT_UI_SETTINGS,...(currentAccount?.settings||{}),...(currentAccount?.ui_settings||{})}}
@@ -3022,7 +3066,7 @@ function previewUiSettings(){
 function updateRangeLabels(st){['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const v=document.getElementById(id+'Value');if(v)v.innerText=(st[id]||DEFAULT_UI_SETTINGS[id])+'px';})}
 function renderThemeGrid(){const grid=document.getElementById('themeGrid');if(!grid)return;grid.innerHTML=Object.entries(UI_THEMES).map(([key,t])=>`<button class="theme-btn ${currentTheme===key?'active':''}" onclick="selectTheme('${key}')"><div class="theme-swatch" style="background:${t.bg.includes('gradient')?t.bg:`linear-gradient(135deg,${t.card},${t.accent})`}"></div>${t.name}</button>`).join('')}
 function selectTheme(key){currentTheme=key;renderThemeGrid();previewUiSettings()}
-function fillSettingsInputs(){const st=getAccountSettings(),profile=getAccountProfile();currentTheme=st.theme||'purple';['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=st[id]||DEFAULT_UI_SETTINGS[id]});updateRangeLabels(st);renderThemeGrid();const nick=document.getElementById('settingNickname');if(nick)nick.value=profile.nickname||'';const img=document.getElementById('settingProfileImage');if(img)img.value=profile.profile_image||'';const intro=document.getElementById('settingIntro');if(intro)intro.value=profile.intro||'';const main=document.getElementById('settingMainLane');if(main)main.value=profile.main_lane||'';const sub=document.getElementById('settingSubLane');if(sub)sub.value=profile.sub_lane||'';const fav=document.getElementById('settingFavoriteChampions');if(fav)fav.value=Array.isArray(profile.favorite_champions)?profile.favorite_champions.join(', '):(profile.favorite_champions||'');const cu=document.getElementById('changeUsername');if(cu)cu.value=''}
+function fillSettingsInputs(){const st=getAccountSettings(),profile=getAccountProfile();currentTheme=st.theme||'purple';['sizeChampion','sizePlayer','sizeMost','sizeRecent','sizeMatch'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=st[id]||DEFAULT_UI_SETTINGS[id]});updateRangeLabels(st);renderThemeGrid();const nick=document.getElementById('settingNickname');if(nick)nick.value=profile.nickname||'';const img=document.getElementById('settingProfileImage');if(img)img.value=profile.profile_image||'';const intro=document.getElementById('settingIntro');if(intro)intro.value=profile.intro||'';const main=document.getElementById('settingMainLane');if(main)main.value=profile.main_lane||'';const sub=document.getElementById('settingSubLane');if(sub)sub.value=profile.sub_lane||'';const cu=document.getElementById('changeUsername');if(cu)cu.value=''}
 function renderAccountPage(){const out=document.getElementById('accountLoggedOut'),inn=document.getElementById('accountLoggedIn');if(currentAccount){out.style.display='none';inn.style.display='block';document.getElementById('accountTitle').innerText=`${currentAccount.username} 로그인됨`;document.getElementById('accountSub').innerText=`연결 플레이어: ${currentAccount.nickname||'미설정'}`;fillSettingsInputs()}else{out.style.display='grid';inn.style.display='none'}}
 async function hashPassword(password,salt){const enc=new TextEncoder();const data=enc.encode(password+'|'+salt);const digest=await crypto.subtle.digest('SHA-256',data);return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 function makeSalt(){return crypto.getRandomValues(new Uint32Array(4)).join('-')}
@@ -3072,9 +3116,8 @@ async function saveProfileSettings(){
     const subRaw=document.getElementById('settingSubLane')?.value||'';
     const main_lane=mainRaw?normalizeLane(mainRaw):'';
     const sub_lane=subRaw?normalizeLane(subRaw):'';
-    const favorite_champions=(document.getElementById('settingFavoriteChampions')?.value||'').split(',').map(x=>x.trim()).filter(Boolean);
-    const profile_settings={profile_image,intro,main_lane,sub_lane,favorite_champions};
-    const legacy={...(currentAccount.settings||{}),profile_image,intro,main_lane,sub_lane,favorite_champions};
+    const profile_settings={profile_image,intro,main_lane,sub_lane};
+    const legacy={...(currentAccount.settings||{}),profile_image,intro,main_lane,sub_lane};
     const update={nickname,profile_settings,settings:legacy,updated_at:new Date().toISOString()};
     const {data,error}=await db.from('bc_accounts').update(update).eq('id',currentAccount.id).select('*').single();
     if(error){console.error(error);flashMessage('profileSaveMessage','저장 실패: SQL 컬럼을 먼저 적용했는지 확인해줘.');return}
