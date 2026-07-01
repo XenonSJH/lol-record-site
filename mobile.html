@@ -6,9 +6,9 @@
 <script>
 (function(){
     const path=window.location.pathname;
-    const isMobile=window.innerWidth<=768;
-    if(isMobile&&!path.startsWith('/mobile')){
-        window.location.replace('/mobile/');
+    const isDesktop=window.innerWidth>768;
+    if(isDesktop&&(path.startsWith('/mobile')||path.endsWith('/mobile.html'))){
+        window.location.replace('/');
     }
 })();
 </script>
@@ -1133,6 +1133,31 @@ html,body,.main,.page,.player-grid,.match-list,.champion-list{
 .champion-top-row.phase3-top{grid-template-columns:56px minmax(130px,1.1fr) repeat(5,minmax(86px,.7fr))!important;min-width:760px!important}
 @media(max-width:1100px){.champion-detail-grid{grid-template-columns:1fr}.champion-analysis-grid{grid-template-columns:1fr}}
 @media(max-width:720px){.champion-metric-grid{grid-template-columns:1fr}}
+@media(max-width:760px){
+    body{display:block;height:100dvh;overflow:hidden}
+    .sidebar{position:fixed;left:0;right:0;bottom:0;width:100%;height:72px;border-right:none;border-top:1px solid var(--bc-border,#334155);z-index:80;display:block}
+    .logo{display:none}
+    .menu{height:100%;display:flex;flex-direction:row;gap:8px;overflow-x:auto;padding:9px 10px;scrollbar-width:none}
+    .menu::-webkit-scrollbar{display:none}
+    .menu button{flex:0 0 auto;min-width:72px;height:52px;padding:8px 10px;border-radius:14px;text-align:center;font-size:12px;font-weight:900;white-space:nowrap}
+    .menu button[data-page="recordDisabled"],.menu button:not([data-page]){display:none!important}
+    .main{height:100dvh;padding-bottom:72px;overflow:hidden!important}
+    .header{height:62px;padding:0 12px}
+    .header h1{font-size:20px}
+    .header-actions{gap:6px}
+    .header button,.nav-btn{padding:9px 10px;border-radius:10px;font-size:12px}
+    .page{padding:16px}
+    .page.active{height:calc(100dvh - 134px)}
+    .cards{grid-template-columns:1fr!important;gap:12px}
+    .card,.account-card,.player-section-card{border-radius:16px;padding:16px}
+    .search-input{min-width:0;width:100%}
+    .toolbar-line{align-items:stretch}
+    .sort-btn{padding:10px 12px;border-radius:10px}
+    .account-panel{grid-template-columns:1fr!important}
+    #accountLoggedOut.account-panel{grid-template-columns:1fr!important}
+    #accountLoggedOut .account-card{margin-bottom:14px}
+    #matchesContainer.player-grid,.player-grid{grid-template-columns:1fr!important}
+}
 </style>
 </head>
 <body>

@@ -1,0 +1,14 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": true,
+  "rewrites": [
+    {
+      "source": "/mobile",
+      "destination": "/mobile/"
+    },
+    {
+      "source": "/mobile.html",
+      "destination": "/mobile/"
+    }
+  ]
+}
